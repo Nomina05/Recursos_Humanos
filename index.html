@@ -75,11 +75,11 @@
       <h1>Sistema RRHH</h1>
       <p>Acceso seguro al sistema de Recursos Humanos.</p>
       <form id="formLogin">
-        <input id="loginUsuario" placeholder="Usuario" autocomplete="username" required>
+        <input id="loginUsuario" placeholder="Usuario o correo" autocomplete="username" required>
         <input id="loginClave" type="password" placeholder="Clave" autocomplete="current-password" required>
         <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
         <div class="login-error" id="loginError"></div>
-        <small class="small">Usuario inicial: admin | Clave inicial: admin123</small>
+        <small class="small">Usuario administrador inicial: registroycontroldenomina@coraamoca.gob.do</small>
       </form>
     </div>
   </section>
@@ -458,6 +458,8 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabaseClient=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)
   ? window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)
   : null;
+const ADMIN_EMAIL='registroycontroldenomina@coraamoca.gob.do';
+const ADMIN_PASSWORD='Coraamoca2025*';
 
 const gruposOcupacionales=[
   {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
@@ -633,7 +635,10 @@ document.getElementById('formLogin').addEventListener('submit',async event=>{
   event.preventDefault();
   const login=document.getElementById('loginUsuario').value.trim();
   const clave=document.getElementById('loginClave').value;
-  const usuario=usuarios.find(item=>item.login.toLowerCase()===login.toLowerCase());
+  const usuario=usuarios.find(item=>
+    item.login.toLowerCase()===login.toLowerCase()||
+    (item.correo||'').toLowerCase()===login.toLowerCase()
+  );
   if(!usuario||usuario.estado!=='Activo'){
     document.getElementById('loginError').textContent='Usuario no encontrado o inactivo.';
     return;
@@ -655,10 +660,23 @@ function crearIdUsuario(){
 }
 
 async function asegurarUsuarioAdminBase(){
-  const admin=usuarios.find(usuario=>usuario.login==='admin');
-  if(admin&&!admin.passwordHash){
-    admin.passwordHash=await hashClave('admin123');
-    admin.claveTemporal=admin.claveTemporal||'Clave inicial asignada';
+  const admin=usuarios.find(usuario=>
+    usuario.login==='admin'||
+    usuario.login===ADMIN_EMAIL||
+    usuario.correo===ADMIN_EMAIL
+  );
+  if(admin){
+    const esAdminAnterior=admin.login==='admin'||admin.claveTemporal==='Clave inicial: admin123';
+    admin.nombre=admin.nombre||'Administrador del Sistema';
+    admin.login=ADMIN_EMAIL;
+    admin.correo=ADMIN_EMAIL;
+    admin.rol='Administrador';
+    admin.estado='Activo';
+    admin.alcance='todo';
+    if(!admin.passwordHash||esAdminAnterior){
+      admin.passwordHash=await hashClave(ADMIN_PASSWORD);
+      admin.claveTemporal='Clave inicial actualizada. Puede editarse desde Usuarios.';
+    }
     guardarStorage();
     return;
   }
@@ -666,14 +684,14 @@ async function asegurarUsuarioAdminBase(){
   usuarios.push({
     id:crearIdUsuario(),
     nombre:'Administrador del Sistema',
-    login:'admin',
-    correo:'',
+    login:ADMIN_EMAIL,
+    correo:ADMIN_EMAIL,
     rol:'Administrador',
     estado:'Activo',
     unidadId:'',
     alcance:'todo',
-    passwordHash:await hashClave('admin123'),
-    claveTemporal:'Clave inicial: admin123',
+    passwordHash:await hashClave(ADMIN_PASSWORD),
+    claveTemporal:'Clave inicial. Puede editarse desde Usuarios.',
     creadoEn:new Date().toISOString()
   });
   guardarStorage();
