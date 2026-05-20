@@ -460,6 +460,7 @@ const supabaseClient=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)
   : null;
 const ADMIN_EMAIL='registroycontroldenomina@coraamoca.gob.do';
 const ADMIN_PASSWORD='Coraamoca2025*';
+const ADMIN_SEED_VERSION='admin-coraamoca-2025-v1';
 
 const gruposOcupacionales=[
   {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
@@ -666,21 +667,20 @@ async function asegurarUsuarioAdminBase(){
     usuario.correo===ADMIN_EMAIL
   );
   if(admin){
-    const esAdminAnterior=admin.login==='admin'||admin.claveTemporal==='Clave inicial: admin123';
     admin.nombre=admin.nombre||'Administrador del Sistema';
     admin.login=ADMIN_EMAIL;
     admin.correo=ADMIN_EMAIL;
     admin.rol='Administrador';
     admin.estado='Activo';
     admin.alcance='todo';
-    if(!admin.passwordHash||esAdminAnterior){
+    if(admin.adminSeedVersion!==ADMIN_SEED_VERSION){
       admin.passwordHash=await hashClave(ADMIN_PASSWORD);
       admin.claveTemporal='Clave inicial actualizada. Puede editarse desde Usuarios.';
+      admin.adminSeedVersion=ADMIN_SEED_VERSION;
     }
     guardarStorage();
     return;
   }
-  if(usuarios.length)return;
   usuarios.push({
     id:crearIdUsuario(),
     nombre:'Administrador del Sistema',
@@ -692,6 +692,7 @@ async function asegurarUsuarioAdminBase(){
     alcance:'todo',
     passwordHash:await hashClave(ADMIN_PASSWORD),
     claveTemporal:'Clave inicial. Puede editarse desde Usuarios.',
+    adminSeedVersion:ADMIN_SEED_VERSION,
     creadoEn:new Date().toISOString()
   });
   guardarStorage();
@@ -714,7 +715,11 @@ formUsuario.addEventListener('submit',async event=>{
   if(alcance!=='todo'&&!unidadId){alert('Seleccione la unidad organizacional para limitar los permisos.');return;}
   if(correo&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){alert('Correo invalido.');return;}
   const duplicado=usuarios.find(usuario=>usuario.id!==id&&usuario.login.toLowerCase()===login.toLowerCase());
-  if(duplicado){alert('Ya existe un usuario con ese nombre de acceso.');return;}
+  if(duplicado){
+    alert('Ya existe un usuario con ese nombre de acceso. Se cargara para editarlo.');
+    cargarUsuarioParaEditar(duplicado.id);
+    return;
+  }
   const validadoSupabase=await validarUsuarioEnSupabase({id,login,correo});
   if(!validadoSupabase)return;
   const actual=usuarios.find(item=>item.id===id);
@@ -725,7 +730,7 @@ formUsuario.addEventListener('submit',async event=>{
     if(!authUser)return;
   }
   const passwordHash=password?await hashClave(password):actual?.passwordHash;
-  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',nombre,login,correo,rol,estado,unidadId,alcance,passwordHash,claveTemporal,actualizadoEn:new Date().toISOString()};
+  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',nombre,login,correo,rol,estado,unidadId,alcance,passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
   const idx=usuarios.findIndex(item=>item.id===usuario.id);
   if(idx>=0)usuarios[idx]={...usuarios[idx],...usuario};else usuarios.push({...usuario,creadoEn:new Date().toISOString()});
   guardarStorage();
