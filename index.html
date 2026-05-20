@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Sistema Completo de Empleados - Validado y Nomina Mensual</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{--bg:#f1f5f9;--accent:#1d3557;--card1:#4f46e5;--card2:#059669;--card3:#ef4444}
+  body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);display:flex;min-height:100vh}
+  .sidebar{width:240px;background:var(--accent);color:#fff;height:100vh;position:fixed;padding-top:20px;display:flex;flex-direction:column}
+  .sidebar h2{text-align:center;margin:0 0 16px;font-weight:600}
+  .sidebar a{display:flex;align-items:center;gap:10px;color:#fff;padding:12px 18px;text-decoration:none;border-left:4px solid transparent;cursor:pointer}
+  .sidebar a.active,.sidebar a:hover{background:#457b9d;border-left-color:#f1faee}
+  .content{margin-left:240px;padding:20px;flex:1;min-width:0}
+  h1{color:var(--accent);margin:0 0 16px}
+  .dashboard-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:12px}
+  .card{padding:18px;border-radius:12px;color:#fff}
+  .presupuesto-total{background:linear-gradient(135deg,var(--card1),#6366f1)}
+  .presupuesto-disponible{background:linear-gradient(135deg,var(--card2),#10b981)}
+  .presupuesto-consumido{background:linear-gradient(135deg,var(--card3),#ef4444)}
+  .card h3{margin:0;font-size:14px;opacity:.9}
+  .card p{margin:8px 0 0;font-size:20px;font-weight:700}
+  .circular-indicator{position:relative;width:200px;height:200px;margin:14px auto}
+  .circle-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center}
+  .circle-center p{margin:0;font-weight:700;font-size:20px;color:#111}
+  .charts{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+  .chart-box{background:#fff;padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);width:420px;max-width:100%}
+  form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;background:#fff;padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+  form input,form select,form textarea{padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
+  .btn{padding:8px 12px;border-radius:6px;border:none;cursor:pointer}
+  .btn-primary{background:#1d4ed8;color:#fff}
+  .btn-secondary{background:#16a34a;color:#fff}
+  .btn-warning{background:#f97316;color:#fff}
+  .btn-danger{background:#dc2626;color:#fff}
+  .table-wrap{width:100%;overflow:auto}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-top:10px}
+  th,td{padding:8px;text-align:left;border-bottom:1px solid #eef2f7;font-size:13px;white-space:nowrap}
+  thead th{background:#f8fafc}
+  .group-row td{background:#e0edf7;color:#1d3557;font-weight:700}
+  .subtotal-row td{background:#f8fafc;font-weight:700}
+  .form-block{grid-column:1/-1;border:1px solid #e5e7eb;border-radius:8px;padding:10px;background:#f8fafc}
+  .form-block h3{margin:0 0 10px;color:#1d3557;font-size:15px}
+  .org-path{grid-column:1/-1;padding:8px 10px;border-radius:6px;background:#eef2ff;color:#1d3557;font-size:13px}
+  .employee-profile{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-top:16px}
+  .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+  .profile-item{border:1px solid #e5e7eb;border-radius:8px;padding:10px;background:#f8fafc}
+  .profile-item small{display:block;color:#64748b;font-size:11px;text-transform:uppercase;margin-bottom:4px}
+  .profile-item strong{color:#111827;font-size:14px}
+  .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1d3557,#457b9d);display:grid;place-items:center;padding:20px;z-index:50}
+  .login-card{width:min(420px,100%);background:#fff;border-radius:12px;box-shadow:0 22px 70px rgba(0,0,0,.22);padding:26px}
+  .login-card h1{margin:0 0 6px;color:#1d3557}
+  .login-card p{margin:0 0 18px;color:#64748b}
+  .login-card form{box-shadow:none;padding:0;margin:0;display:grid;grid-template-columns:1fr;gap:12px}
+  .login-error{min-height:18px;color:#dc2626;font-size:13px;font-weight:600}
+  .session-box{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.18);font-size:12px;color:#dbeafe}
+  .session-box strong{display:block;color:#fff;font-size:13px;margin-bottom:6px}
+  .hidden{display:none}
+  .small{font-size:12px;color:#666}
+  label.inline{display:block;font-size:12px;color:#374151;margin-bottom:4px}
+  input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  @media (max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:12px}}
+</style>
+</head>
+<body>
+
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <h1>Sistema RRHH</h1>
+      <p>Acceso seguro al sistema de Recursos Humanos.</p>
+      <form id="formLogin">
+        <input id="loginUsuario" placeholder="Usuario" autocomplete="username" required>
+        <input id="loginClave" type="password" placeholder="Clave" autocomplete="current-password" required>
+        <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+        <div class="login-error" id="loginError"></div>
+        <small class="small">Usuario inicial: admin | Clave inicial: admin123</small>
+      </form>
+    </div>
+  </section>
+
+  <div class="sidebar" id="mainSidebar">
+    <h2>Sistema RRHH</h2>
+    <a id="menu-dashboard" class="active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+    <a id="menu-registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
+    <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
+    <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
+    <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
+    <a id="menu-novedades" onclick="showSection('novedades')"><i class="fa-solid fa-bell"></i>Novedades</a>
+    <div class="session-box">
+      <strong id="usuarioSesionNombre">Sin sesion</strong>
+      <span id="usuarioSesionRol"></span>
+      <button class="btn btn-warning" type="button" onclick="cerrarSesion()" style="width:100%;margin-top:10px">Salir</button>
+    </div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <section id="dashboard">
+      <h1>Resumen de Presupuesto & Nomina</h1>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <div style="min-width:260px">
+          <label class="inline">Vista como usuario</label>
+          <select id="usuarioVista" onchange="cambiarUsuarioVista()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;width:100%"></select>
+        </div>
+        <div style="min-width:240px;flex:1">
+          <label class="inline">Presupuesto Total (editable)</label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="inputPresupuestoTotal" type="number" min="0" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;width:180px">
+            <button class="btn btn-primary" onclick="guardarPresupuesto()">Guardar Presupuesto</button>
+            <small class="small" id="presupuestoMsg"></small>
+          </div>
+        </div>
+
+        <div style="min-width:240px">
+          <label class="inline">Historico de Nominas (mes/total)</label>
+          <select id="selectNominas" onchange="mostrarNominaSeleccionada()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px"></select>
+        </div>
+
+        <div style="min-width:160px">
+          <label class="inline">Forzar archivo nomina (mes actual)</label>
+          <button class="btn btn-warning" onclick="forzarArchivoNomina()">Archivar Nomina Ahora</button>
+        </div>
+      </div>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Presupuesto Total</h3><p id="presupuestoTotal">RD$ 0</p></div>
+        <div class="card presupuesto-disponible"><h3>Presupuesto Disponible (inactivos)</h3><p id="presupuestoDisponible">RD$ 0</p></div>
+        <div class="card presupuesto-consumido"><h3>Total Consumido</h3><p id="presupuestoConsumido">RD$ 0</p></div>
+      </div>
+
+      <div class="circular-indicator">
+        <canvas id="circleChart" width="200" height="200"></canvas>
+        <div class="circle-center"><p id="circlePercentage">0%</p><small class="small">Consumido</small></div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-box">
+          <h4 style="margin:0 0 8px">Distribucion por Tipo (cantidad empleados)</h4>
+          <canvas id="graficoCircular"></canvas>
+        </div>
+        <div class="chart-box">
+          <h4 style="margin:0 0 8px">Comparativo por Tipo (monto DOP)</h4>
+          <canvas id="graficoBarras"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="registro" class="hidden">
+      <h1>Registro de Empleados</h1>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <input id="busquedaEmpleado" placeholder="Buscar por nombre, cedula o codigo" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
+        <button class="btn btn-secondary" onclick="buscarEmpleado()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+        <input type="file" id="archivoImportar" accept=".xlsx,.xls" style="margin-left:8px">
+        <button class="btn btn-primary" onclick="importarEmpleados()"><i class="fa-solid fa-file-import"></i> Importar Excel</button>
+        <button class="btn" onclick="descargarPlantilla()"><i class="fa-solid fa-file-excel"></i> Plantilla</button>
+      </div>
+
+      <form id="formEmpleado" novalidate>
+        <input type="hidden" id="codigo">
+        <input type="hidden" id="salarioBase">
+
+        <input id="nombre" placeholder="Nombre" required>
+        <input id="apellido" placeholder="Apellido" required>
+        <select id="tipoDocumento" onchange="actualizarValidacionDocumento()">
+          <option value="Cedula">Cedula</option>
+          <option value="Pasaporte">Pasaporte</option>
+        </select>
+        <input id="cedula" placeholder="Cedula 000-0000000-0" pattern="\d{3}-\d{7}-\d{1}" required>
+        <input type="hidden" id="cargo">
+        <input type="hidden" id="grupoOcupacional">
+        <select id="grupoOcupacionalSelect" onchange="actualizarCargosEmpleado()" required></select>
+        <select id="cargoSelect" onchange="sincronizarCargoEmpleado()" required></select>
+        <input id="salario" type="number" placeholder="Salario" min="0" oninput="calcularPorcentajeAumento()" required>
+        <input id="salarioInterinato" type="number" class="hidden" placeholder="Salario Interinato" min="0">
+
+        <input id="fechaIngreso" type="date" required>
+        <select id="tipoIngreso" onchange="actualizarSustitutos()" required>
+          <option value="">Tipo de Ingreso</option>
+          <option value="Creacion">Creacion</option>
+          <option value="Sustitucion">Sustitucion</option>
+          <option value="Interinato">Interinato</option>
+          <option value="Aumento">Aumento</option>
+        </select>
+
+        <select id="sustituyeA" class="hidden"></select>
+
+        <div class="form-block hidden" id="bloqueAumento">
+          <h3>Control de aumento salarial</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <input id="montoAumento" type="number" min="0" step="0.01" placeholder="Monto del aumento" oninput="calcularPorcentajeAumento('monto')">
+            <input id="porcentajeAumento" type="number" min="0" step="0.01" placeholder="% de aumento" oninput="calcularPorcentajeAumento('porcentaje')">
+            <input id="fechaAumento" type="date">
+            <div class="org-path" id="resumenAumento">Seleccione Aumento para registrar el impacto presupuestario.</div>
+          </div>
+        </div>
+
+        <input type="hidden" id="direccion">
+        <input type="hidden" id="departamento">
+        <input type="hidden" id="division">
+        <input type="hidden" id="seccion">
+
+        <div class="form-block">
+          <h3>Estructura organizacional</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <select id="empleadoDireccion" onchange="actualizarSelectsEmpleado('direccion')"></select>
+            <select id="empleadoDepartamento" onchange="actualizarSelectsEmpleado('departamento')"></select>
+            <select id="empleadoDivision" onchange="actualizarSelectsEmpleado('division')"></select>
+            <select id="empleadoSeccion" onchange="actualizarSelectsEmpleado('seccion')"></select>
+            <div class="org-path" id="empleadoRutaOrg">Sin estructura seleccionada</div>
+          </div>
+        </div>
+
+        <input type="hidden" id="centroServicio">
+        <select id="centroServicioSelect" onchange="sincronizarCentroServicio()"></select>
+
+        <div class="form-block">
+          <h3>Datos personales y bancarios</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <input id="direccionResidencia" placeholder="Direccion de residencia">
+            <input id="sector" placeholder="Sector">
+            <input id="cuentaBanco" placeholder="Cuenta de banco">
+            <input id="edad" type="number" min="0" placeholder="Edad">
+            <select id="nivelEscolaridad">
+              <option value="">Nivel de escolaridad</option>
+              <option>Basica</option>
+              <option>Bachiller</option>
+              <option>Tecnico</option>
+              <option>Universitario</option>
+              <option>Postgrado</option>
+              <option>Maestria</option>
+              <option>Doctorado</option>
+            </select>
+            <select id="estadoCivil">
+              <option value="">Estado civil</option>
+              <option>Soltero</option>
+              <option>Casado</option>
+              <option>Union libre</option>
+            </select>
+            <input id="hijos" type="number" min="0" placeholder="Cantidad de hijos">
+            <select id="tipoSangre">
+              <option value="">Tipo de sangre</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+            <input id="licenciaConducir" placeholder="Licencia de conducir">
+            <textarea id="otrosDatos" placeholder="Otros datos"></textarea>
+          </div>
+        </div>
+
+        <input id="recomendado" placeholder="Recomendacion">
+        <textarea id="nota" placeholder="Nota"></textarea>
+
+        <select id="estado" onchange="mostrarFechaTipoSalida()">
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+
+        <input id="fechaSalida" type="date" class="hidden">
+        <select id="tipoSalida" class="hidden">
+          <option value="">Tipo de Salida</option>
+          <option>Renuncia</option>
+          <option>Desvinculacion</option>
+          <option>Despido</option>
+          <option>Defuncion</option>
+          <option>Exclusion por pension</option>
+        </select>
+
+        <div style="grid-column:1/-1;display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar</button>
+          <button type="button" class="btn" onclick="limpiarFormulario()">Nuevo</button>
+        </div>
+      </form>
+
+      <h2>Lista de Empleados</h2>
+      <div class="table-wrap">
+        <table id="tablaEmpleados">
+          <thead>
+            <tr>
+              <th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo</th><th>Cargo</th><th>Estado</th><th>Fecha Salida</th><th>Sustituye a</th><th>Nota</th><th>Accion</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <section class="employee-profile hidden" id="panelEmpleado">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+          <div>
+            <h2 id="panelEmpleadoTitulo" style="margin:0;color:#1d3557">Panel del Empleado</h2>
+            <p id="panelEmpleadoSubtitulo" class="small" style="margin:4px 0 0"></p>
+          </div>
+          <button class="btn" type="button" onclick="cerrarPanelEmpleado()">Cerrar</button>
+        </div>
+        <div class="profile-grid" id="panelEmpleadoDetalle"></div>
+      </section>
+    </section>
+
+    <section id="estructura" class="hidden">
+      <h1>Estructura Organizacional</h1>
+      <form id="formUnidad" novalidate>
+        <input type="hidden" id="unidadId">
+        <select id="unidadTipo" onchange="actualizarPadresUnidad()" required>
+          <option value="">Tipo de unidad</option>
+          <option value="Direccion">Direccion</option>
+          <option value="Departamento">Departamento</option>
+          <option value="Division">Division</option>
+          <option value="Seccion">Seccion</option>
+        </select>
+        <select id="unidadPadre"></select>
+        <input id="unidadNombre" placeholder="Nombre de la unidad" required>
+        <div style="grid-column:1/-1;display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Unidad</button>
+          <button type="button" class="btn" onclick="limpiarUnidadFormulario()">Nueva</button>
+        </div>
+      </form>
+
+      <h2>Catalogo de unidades</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Tipo</th><th>Nombre</th><th>Depende de</th><th>Ruta</th><th>Accion</th></tr>
+          </thead>
+          <tbody id="tablaEstructura"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="usuarios" class="hidden">
+      <h1>Panel de Usuarios</h1>
+      <form id="formUsuario" novalidate>
+        <input type="hidden" id="usuarioId">
+        <input id="usuarioNombre" placeholder="Nombre completo" required>
+        <input id="usuarioLogin" placeholder="Usuario" required>
+        <input id="usuarioCorreo" type="email" placeholder="Correo institucional">
+        <select id="usuarioRol" required>
+          <option value="">Rol</option>
+          <option>Administrador</option>
+          <option>Recursos Humanos</option>
+          <option>Nomina</option>
+          <option>Consulta</option>
+        </select>
+        <select id="usuarioEstado" required>
+          <option>Activo</option>
+          <option>Inactivo</option>
+        </select>
+        <select id="usuarioUnidad"></select>
+        <select id="usuarioAlcance">
+          <option value="todo">Todo el sistema</option>
+          <option value="unidad">Solo su unidad</option>
+          <option value="unidad_dependencias">Unidad y dependencias</option>
+        </select>
+        <input id="usuarioPassword" type="password" placeholder="Clave de acceso">
+        <input id="usuarioClaveTemporal" placeholder="Nota de acceso">
+        <div style="grid-column:1/-1;display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Usuario</button>
+          <button type="button" class="btn" onclick="limpiarUsuarioFormulario()">Nuevo</button>
+        </div>
+      </form>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Total Usuarios</h3><p id="totalUsuarios">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Usuarios Activos</h3><p id="usuariosActivos">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Administradores</h3><p id="usuariosAdmin">0</p></div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <input id="busquedaUsuario" placeholder="Buscar por nombre, usuario o rol" oninput="renderUsuarios()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Nota</th><th>Accion</th></tr>
+          </thead>
+          <tbody id="tablaUsuarios"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reportes" class="hidden">
+      <h1>Reportes</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <select id="tipoReporte">
+          <option value="">-- Seleccione reporte --</option>
+          <option value="entradas">Entradas</option>
+          <option value="salidas">Salidas</option>
+          <option value="sustituciones">Comparativo Sustitucion/Interinato</option>
+          <option value="vacantes">Vacantes</option>
+          <option value="estructura">Empleados por Estructura</option>
+          <option value="nomina">Nomina del Mes</option>
+        </select>
+        <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
+        <button class="btn btn-secondary" onclick="exportExcelReporte()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+        <button class="btn btn-warning" onclick="exportPDFReporte()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="tablaReporte">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="novedades" class="hidden">
+      <h1>Novedades Automaticas</h1>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Codigo</th><th>Empleado</th><th>Detalle</th><th>Nota</th><th>Accion</th></tr></thead>
+          <tbody id="tablaNovedades"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+<script>
+function formatoNumero(n){return Number(n||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'});}
+function formatoFechaISO(s){if(!s)return'';const d=new Date(s);if(isNaN(d))return s;return d.toLocaleDateString('es-DO');}
+function ahoraYYYYMM(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function labelMesYYYYMM(yyyymm){const[y,m]=yyyymm.split('-');const dt=new Date(Number(y),Number(m)-1,1);return dt.toLocaleString('es-DO',{month:'long',year:'numeric'});}
+
+function validarCedulaRD(ced){
+  if(!ced)return false;
+  const digits=ced.replace(/\D/g,'');
+  if(digits.length!==11)return false;
+  const weights=[1,2,1,2,1,2,1,2,1,2,1];
+  let sum=0;
+  for(let i=0;i<11;i++){
+    let prod=Number(digits[i])*weights[i];
+    if(prod>9)prod=Math.floor(prod/10)+(prod%10);
+    sum+=prod;
+  }
+  return sum%10===0;
+}
+
+function safeText(value){return String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+
+let empleados=JSON.parse(localStorage.getItem('empleados')||'[]');
+let contadorCodigo=Number(localStorage.getItem('contadorCodigo')||1);
+let presupuestoTotal=Number(localStorage.getItem('presupuestoTotal')||0);
+let payrollHistory=JSON.parse(localStorage.getItem('payrollHistory')||'{}');
+let estructuraOrganizacional=JSON.parse(localStorage.getItem('estructuraOrganizacional')||'[]');
+let usuarios=JSON.parse(localStorage.getItem('usuariosSistema')||'[]');
+let usuarioVistaId=localStorage.getItem('usuarioVistaId')||'';
+let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||'';
+let reporteCache={headers:[],rows:[]};
+let pieChart=null,barChart=null,circleChart=null;
+
+const gruposOcupacionales=[
+  {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
+    'CONSERJE','PARQUEADOR','FOTOCOPIADOR','MENSAJERO INTERNO','PORTERO','VIGILANTE','JARDINERO','AYUDANTE DE MANTENIMIENTO','MENSAJERO EXTERNO','CHOFER I','CHOFER II','AYUDANTE DE PLOMERO','OPERADOR DE EQUIPO DE BOMBEO','RECOLECTOR DE MUESTRAS DE AGUA POTABLE','LECTOR DE MEDIDORES','OPERADOR DE EQUIPO PESADO','OPERADOR DE VALVULA'
+  ]},
+  {id:'II',nombre:'Grupo Ocupacional II - Supervision y Apoyo',cargos:[
+    'RECEPCIONISTA','SECRETARIA','AUXILIAR DE RELACIONES PUBLICAS','AUXILIAR ADMINISTRATIVO I','AUXILIAR COMERCIAL','AUXILIAR DE SERVICIO AL CLIENTE','CAJERO','AUXILIAR DE ALMACEN Y SUMINISTRO','SECRETARIA EJECUTIVA','DIGITADOR','AUXILIAR DE FACTURACION','AUXILIAR DE CATASTRO','AUXILIAR DE GESTION DE COBRO','AUXILIAR DE VALIJA','OPERADOR DE PLANTA DE TRATAMIENTO DE AGUA POTABLE','OPERADOR DE PLANTA DE TRATAMIENTO DE AGUAS RESIDUALES','SUPERVISOR GENERAL','SUPERVISOR COMERCIAL','SUPERVISOR DE REDES DE AGUA POTABLE','GESTOR DE COBRO','SUPERVISOR DE PROTOCOLO','ENCARGADO (A) SECCION DE SEGURIDAD','ENCARGADO (A) SECCION DE MAYORDOMIA'
+  ]},
+  {id:'III',nombre:'Grupo Ocupacional III - Tecnicos',cargos:[
+    'PLOMERO I','PLOMERO II','SOLDADOR','OPERADOR DE OBRA DE TOMA','FOTOGRAFO','ELECTRICISTA','ALBANIL','TECNICO EN ELECTRONICA','TECNICO DE TESORERIA','DIAGRAMADOR','TECNICO DE NOMINA','CAMAROGRAFO','TECNICO ADMINISTRATIVO','DISENADOR GRAFICO','TECNICO DE CONTABILIDAD','TECNICO DE LABORATORIO CONTROL DE CALIDAD DEL AGUA','SOPORTE TECNICO INFORMATICO','DISENADOR DE PAGINA WEB','TECNICO EN COMPRAS Y CONTRATACIONES','TECNICO DE ARCHIVISTICA','TECNICO DE RECURSOS HUMANOS','PROGRAMADOR DE COMPUTADORAS','MONITOR DE CAMARAS','TECNICO DE CLORACION','COORDINADOR DE INCORPORACIONES DE AGUA POTABLE Y SANEAMIENTO','ENCARGADO (A) SECCION DE TRANSPORTACION','ENCARGADO (A) SECCION DE ALMACEN Y SUMINISTRO','ENCARGADO (A) SECCION CORTE Y RECONEXION','ENCARGADO (A) CENTROS DE PAGOS EXTERNOS','ENCARGADO (A) SECCION DE MANTENIMIENTO Y REPARACION','ENCARGADO (A) SECCION OBRAS DE TOMA'
+  ]},
+  {id:'IV',nombre:'Grupo Ocupacional IV - Profesionales',cargos:[
+    'ANALISTA DE CAPACITACION Y DESARROLLO','ANALISTA DE RECURSOS HUMANOS','ANALISTA DE CONTROL Y ANALISIS DE OPERACIONES','ANALISTA DE PRESUPUESTO','ANALISTA DE PLANIFICACION','ANALISTA DE DESARROLLO INSTITUCIONAL','ANALISTA DE CALIDAD EN LA GESTION','ANALISTA DE COOPERACION INTERNACIONAL','ANALISTA DE PROYECTOS','PSICOLOGO INDUSTRIAL','ANALISTA DE SISTEMAS INFORMATICOS','ANALISTA DE DATOS ESTADISTICOS','ADMINISTRADOR DE BASE DE DATOS','ABOGADO I','ABOGADO II','CONTADOR','ANALISTA FINANCIERO','ADMINISTRADOR DE RED','AGRIMENSOR','SUPERVISOR DE OBRAS','ANALISTA DE PRESUPUESTO DE OBRAS','LABORATORISTA CONTROL CALIDAD DE AGUA','PERIODISTA','ADMINISTRADOR (A) DE CENTROS DE SERVICIO AL CLIENTE','ANALISTA DE ASISTENCIA SOCIAL'
+  ]},
+  {id:'V',nombre:'Grupo Ocupacional V - Direccion',cargos:[
+    'ENCARGADO (A) DE CENTROS DE SERVICIO AL CLIENTE','ENCARGADO (A) SECCION DE ARCHIVO Y CORRESPONDENCIA','ENCARGADO (A) SECCION DE PROTOCOLO Y EVENTOS','ENCARGADO (A) SECCION DE COOPERACION INTERNACIONAL','ENCARGADO (A) SECCION DE REDES SOCIALES Y MEDIOS DIGITALES','ENCARGADO (A) SECCION DE SERVICIO AL CLIENTE','ENCARGADO (A) SECCION DE REGISTRO, CONTROL Y NOMINA','ENCARGADO (A) SECCION DE EVALUACION DEL DESEMPENO Y CAPACITACION','ENCARGADO (A) SECCION DE ORGANIZACION DEL TRABAJO Y COMPENSACIONES','ENCARGADO (A) SECCION DE COMPRAS Y CONTRATACIONES','ENCARGADO (A) SECCION DE CONTROL DE ACTIVO FIJO','ENCARGADO (A) SECCION DE TESORERIA','ENCARGADO (A) SECCION DE PRESUPUESTO','ENCARGADO (A) SECCION DE GESTION DE COBROS','ENCARGADO (A) SECCION DE ADMINISTRACION DE SERVICIOS TIC','ENCARGADO (A) SECCION DE OPERACIONES TIC','ENCARGADO (A) SECCION DE TRATAMIENTO DE AGUA POTABLE','ENCARGADO (A) SECCION DE CONTROL DE CALIDAD DE AGUA POTABLE','ENCARGADO (A) SECCION DE LABORATORIO','ENCARGADO (A) SECCION DE MANTENIMIENTO DE REDES DE AGUA POTABLE','ENCARGADO (A) SECCION DE OPERACION Y DISTRIBUCION DE AGUA POTABLE','ENCARGADO (A) SECCION DE CATASTRO DE REDES DE AGUA POTABLE','ENCARGADO (A) SECCION DE OPERACION Y MANTENIMIENTO ZONAS PERIFERICAS','ENCARGADO (A) SECCION DE ELECTROMECANICA','ENCARGADO (A) SECCION DE CONSTRUCCIONES','ENCARGADO (A) SECCION DE DISENO Y PRESUPUESTO DE OBRAS','ENCARGADO (A) SECCION DE FISCALIZACION Y CONTROL DE OBRAS','ENCARGADO (A) SECCION DE OPERACION Y MANTENIMIENTO DE REDES DE AGUAS RESIDUALES','ENCARGADO (A) SECCION DE CONTROL DE CALIDAD AGUAS RESIDUALES','ENCARGADO (A) SECCION DE TRATAMIENTO DE AGUAS RESIDUALES','ENCARGADO (A) SECCION DE MICRO MEDICION','ENCARGADO (A) SECCION DE CATASTRO DE USUARIOS','ENCARGADO (A) SECCION DE FACTURACION','ENCARGADO (A) SECCION DE PRENSA','ENCARGADO (A) DIVISION DE SERVICIOS GENERALES','ENCARGADO (A) DIVISION DE RELACIONES PUBLICAS','ENCARGADO (A) DE DIVISION PARTICIPACION SOCIAL Y CIUDADANA','ENCARGADO (A) DEPARTAMENTO DE CONTABILIDAD','ENCARGADO (A) DEPARTAMENTO DE FORMULACION, MONITOREO Y EVALUACION DE PLANES, PROGRAMAS Y PROYECTOS','ENCARGADO(A) DEPARTAMENTO DE DESARROLLO INSTITUCIONAL Y CALIDAD EN LA GESTION','ENCARGADO (A) DEPARTAMENTO DE GESTION OPERATIVA','ENCARGADO (A) DEPARTAMENTO DE GESTION COMERCIAL','ENCARGADO (A) DEPARTAMENTO DE AGUAS RESIDUALES Y SANEAMIENTO','ENCARGADO (A) DEPARTAMENTO DE PRODUCCION Y TRATAMIENTO DE AGUA POTABLE','ENCARGADO (A) DEPARTAMENTO DE OPERACION Y MANTENIMIENTO DE AGUA POTABLE','ENCARGADO (A) DEPARTAMENTO DE INGENIERIA','ENCARGADO (A) DEPARTAMENTO FINANCIERO','ENCARGADO (A) DEPARTAMENTO ADMINISTRATIVO','ENCARGADO (A) DEPARTAMENTO DE TECNOLOGIAS DE LA INFORMACION Y COMUNICACION','ENCARGADO (A) DEPARTAMENTO JURIDICO','ENCARGADO (A) DEPARTAMENTO DE CONTROL Y ANALISIS DE OPERACIONES','ENCARGADO (A) OFICINA DE ACCESO A LA INFORMACION PUBLICA','DIRECTOR (A) DE PLANIFICACION Y DESARROLLO','DIRECTOR (A) DE COMUNICACIONES','DIRECTOR (A) DE RECURSOS HUMANOS','DIRECTOR (A) ADMINISTRATIVO FINANCIERO','DIRECTOR (A) TECNICO','DIRECTOR (A) COMERCIAL'
+  ]}
+];
+
+const centrosServicio=[
+  'Canca la Reina',
+  'Cayetano Germosen',
+  'Tanque de Llenado Guauci',
+  'Juan Lopez',
+  'Los Lopez',
+  'Las Lagunas',
+  'Villa Trina',
+  'Barrio Nuevo Puerto Rico',
+  'Estafeta La Estacion',
+  'Higuerito',
+  'Hincha',
+  'Oficina Edif. Corporativo',
+  'San Victor',
+  'Veragua',
+  'Monte la Jagua',
+  'Jamao al Norte',
+  'Gaspar Hernandez'
+];
+
+function showSection(id){
+  const sesion=usuarioSesionActual();
+  if((id==='usuarios'||id==='estructura')&&sesion?.rol!=='Administrador'){
+    alert('No tiene permiso para acceder a este modulo.');
+    id='dashboard';
+  }
+  document.querySelectorAll('.content section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('menu-'+id)?.classList.add('active');
+  if(id==='dashboard')actualizarDashboard();
+  if(id==='registro'){renderEmpleados();actualizarSelectsEmpleado();}
+  if(id==='estructura'){renderEstructura();actualizarPadresUnidad();}
+  if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
+  if(id==='novedades')renderNovedades();
+}
+
+function guardarStorage(){
+  localStorage.setItem('empleados',JSON.stringify(empleados));
+  localStorage.setItem('contadorCodigo',String(contadorCodigo));
+  localStorage.setItem('presupuestoTotal',String(presupuestoTotal));
+  localStorage.setItem('payrollHistory',JSON.stringify(payrollHistory));
+  localStorage.setItem('estructuraOrganizacional',JSON.stringify(estructuraOrganizacional));
+  localStorage.setItem('usuariosSistema',JSON.stringify(usuarios));
+  localStorage.setItem('usuarioVistaId',usuarioVistaId);
+}
+
+function guardarPresupuesto(){
+  const val=Number(document.getElementById('inputPresupuestoTotal').value||0);
+  if(isNaN(val)||val<0){alert('Presupuesto invalido');return;}
+  presupuestoTotal=val;
+  guardarStorage();
+  document.getElementById('presupuestoMsg').innerText='Guardado';
+  setTimeout(()=>document.getElementById('presupuestoMsg').innerText='',2000);
+  actualizarDashboard();
+}
+
+async function hashClave(clave){
+  const data=new TextEncoder().encode(clave);
+  const hash=await crypto.subtle.digest('SHA-256',data);
+  return Array.from(new Uint8Array(hash)).map(byte=>byte.toString(16).padStart(2,'0')).join('');
+}
+
+function usuarioSesionActual(){
+  return usuarios.find(usuario=>usuario.id===sesionActualId&&usuario.estado==='Activo');
+}
+
+function aplicarEstadoSesion(){
+  const usuario=usuarioSesionActual();
+  const autenticado=Boolean(usuario);
+  document.getElementById('loginScreen').classList.toggle('hidden',autenticado);
+  document.getElementById('mainSidebar').classList.toggle('hidden',!autenticado);
+  document.getElementById('mainContent').classList.toggle('hidden',!autenticado);
+  if(!autenticado)return;
+  document.getElementById('usuarioSesionNombre').textContent=usuario.nombre;
+  document.getElementById('usuarioSesionRol').textContent=`${usuario.rol} | ${textoAlcance(usuario.alcance)}`;
+  usuarioVistaId=usuario.id;
+  guardarStorage();
+  aplicarPermisosMenu(usuario);
+  renderUsuarioVista();
+  actualizarDashboard();
+}
+
+function aplicarPermisosMenu(usuario){
+  const esAdmin=usuario.rol==='Administrador';
+  document.getElementById('menu-usuarios').classList.toggle('hidden',!esAdmin);
+  document.getElementById('menu-estructura').classList.toggle('hidden',!esAdmin);
+}
+
+function cerrarSesion(){
+  sessionStorage.removeItem('sesionUsuarioId');
+  sesionActualId='';
+  usuarioVistaId='';
+  document.getElementById('loginClave').value='';
+  document.getElementById('loginError').textContent='';
+  aplicarEstadoSesion();
+}
+
+document.getElementById('formLogin').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const login=document.getElementById('loginUsuario').value.trim();
+  const clave=document.getElementById('loginClave').value;
+  const usuario=usuarios.find(item=>item.login.toLowerCase()===login.toLowerCase());
+  if(!usuario||usuario.estado!=='Activo'){
+    document.getElementById('loginError').textContent='Usuario no encontrado o inactivo.';
+    return;
+  }
+  const hash=await hashClave(clave);
+  if(usuario.passwordHash!==hash){
+    document.getElementById('loginError').textContent='Clave incorrecta.';
+    return;
+  }
+  sesionActualId=usuario.id;
+  sessionStorage.setItem('sesionUsuarioId',usuario.id);
+  document.getElementById('loginError').textContent='';
+  aplicarEstadoSesion();
+});
+
+function crearIdUsuario(){
+  if(window.crypto?.randomUUID)return window.crypto.randomUUID();
+  return 'USR'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+async function asegurarUsuarioAdminBase(){
+  const admin=usuarios.find(usuario=>usuario.login==='admin');
+  if(admin&&!admin.passwordHash){
+    admin.passwordHash=await hashClave('admin123');
+    admin.claveTemporal=admin.claveTemporal||'Clave inicial asignada';
+    guardarStorage();
+    return;
+  }
+  if(usuarios.length)return;
+  usuarios.push({
+    id:crearIdUsuario(),
+    nombre:'Administrador del Sistema',
+    login:'admin',
+    correo:'',
+    rol:'Administrador',
+    estado:'Activo',
+    unidadId:'',
+    alcance:'todo',
+    passwordHash:await hashClave('admin123'),
+    claveTemporal:'Clave inicial: admin123',
+    creadoEn:new Date().toISOString()
+  });
+  guardarStorage();
+}
+
+const formUsuario=document.getElementById('formUsuario');
+formUsuario.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const id=document.getElementById('usuarioId').value;
+  const nombre=document.getElementById('usuarioNombre').value.trim();
+  const login=document.getElementById('usuarioLogin').value.trim();
+  const correo=document.getElementById('usuarioCorreo').value.trim();
+  const rol=document.getElementById('usuarioRol').value;
+  const estado=document.getElementById('usuarioEstado').value;
+  const unidadId=document.getElementById('usuarioUnidad').value;
+  const alcance=document.getElementById('usuarioAlcance').value;
+  const password=document.getElementById('usuarioPassword').value;
+  const claveTemporal=document.getElementById('usuarioClaveTemporal').value.trim();
+  if(!nombre||!login||!rol){alert('Complete nombre, usuario y rol.');return;}
+  if(alcance!=='todo'&&!unidadId){alert('Seleccione la unidad organizacional para limitar los permisos.');return;}
+  if(correo&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){alert('Correo invalido.');return;}
+  const duplicado=usuarios.find(usuario=>usuario.id!==id&&usuario.login.toLowerCase()===login.toLowerCase());
+  if(duplicado){alert('Ya existe un usuario con ese nombre de acceso.');return;}
+  const actual=usuarios.find(item=>item.id===id);
+  if(!id&&!password){alert('Indique una clave para el nuevo usuario.');return;}
+  const passwordHash=password?await hashClave(password):actual?.passwordHash;
+  const usuario={id:id||crearIdUsuario(),nombre,login,correo,rol,estado,unidadId,alcance,passwordHash,claveTemporal,actualizadoEn:new Date().toISOString()};
+  const idx=usuarios.findIndex(item=>item.id===usuario.id);
+  if(idx>=0)usuarios[idx]={...usuarios[idx],...usuario};else usuarios.push({...usuario,creadoEn:new Date().toISOString()});
+  guardarStorage();
+  limpiarUsuarioFormulario();
+  renderUsuarios();
+});
+
+function limpiarUsuarioFormulario(){
+  formUsuario.reset();
+  document.getElementById('usuarioId').value='';
+  document.getElementById('usuarioEstado').value='Activo';
+  document.getElementById('usuarioAlcance').value='todo';
+  document.getElementById('usuarioUnidad').value='';
+  document.getElementById('usuarioPassword').value='';
+  renderUsuariosPermisos();
+}
+
+function cargarUsuarioParaEditar(id){
+  const usuario=usuarios.find(item=>item.id===id);
+  if(!usuario)return;
+  renderUsuariosPermisos();
+  document.getElementById('usuarioId').value=usuario.id;
+  document.getElementById('usuarioNombre').value=usuario.nombre||'';
+  document.getElementById('usuarioLogin').value=usuario.login||'';
+  document.getElementById('usuarioCorreo').value=usuario.correo||'';
+  document.getElementById('usuarioRol').value=usuario.rol||'';
+  document.getElementById('usuarioEstado').value=usuario.estado||'Activo';
+  document.getElementById('usuarioUnidad').value=usuario.unidadId||'';
+  document.getElementById('usuarioAlcance').value=usuario.alcance||'todo';
+  document.getElementById('usuarioPassword').value='';
+  document.getElementById('usuarioClaveTemporal').value=usuario.claveTemporal||'';
+  showSection('usuarios');
+}
+
+function eliminarUsuario(id){
+  const usuario=usuarios.find(item=>item.id===id);
+  if(!usuario)return;
+  if(usuario.login==='admin'&&usuarios.filter(item=>item.rol==='Administrador'&&item.estado==='Activo').length<=1){
+    alert('Debe existir al menos un administrador activo.');
+    return;
+  }
+  if(!confirm('Desea eliminar este usuario?'))return;
+  usuarios=usuarios.filter(item=>item.id!==id);
+  guardarStorage();
+  renderUsuarios();
+  renderUsuarioVista();
+}
+
+function cambiarEstadoUsuario(id){
+  const usuario=usuarios.find(item=>item.id===id);
+  if(!usuario)return;
+  if(usuario.rol==='Administrador'&&usuario.estado==='Activo'&&usuarios.filter(item=>item.rol==='Administrador'&&item.estado==='Activo').length<=1){
+    alert('Debe existir al menos un administrador activo.');
+    return;
+  }
+  usuario.estado=usuario.estado==='Activo'?'Inactivo':'Activo';
+  usuario.actualizadoEn=new Date().toISOString();
+  guardarStorage();
+  renderUsuarios();
+}
+
+function renderUsuarios(){
+  const tbody=document.getElementById('tablaUsuarios');
+  const q=(document.getElementById('busquedaUsuario')?.value||'').toLowerCase().trim();
+  const filtrados=usuarios.filter(usuario=>[usuario.nombre,usuario.login,usuario.correo,usuario.rol,usuario.estado].join(' ').toLowerCase().includes(q));
+  tbody.innerHTML=filtrados.map(usuario=>`<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+  document.getElementById('totalUsuarios').innerText=usuarios.length;
+  document.getElementById('usuariosActivos').innerText=usuarios.filter(usuario=>usuario.estado==='Activo').length;
+  document.getElementById('usuariosAdmin').innerText=usuarios.filter(usuario=>usuario.rol==='Administrador').length;
+}
+
+function textoAlcance(alcance){
+  if(alcance==='unidad')return 'Solo su unidad';
+  if(alcance==='unidad_dependencias')return 'Unidad y dependencias';
+  return 'Todo el sistema';
+}
+
+function renderUsuariosPermisos(){
+  const unidadSel=document.getElementById('usuarioUnidad');
+  const actual=unidadSel.value;
+  unidadSel.innerHTML='<option value="">Unidad organizacional / linea de mando</option>';
+  estructuraOrganizacional
+    .slice()
+    .sort((a,b)=>rutaUnidad(a).localeCompare(rutaUnidad(b),'es'))
+    .forEach(unidad=>unidadSel.insertAdjacentHTML('beforeend',`<option value="${safeText(unidad.id)}">${safeText(rutaUnidad(unidad))}</option>`));
+  unidadSel.value=actual;
+  renderUsuarioVista();
+}
+
+function renderUsuarioVista(){
+  const sel=document.getElementById('usuarioVista');
+  if(!sel)return;
+  const sesion=usuarioSesionActual();
+  const puedeSimular=sesion?.rol==='Administrador';
+  sel.disabled=!puedeSimular;
+  sel.innerHTML=puedeSimular?'<option value="">Administrador / Todo el sistema</option>':'';
+  const lista=puedeSimular?usuarios.filter(usuario=>usuario.estado==='Activo'):(sesion?[sesion]:[]);
+  lista.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'))
+    .forEach(usuario=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(usuario.id)}">${safeText(usuario.nombre)} - ${safeText(textoAlcance(usuario.alcance))}</option>`));
+  sel.value=usuarios.some(usuario=>usuario.id===usuarioVistaId)?usuarioVistaId:'';
+}
+
+function cambiarUsuarioVista(){
+  usuarioVistaId=document.getElementById('usuarioVista').value;
+  guardarStorage();
+  actualizarDashboard();
+  renderEmpleados();
+}
+
+function renderGruposOcupacionales(){
+  const grupoSel=document.getElementById('grupoOcupacionalSelect');
+  grupoSel.innerHTML='<option value="">Grupo ocupacional</option>';
+  gruposOcupacionales.forEach(grupo=>{
+    grupoSel.insertAdjacentHTML('beforeend',`<option value="${safeText(grupo.id)}">${safeText(grupo.nombre)}</option>`);
+  });
+  actualizarCargosEmpleado();
+}
+
+function actualizarCargosEmpleado(){
+  const grupoId=document.getElementById('grupoOcupacionalSelect').value;
+  const cargoSel=document.getElementById('cargoSelect');
+  const grupo=gruposOcupacionales.find(item=>item.id===grupoId);
+  const current=cargoSel.value;
+  cargoSel.innerHTML='<option value="">Cargo</option>';
+  if(grupo){
+    grupo.cargos.forEach(cargo=>cargoSel.insertAdjacentHTML('beforeend',`<option value="${safeText(cargo)}">${safeText(cargo)}</option>`));
+  }
+  if(grupo?.cargos.includes(current))cargoSel.value=current;
+  sincronizarCargoEmpleado();
+}
+
+function sincronizarCargoEmpleado(){
+  const grupoId=document.getElementById('grupoOcupacionalSelect').value;
+  const grupo=gruposOcupacionales.find(item=>item.id===grupoId);
+  document.getElementById('grupoOcupacional').value=grupo?.nombre||'';
+  document.getElementById('cargo').value=document.getElementById('cargoSelect').value||'';
+}
+
+function grupoPorCargo(cargo){
+  return gruposOcupacionales.find(grupo=>grupo.cargos.some(item=>item.toLowerCase()===(cargo||'').toLowerCase()));
+}
+
+function seleccionarCargoEmpleado(emp){
+  const grupo=gruposOcupacionales.find(item=>item.nombre===emp.grupoOcupacional)||grupoPorCargo(emp.cargo);
+  document.getElementById('grupoOcupacionalSelect').value=grupo?.id||'';
+  actualizarCargosEmpleado();
+  document.getElementById('cargoSelect').value=emp.cargo||'';
+  sincronizarCargoEmpleado();
+}
+
+function renderCentrosServicio(){
+  const sel=document.getElementById('centroServicioSelect');
+  sel.innerHTML='<option value="">Centro de Servicio</option>';
+  centrosServicio.forEach(centro=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(centro)}">${safeText(centro)}</option>`));
+}
+
+function sincronizarCentroServicio(){
+  document.getElementById('centroServicio').value=document.getElementById('centroServicioSelect').value||'';
+}
+
+function seleccionarCentroServicio(valor){
+  const sel=document.getElementById('centroServicioSelect');
+  sel.value=valor||'';
+  document.getElementById('centroServicio').value=valor||'';
+  if(valor&&!centrosServicio.includes(valor)){
+    sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valor)}">${safeText(valor)}</option>`);
+    sel.value=valor;
+  }
+}
+
+function completarGruposOcupacionalesEmpleados(){
+  let cambio=false;
+  empleados.forEach(emp=>{
+    if(emp.grupoOcupacional)return;
+    const grupo=grupoPorCargo(emp.cargo);
+    if(grupo){
+      emp.grupoOcupacional=grupo.nombre;
+      cambio=true;
+    }
+  });
+  if(cambio)guardarStorage();
+}
+
+function crearIdUnidad(){
+  if(window.crypto?.randomUUID)return window.crypto.randomUUID();
+  return 'U'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function tiposPadrePermitidos(tipo){
+  if(tipo==='Direccion')return ['Direccion'];
+  if(tipo==='Departamento')return ['Direccion'];
+  if(tipo==='Division')return ['Direccion','Departamento'];
+  if(tipo==='Seccion')return ['Direccion','Departamento','Division'];
+  return [];
+}
+
+function buscarUnidad(id){
+  return estructuraOrganizacional.find(unidad=>unidad.id===id);
+}
+
+function obtenerAncestrosUnidad(unidad){
+  const ancestros=[];
+  let actual=unidad;
+  while(actual?.padreId){
+    actual=buscarUnidad(actual.padreId);
+    if(actual)ancestros.unshift(actual);else break;
+  }
+  return ancestros;
+}
+
+function rutaUnidad(unidad){
+  if(!unidad)return '';
+  return [...obtenerAncestrosUnidad(unidad),unidad].map(item=>item.nombre).join(' > ');
+}
+
+function unidadPorTipoEnRuta(unidad,tipo){
+  return [...obtenerAncestrosUnidad(unidad),unidad].find(item=>item.tipo===tipo)?.nombre||'';
+}
+
+function obtenerDescendientesUnidad(id){
+  const ids=new Set([id]);
+  let cambio=true;
+  while(cambio){
+    cambio=false;
+    estructuraOrganizacional.forEach(unidad=>{
+      if(unidad.padreId&&ids.has(unidad.padreId)&&!ids.has(unidad.id)){
+        ids.add(unidad.id);
+        cambio=true;
+      }
+    });
+  }
+  return ids;
+}
+
+function unidadEmpleado(emp){
+  const match=(tipo,nombre,padreId='')=>estructuraOrganizacional.find(unidad=>unidad.tipo===tipo&&unidad.nombre===nombre&&(padreId===''||unidad.padreId===padreId));
+  const dir=match('Direccion',emp.direccion||'');
+  const dep=dir?match('Departamento',emp.departamento||'',dir.id):match('Departamento',emp.departamento||'');
+  const divPadre=dep?.id||dir?.id||'';
+  const div=divPadre?match('Division',emp.division||'',divPadre):match('Division',emp.division||'');
+  const secPadre=div?.id||dep?.id||dir?.id||'';
+  const sec=secPadre?match('Seccion',emp.seccion||'',secPadre):match('Seccion',emp.seccion||'');
+  return sec||div||dep||dir;
+}
+
+function usuarioVistaActual(){
+  return usuarios.find(usuario=>usuario.id===usuarioVistaId&&usuario.estado==='Activo');
+}
+
+function empleadosPermitidos(){
+  const usuario=usuarioVistaActual();
+  if(!usuario||usuario.alcance==='todo'||!usuario.unidadId)return empleados;
+  const ids=usuario.alcance==='unidad_dependencias'?obtenerDescendientesUnidad(usuario.unidadId):new Set([usuario.unidadId]);
+  return empleados.filter(emp=>{
+    const unidad=unidadEmpleado(emp);
+    return unidad&&ids.has(unidad.id);
+  });
+}
+
+function unidadesHijas(padreId,tipo){
+  return estructuraOrganizacional
+    .filter(unidad=>unidad.padreId===padreId&&unidad.tipo===tipo)
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+}
+
+function migrarEstructuraDesdeEmpleados(){
+  if(estructuraOrganizacional.length||!empleados.length)return;
+  empleados.forEach(emp=>{
+    let padreId='';
+    [
+      ['Direccion',emp.direccion],
+      ['Departamento',emp.departamento],
+      ['Division',emp.division],
+      ['Seccion',emp.seccion]
+    ].forEach(([tipo,nombre])=>{
+      nombre=(nombre||'').trim();
+      if(!nombre)return;
+      let unidad=estructuraOrganizacional.find(item=>item.tipo===tipo&&item.nombre.toLowerCase()===nombre.toLowerCase()&&item.padreId===padreId);
+      if(!unidad){
+        unidad={id:crearIdUnidad(),tipo,nombre,padreId};
+        estructuraOrganizacional.push(unidad);
+      }
+      padreId=unidad.id;
+    });
+  });
+  guardarStorage();
+}
+
+function asegurarDireccionesBase(){
+  const general=asegurarUnidadOrganizacional('Direccion','Direccion General','', ['General']);
+  [
+    ['Direccion de Comunicaciones',['Comunicaciones','Director (A) de Comunicaciones']],
+    ['Direccion de Recursos Humanos',['Recursos Humanos','Director (A) de Recursos Humanos']],
+    ['Direccion Administrativo y Financiero',['Administrativo y Financiero','Director (A) Administrativo Financiero']],
+    ['Direccion Tecnica',['Tecnica','Director (A) Tecnico']],
+    ['Direccion Comercial',['Comercial','Director (A) Comercial']],
+    ['Direccion de Planificacion y Desarrollo',['Planificacion y Desarrollo','Director (A) de Planificacion y Desarrollo']]
+  ].forEach(([nombre,alias])=>asegurarUnidadOrganizacional('Direccion',nombre,general.id,alias));
+  guardarStorage();
+}
+
+function asegurarUnidadOrganizacional(tipo,nombre,padreId='',alias=[]){
+  const nombres=[nombre,...alias].map(item=>item.toLowerCase());
+  let unidad=estructuraOrganizacional.find(item=>item.tipo===tipo&&nombres.includes(item.nombre.toLowerCase()));
+  if(unidad){
+    unidad.nombre=nombre;
+    unidad.padreId=padreId;
+    return unidad;
+  }
+  unidad={id:crearIdUnidad(),tipo,nombre,padreId};
+  estructuraOrganizacional.push(unidad);
+  return unidad;
+}
+
+function asegurarEstructuraPrincipal(){
+  const general=asegurarUnidadOrganizacional('Direccion','Direccion General','', ['General']);
+  [
+    'Departamento De Tecnologia de la Informacion y Comunicacion (TIC)',
+    'Departamento de Control y Analisis de Operaciones',
+    'Departamento Juridico',
+    'Oficina de Acceso a la Informacion'
+  ].forEach(nombre=>asegurarUnidadOrganizacional('Departamento',nombre,general.id,[nombre.replace(/^Departamento\s+/i,''),nombre.replace(/^Oficina\s+/i,'')]));
+  guardarStorage();
+}
+
+function asegurarEstructuraPorDirecciones(){
+  const general=asegurarUnidadOrganizacional('Direccion','Direccion General','', ['General']);
+  const comunicaciones=asegurarUnidadOrganizacional('Direccion','Direccion de Comunicaciones',general.id);
+  const rrhh=asegurarUnidadOrganizacional('Direccion','Direccion de Recursos Humanos',general.id);
+  const planificacion=asegurarUnidadOrganizacional('Direccion','Direccion de Planificacion y Desarrollo',general.id);
+  const comercial=asegurarUnidadOrganizacional('Direccion','Direccion Comercial',general.id);
+  const administrativoFinanciero=asegurarUnidadOrganizacional('Direccion','Direccion Administrativo y Financiero',general.id);
+  const tecnica=asegurarUnidadOrganizacional('Direccion','Direccion Tecnica',general.id);
+  const tic=asegurarUnidadOrganizacional('Departamento','Departamento De Tecnologia de la Informacion y Comunicacion (TIC)',general.id);
+
+  const relacionesPublicas=asegurarUnidadOrganizacional('Division','Relaciones Publicas',comunicaciones.id,['Division de Relaciones Publicas']);
+  asegurarUnidadOrganizacional('Seccion','Prensa',relacionesPublicas.id,['Seccion de Prensa']);
+  asegurarUnidadOrganizacional('Division','Participacion Social y Ciudadana',comunicaciones.id,['Division Participacion Social y Ciudadana','Division de Participacion Social y Ciudadana']);
+  asegurarUnidadOrganizacional('Seccion','Protocolo y Eventos',comunicaciones.id,['Seccion de Protocolo y Eventos']);
+  asegurarUnidadOrganizacional('Seccion','Redes Sociales y Medios Digitales',comunicaciones.id,['Seccion de Redes Sociales y Medios Digitales']);
+
+  asegurarUnidadOrganizacional('Seccion','Registro, Control y Nomina',rrhh.id,['Seccion de Registro, Control y Nomina']);
+  asegurarUnidadOrganizacional('Seccion','Evaluacion del Desempeno y Capacitaciones',rrhh.id,['Evaluacion del Desempeno y Capacitacion','Seccion de Evaluacion del Desempeno y Capacitacion']);
+  asegurarUnidadOrganizacional('Seccion','Organizacion del Trabajo y Compensaciones',rrhh.id,['Seccion de Organizacion del Trabajo y Compensaciones']);
+
+  asegurarUnidadOrganizacional('Departamento','Desarrollo Institucional y Calidad en la Gestion',planificacion.id,['Departamento de Desarrollo Institucional y Calidad en la Gestion']);
+  asegurarUnidadOrganizacional('Seccion','Cooperacion Internacional',planificacion.id,['Seccion de Cooperacion Internacional']);
+  asegurarUnidadOrganizacional('Departamento','Formulacion, Monitoreo y Evaluacion de Planes, Programas y Proyectos',planificacion.id,['Departamento de Formulacion, Monitoreo y Evaluacion de Planes, Programas y Proyectos']);
+
+  asegurarUnidadOrganizacional('Seccion','Administracion de Servicios TIC',tic.id,['Seccion de Administracion de Servicios TIC']);
+  asegurarUnidadOrganizacional('Seccion','Operaciones TIC',tic.id,['Seccion de Operaciones TIC']);
+
+  const gestionComercial=asegurarUnidadOrganizacional('Departamento','Gestion Comercial',comercial.id,['Departamento de Gestion Comercial']);
+  asegurarUnidadOrganizacional('Seccion','Gestion de Cobros',gestionComercial.id,['Seccion de Gestion de Cobros']);
+  asegurarUnidadOrganizacional('Seccion','Facturacion',gestionComercial.id,['Seccion de Facturacion']);
+  asegurarUnidadOrganizacional('Seccion','Atencion al Cliente',gestionComercial.id,['Servicio al Cliente','Seccion de Servicio al Cliente','Seccion de Atencion al Cliente']);
+  asegurarUnidadOrganizacional('Seccion','Centros de Pagos Externos',gestionComercial.id,['Centros de Pagos Externos']);
+  asegurarUnidadOrganizacional('Seccion','Centros de Servicio al Cliente',gestionComercial.id,['Centros de Servicio al Cliente']);
+
+  const gestionOperativa=asegurarUnidadOrganizacional('Departamento','Gestion Operativa',comercial.id,['Departamento de Gestion Operativa']);
+  asegurarUnidadOrganizacional('Seccion','Catastro de Usuarios',gestionOperativa.id,['Seccion de Catastro de Usuarios']);
+  asegurarUnidadOrganizacional('Seccion','Micro-Medicion',gestionOperativa.id,['Micro Medicion','Seccion de Micro Medicion','Seccion de Micro-Medicion']);
+  asegurarUnidadOrganizacional('Seccion','Corte y Reconexion',gestionOperativa.id,['Seccion Corte y Reconexion','Seccion de Corte y Reconexion']);
+
+  const departamentoAdministrativo=asegurarUnidadOrganizacional('Departamento','Departamento Administrativo',administrativoFinanciero.id,['Administrativo','Departamento de Administrativo']);
+  asegurarUnidadOrganizacional('Seccion','Compras y Contrataciones',departamentoAdministrativo.id,['Seccion de Compras y Contrataciones']);
+  asegurarUnidadOrganizacional('Seccion','Activo Fijo',departamentoAdministrativo.id,['Control de Activo Fijo','Seccion de Control de Activo Fijo','Seccion de Activo Fijo']);
+  asegurarUnidadOrganizacional('Seccion','Transportacion',departamentoAdministrativo.id,['Seccion de Transportacion']);
+  const serviciosGenerales=asegurarUnidadOrganizacional('Division','Servicios Generales',departamentoAdministrativo.id,['Division de Servicios Generales']);
+  asegurarUnidadOrganizacional('Seccion','Seguridad',serviciosGenerales.id,['Seccion de Seguridad']);
+  asegurarUnidadOrganizacional('Seccion','Mayordomia',serviciosGenerales.id,['Seccion de Mayordomia']);
+  asegurarUnidadOrganizacional('Seccion','Mantenimiento y Reparacion',serviciosGenerales.id,['Seccion de Mantenimiento y Reparacion']);
+  asegurarUnidadOrganizacional('Seccion','Archivo y Correspondencia',serviciosGenerales.id,['Seccion de Archivo y Correspondencia']);
+  asegurarUnidadOrganizacional('Seccion','Almacen y Suministro',serviciosGenerales.id,['Seccion de Almacen y Suministro']);
+
+  const departamentoFinanciero=asegurarUnidadOrganizacional('Departamento','Departamento Financiero',administrativoFinanciero.id,['Financiero']);
+  asegurarUnidadOrganizacional('Seccion','Contabilidad',departamentoFinanciero.id,['Departamento de Contabilidad','Seccion de Contabilidad']);
+  asegurarUnidadOrganizacional('Seccion','Presupuesto',departamentoFinanciero.id,['Seccion de Presupuesto']);
+  asegurarUnidadOrganizacional('Seccion','Tesoreria',departamentoFinanciero.id,['Seccion de Tesoreria']);
+
+  const aguasResiduales=asegurarUnidadOrganizacional('Departamento','Aguas Residuales y Saneamiento',tecnica.id,['Departamento de Aguas Residuales y Saneamiento']);
+  asegurarUnidadOrganizacional('Seccion','Operacion y Mantenimiento de Redes de Aguas Residuales',aguasResiduales.id,['Seccion de Operacion y Mantenimiento de Redes de Aguas Residuales']);
+  asegurarUnidadOrganizacional('Seccion','Tratamiento de Aguas Residuales',aguasResiduales.id,['Seccion de Tratamiento de Aguas Residuales']);
+  asegurarUnidadOrganizacional('Seccion','Control de Calidad de Aguas Residuales',aguasResiduales.id,['Control de Calidad Aguas Residuales','Seccion de Control de Calidad Aguas Residuales']);
+
+  const operacionMantenimiento=asegurarUnidadOrganizacional('Departamento','Operacion y Mantenimiento',tecnica.id,['Departamento de Operacion y Mantenimiento de Agua Potable','Operacion y Mantenimiento de Agua Potable']);
+  asegurarUnidadOrganizacional('Seccion','Operacion y Distribucion de Agua Potable',operacionMantenimiento.id,['Seccion de Operacion y Distribucion de Agua Potable']);
+  asegurarUnidadOrganizacional('Seccion','Catastro de Redes de Agua Potable',operacionMantenimiento.id,['Seccion de Catastro de Redes de Agua Potable']);
+  asegurarUnidadOrganizacional('Seccion','Electromecanica',operacionMantenimiento.id,['Seccion de Electromecanica']);
+  asegurarUnidadOrganizacional('Seccion','Mantenimiento de Redes',operacionMantenimiento.id,['Mantenimiento de Redes de Agua Potable','Seccion de Mantenimiento de Redes de Agua Potable']);
+  asegurarUnidadOrganizacional('Seccion','Operacion y Mantenimiento de Redes de Zonas Perifericas',operacionMantenimiento.id,['Operacion y Mantenimiento Zonas Perifericas','Seccion de Operacion y Mantenimiento Zonas Perifericas']);
+
+  const produccionAgua=asegurarUnidadOrganizacional('Departamento','Produccion y Tratamiento de Agua Potable',tecnica.id,['Departamento de Produccion y Tratamiento de Agua Potable']);
+  asegurarUnidadOrganizacional('Seccion','Tratamiento de Agua Potable',produccionAgua.id,['Seccion de Tratamiento de Agua Potable']);
+  asegurarUnidadOrganizacional('Seccion','Laboratorio de Agua Potable',produccionAgua.id,['Laboratorio','Seccion de Laboratorio']);
+  asegurarUnidadOrganizacional('Seccion','Obra de Toma',produccionAgua.id,['Obras de Toma','Seccion Obras de Toma']);
+  asegurarUnidadOrganizacional('Seccion','Control y Calidad de Agua Potable',produccionAgua.id,['Control de Calidad de Agua Potable','Seccion de Control de Calidad de Agua Potable']);
+
+  const ingenieria=asegurarUnidadOrganizacional('Departamento','Ingenieria',tecnica.id,['Departamento de Ingenieria']);
+  asegurarUnidadOrganizacional('Seccion','Construccion',ingenieria.id,['Construcciones','Seccion de Construcciones']);
+  asegurarUnidadOrganizacional('Seccion','Diseno y Presupuesto',ingenieria.id,['Diseno y Presupuesto de Obras','Seccion de Diseno y Presupuesto de Obras']);
+  asegurarUnidadOrganizacional('Seccion','Fiscalizacion y Control de Obras',ingenieria.id,['Seccion de Fiscalizacion y Control de Obras']);
+  guardarStorage();
+}
+
+function asegurarUnidadesDesdeCargosGrupoV(){
+  const direccionGeneral=estructuraOrganizacional.find(unidad=>unidad.tipo==='Direccion'&&unidad.nombre==='Direccion General');
+  if(!direccionGeneral)return;
+  const unidadesEstructuradas=new Set([
+    'seccion|Archivo y Correspondencia',
+    'seccion|Protocolo y Eventos',
+    'seccion|Cooperacion Internacional',
+    'seccion|Redes Sociales y Medios Digitales',
+    'seccion|Servicio al Cliente',
+    'seccion|Registro, Control y Nomina',
+    'seccion|Evaluacion del Desempeno y Capacitacion',
+    'seccion|Organizacion del Trabajo y Compensaciones',
+    'seccion|Compras y Contrataciones',
+    'seccion|Control de Activo Fijo',
+    'seccion|Tesoreria',
+    'seccion|Presupuesto',
+    'seccion|Gestion de Cobros',
+    'seccion|Administracion de Servicios TIC',
+    'seccion|Operaciones TIC',
+    'seccion|Tratamiento de Agua Potable',
+    'seccion|Control de Calidad de Agua Potable',
+    'seccion|Laboratorio',
+    'seccion|Mantenimiento de Redes de Agua Potable',
+    'seccion|Operacion y Distribucion de Agua Potable',
+    'seccion|Catastro de Redes de Agua Potable',
+    'seccion|Operacion y Mantenimiento Zonas Perifericas',
+    'seccion|Electromecanica',
+    'seccion|Construcciones',
+    'seccion|Diseno y Presupuesto de Obras',
+    'seccion|Fiscalizacion y Control de Obras',
+    'seccion|Operacion y Mantenimiento de Redes de Aguas Residuales',
+    'seccion|Control de Calidad Aguas Residuales',
+    'seccion|Tratamiento de Aguas Residuales',
+    'seccion|Micro Medicion',
+    'seccion|Catastro de Usuarios',
+    'seccion|Facturacion',
+    'seccion|Prensa',
+    'division|Servicios Generales',
+    'division|Relaciones Publicas',
+    'division|Participacion Social y Ciudadana',
+    'departamento|Contabilidad',
+    'departamento|Formulacion, Monitoreo y Evaluacion de Planes, Programas y Proyectos',
+    'departamento|Desarrollo Institucional y Calidad en la Gestion',
+    'departamento|Gestion Operativa',
+    'departamento|Gestion Comercial',
+    'departamento|Aguas Residuales y Saneamiento',
+    'departamento|Produccion y Tratamiento de Agua Potable',
+    'departamento|Operacion y Mantenimiento de Agua Potable',
+    'departamento|Ingenieria',
+    'departamento|Financiero',
+    'departamento|Administrativo',
+    'departamento|Tecnologias de la Informacion y Comunicacion',
+    'departamento|Juridico',
+    'departamento|Control y Analisis de Operaciones'
+  ]);
+  const unidades=[
+    ['Seccion','Archivo y Correspondencia'],
+    ['Seccion','Protocolo y Eventos'],
+    ['Seccion','Cooperacion Internacional'],
+    ['Seccion','Redes Sociales y Medios Digitales'],
+    ['Seccion','Servicio al Cliente'],
+    ['Seccion','Registro, Control y Nomina'],
+    ['Seccion','Evaluacion del Desempeno y Capacitacion'],
+    ['Seccion','Organizacion del Trabajo y Compensaciones'],
+    ['Seccion','Compras y Contrataciones'],
+    ['Seccion','Control de Activo Fijo'],
+    ['Seccion','Tesoreria'],
+    ['Seccion','Presupuesto'],
+    ['Seccion','Gestion de Cobros'],
+    ['Seccion','Administracion de Servicios TIC'],
+    ['Seccion','Operaciones TIC'],
+    ['Seccion','Tratamiento de Agua Potable'],
+    ['Seccion','Control de Calidad de Agua Potable'],
+    ['Seccion','Laboratorio'],
+    ['Seccion','Mantenimiento de Redes de Agua Potable'],
+    ['Seccion','Operacion y Distribucion de Agua Potable'],
+    ['Seccion','Catastro de Redes de Agua Potable'],
+    ['Seccion','Operacion y Mantenimiento Zonas Perifericas'],
+    ['Seccion','Electromecanica'],
+    ['Seccion','Construcciones'],
+    ['Seccion','Diseno y Presupuesto de Obras'],
+    ['Seccion','Fiscalizacion y Control de Obras'],
+    ['Seccion','Operacion y Mantenimiento de Redes de Aguas Residuales'],
+    ['Seccion','Control de Calidad Aguas Residuales'],
+    ['Seccion','Tratamiento de Aguas Residuales'],
+    ['Seccion','Micro Medicion'],
+    ['Seccion','Catastro de Usuarios'],
+    ['Seccion','Facturacion'],
+    ['Seccion','Prensa'],
+    ['Division','Servicios Generales'],
+    ['Division','Relaciones Publicas'],
+    ['Division','Participacion Social y Ciudadana'],
+    ['Departamento','Contabilidad'],
+    ['Departamento','Formulacion, Monitoreo y Evaluacion de Planes, Programas y Proyectos'],
+    ['Departamento','Desarrollo Institucional y Calidad en la Gestion'],
+    ['Departamento','Gestion Operativa'],
+    ['Departamento','Gestion Comercial'],
+    ['Departamento','Aguas Residuales y Saneamiento'],
+    ['Departamento','Produccion y Tratamiento de Agua Potable'],
+    ['Departamento','Operacion y Mantenimiento de Agua Potable'],
+    ['Departamento','Ingenieria'],
+    ['Departamento','Financiero'],
+    ['Departamento','Administrativo'],
+    ['Departamento','Tecnologias de la Informacion y Comunicacion'],
+    ['Departamento','Juridico'],
+    ['Departamento','Control y Analisis de Operaciones'],
+    ['Seccion','Oficina de Acceso a la Informacion Publica']
+  ];
+  let cambio=false;
+  unidades.forEach(([tipo,nombre])=>{
+    if(unidadesEstructuradas.has(`${tipo.toLowerCase()}|${nombre}`))return;
+    const existe=estructuraOrganizacional.some(unidad=>unidad.tipo===tipo&&unidad.nombre.toLowerCase()===nombre.toLowerCase());
+    if(!existe){
+      estructuraOrganizacional.push({id:crearIdUnidad(),tipo,nombre,padreId:direccionGeneral.id});
+      cambio=true;
+    }
+  });
+  if(cambio)guardarStorage();
+}
+
+function actualizarPadresUnidad(){
+  const tipo=document.getElementById('unidadTipo').value;
+  const unidadId=document.getElementById('unidadId').value;
+  const sel=document.getElementById('unidadPadre');
+  const permitidos=tiposPadrePermitidos(tipo);
+  const padres=estructuraOrganizacional.filter(unidad=>permitidos.includes(unidad.tipo)&&unidad.id!==unidadId);
+  sel.innerHTML='<option value="">Sin padre / nivel principal</option>';
+  padres.sort((a,b)=>rutaUnidad(a).localeCompare(rutaUnidad(b),'es')).forEach(unidad=>{
+    sel.insertAdjacentHTML('beforeend',`<option value="${safeText(unidad.id)}">${safeText(rutaUnidad(unidad))}</option>`);
+  });
+  sel.disabled=tipo==='Direccion'||!tipo;
+}
+
+const formUnidad=document.getElementById('formUnidad');
+formUnidad.addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('unidadId').value;
+  const tipo=document.getElementById('unidadTipo').value;
+  const nombre=document.getElementById('unidadNombre').value.trim();
+  const padreId=document.getElementById('unidadPadre').value;
+  if(!tipo||!nombre){alert('Complete tipo y nombre de la unidad.');return;}
+  if(tipo!=='Direccion'&&!padreId){alert('Seleccione la unidad padre.');return;}
+  const duplicada=estructuraOrganizacional.find(unidad=>unidad.id!==id&&unidad.tipo===tipo&&unidad.padreId===padreId&&unidad.nombre.toLowerCase()===nombre.toLowerCase());
+  if(duplicada){alert('Ya existe una unidad con ese nombre en el mismo nivel.');return;}
+  const unidad={id:id||crearIdUnidad(),tipo,nombre,padreId};
+  const idx=estructuraOrganizacional.findIndex(item=>item.id===unidad.id);
+  if(idx>=0)estructuraOrganizacional[idx]=unidad;else estructuraOrganizacional.push(unidad);
+  guardarStorage();
+  limpiarUnidadFormulario();
+  renderEstructura();
+  actualizarSelectsEmpleado();
+});
+
+function limpiarUnidadFormulario(){
+  formUnidad.reset();
+  document.getElementById('unidadId').value='';
+  actualizarPadresUnidad();
+}
+
+function cargarUnidadParaEditar(id){
+  const unidad=buscarUnidad(id);
+  if(!unidad)return;
+  document.getElementById('unidadId').value=unidad.id;
+  document.getElementById('unidadTipo').value=unidad.tipo;
+  actualizarPadresUnidad();
+  document.getElementById('unidadPadre').value=unidad.padreId||'';
+  document.getElementById('unidadNombre').value=unidad.nombre;
+  showSection('estructura');
+}
+
+function unidadTieneHijos(id){
+  return estructuraOrganizacional.some(unidad=>unidad.padreId===id);
+}
+
+function unidadEnUso(unidad){
+  return empleados.some(emp=>
+    (unidad.tipo==='Direccion'&&emp.direccion===unidad.nombre)||
+    (unidad.tipo==='Departamento'&&emp.departamento===unidad.nombre)||
+    (unidad.tipo==='Division'&&emp.division===unidad.nombre)||
+    (unidad.tipo==='Seccion'&&emp.seccion===unidad.nombre)
+  );
+}
+
+function eliminarUnidad(id){
+  const unidad=buscarUnidad(id);
+  if(!unidad)return;
+  if(unidadTieneHijos(id)){alert('No puede eliminar una unidad con dependencias.');return;}
+  if(unidadEnUso(unidad)){alert('No puede eliminar una unidad usada por empleados.');return;}
+  if(!confirm('Desea eliminar esta unidad?'))return;
+  estructuraOrganizacional=estructuraOrganizacional.filter(item=>item.id!==id);
+  guardarStorage();
+  renderEstructura();
+  actualizarSelectsEmpleado();
+}
+
+function renderEstructura(){
+  const tbody=document.getElementById('tablaEstructura');
+  tbody.innerHTML=estructuraOrganizacional
+    .slice()
+    .sort((a,b)=>rutaUnidad(a).localeCompare(rutaUnidad(b),'es'))
+    .map(unidad=>{
+      const padre=buscarUnidad(unidad.padreId);
+      return `<tr><td>${safeText(unidad.tipo)}</td><td>${safeText(unidad.nombre)}</td><td>${safeText(padre?padre.nombre:'')}</td><td>${safeText(rutaUnidad(unidad))}</td><td><button class="btn btn-warning" onclick="cargarUnidadParaEditar('${safeText(unidad.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarUnidad('${safeText(unidad.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+    }).join('');
+}
+
+function setOptions(selectId, items, placeholder){
+  const sel=document.getElementById(selectId);
+  const current=sel.value;
+  sel.innerHTML=`<option value="">${placeholder}</option>`;
+  items.forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(item.id)}">${safeText(item.nombre)}</option>`));
+  if(items.some(item=>item.id===current))sel.value=current;
+}
+
+function actualizarSelectsEmpleado(nivel){
+  const dirSel=document.getElementById('empleadoDireccion');
+  const depSel=document.getElementById('empleadoDepartamento');
+  const divSel=document.getElementById('empleadoDivision');
+  const secSel=document.getElementById('empleadoSeccion');
+  if(nivel==='direccion'){depSel.value='';divSel.value='';secSel.value='';}
+  if(nivel==='departamento'){divSel.value='';secSel.value='';}
+  if(nivel==='division')secSel.value='';
+
+  const direcciones=estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion').sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  setOptions('empleadoDireccion',direcciones,'Direccion');
+
+  const dirId=dirSel.value;
+  const departamentos=dirId?unidadesHijas(dirId,'Departamento'):[];
+  setOptions('empleadoDepartamento',departamentos,'Departamento');
+
+  const depId=depSel.value;
+  const divisionPadreId=depId||dirId;
+  const divisiones=divisionPadreId?unidadesHijas(divisionPadreId,'Division'):[];
+  setOptions('empleadoDivision',divisiones,'Division');
+
+  const divId=divSel.value;
+  const seccionPadreId=divId||depId||dirId;
+  const secciones=seccionPadreId?unidadesHijas(seccionPadreId,'Seccion'):[];
+  setOptions('empleadoSeccion',secciones,'Seccion');
+  sincronizarCamposOrganizacionales();
+}
+
+function seleccionarEstructuraEmpleado(emp){
+  const match=(tipo,nombre,padreId='')=>estructuraOrganizacional.find(unidad=>unidad.tipo===tipo&&unidad.nombre===nombre&&(padreId===''||unidad.padreId===padreId));
+  const dir=match('Direccion',emp.direccion||'');
+  document.getElementById('empleadoDireccion').value=dir?.id||'';
+  actualizarSelectsEmpleado('direccion');
+  const dep=dir?match('Departamento',emp.departamento||'',dir.id):undefined;
+  document.getElementById('empleadoDepartamento').value=dep?.id||'';
+  actualizarSelectsEmpleado('departamento');
+  const divisionPadreId=dep?.id||dir?.id||'';
+  const div=divisionPadreId?match('Division',emp.division||'',divisionPadreId):undefined;
+  document.getElementById('empleadoDivision').value=div?.id||'';
+  actualizarSelectsEmpleado('division');
+  const seccionPadreId=div?.id||dep?.id||dir?.id||'';
+  const sec=seccionPadreId?match('Seccion',emp.seccion||'',seccionPadreId):undefined;
+  document.getElementById('empleadoSeccion').value=sec?.id||'';
+  sincronizarCamposOrganizacionales();
+}
+
+function sincronizarCamposOrganizacionales(){
+  const sec=buscarUnidad(document.getElementById('empleadoSeccion').value);
+  const div=buscarUnidad(document.getElementById('empleadoDivision').value);
+  const dep=buscarUnidad(document.getElementById('empleadoDepartamento').value);
+  const dir=buscarUnidad(document.getElementById('empleadoDireccion').value);
+  const unidad=sec||div||dep||dir;
+  document.getElementById('direccion').value=unidadPorTipoEnRuta(unidad,'Direccion');
+  document.getElementById('departamento').value=unidadPorTipoEnRuta(unidad,'Departamento');
+  document.getElementById('division').value=unidadPorTipoEnRuta(unidad,'Division');
+  document.getElementById('seccion').value=unidadPorTipoEnRuta(unidad,'Seccion');
+  document.getElementById('empleadoRutaOrg').textContent=unidad?rutaUnidad(unidad):'Sin estructura seleccionada';
+}
+
+function actualizarValidacionDocumento(){
+  const tipo=document.getElementById('tipoDocumento').value;
+  const documento=document.getElementById('cedula');
+  if(tipo==='Pasaporte'){
+    documento.placeholder='Pasaporte';
+    documento.removeAttribute('pattern');
+  }else{
+    documento.placeholder='Cedula 000-0000000-0';
+    documento.setAttribute('pattern','\\d{3}-\\d{7}-\\d{1}');
+  }
+}
+
+const form=document.getElementById('formEmpleado');
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  sincronizarCamposOrganizacionales();
+  sincronizarCargoEmpleado();
+  sincronizarCentroServicio();
+  const required=[
+    {id:'nombre',label:'Nombre'},
+    {id:'apellido',label:'Apellido'},
+    {id:'cedula',label:'Cedula'},
+    {id:'cargo',label:'Cargo'},
+    {id:'grupoOcupacional',label:'Grupo ocupacional'},
+    {id:'salario',label:'Salario'},
+    {id:'fechaIngreso',label:'Fecha de entrada'},
+    {id:'tipoIngreso',label:'Tipo de ingreso'}
+  ];
+  const missing=required.filter(r=>!document.getElementById(r.id).value);
+  if(missing.length){alert('Faltan campos obligatorios: '+missing.map(m=>m.label).join(', '));return;}
+
+  const tipoDocumento=document.getElementById('tipoDocumento').value||'Cedula';
+  const ced=document.getElementById('cedula').value.trim();
+  if(tipoDocumento==='Cedula'){
+    if(!/^\d{3}-\d{7}-\d{1}$/.test(ced)){alert('La cedula debe tener el formato 000-0000000-0');return;}
+    if(!validarCedulaRD(ced)){alert('Cedula invalida (fallo digito verificador)');return;}
+  }
+
+  const codigoField=document.getElementById('codigo').value;
+  const cedDup=empleados.find(emp=>emp.cedula===ced&&(!codigoField||emp.codigo!==codigoField));
+  if(cedDup){alert('Ya existe un empleado con esa cedula (Codigo: '+cedDup.codigo+')');return;}
+
+  let codigo=codigoField;
+  if(!codigo)codigo='EMP'+(contadorCodigo++);
+  const tipoIngreso=document.getElementById('tipoIngreso').value;
+  const salario=Number(document.getElementById('salario').value)||0;
+  const salarioInterinato=Number(document.getElementById('salarioInterinato').value)||0;
+  const salarioBaseField=Number(document.getElementById('salarioBase').value)||salario;
+  const montoAumento=Number(document.getElementById('montoAumento').value)||0;
+  const porcentajeAumento=Number(document.getElementById('porcentajeAumento').value)||0;
+  const fechaAumento=document.getElementById('fechaAumento').value||'';
+  if(tipoIngreso==='Aumento'){
+    if(montoAumento<=0){alert('Indique el monto del aumento.');return;}
+    if(!fechaAumento){alert('Indique la fecha del aumento.');return;}
+  }
+
+  const emp={
+    codigo,
+    nombre:document.getElementById('nombre').value.trim(),
+    apellido:document.getElementById('apellido').value.trim(),
+    tipoDocumento,
+    cedula:ced,
+    grupoOcupacional:document.getElementById('grupoOcupacional').value,
+    cargo:document.getElementById('cargo').value.trim(),
+    salario,
+    salarioBase:salarioBaseField,
+    salarioInterinato,
+    montoAumento,
+    porcentajeAumento,
+    fechaAumento,
+    fechaIngreso:document.getElementById('fechaIngreso').value||'',
+    tipoIngreso,
+    sustituyeA:document.getElementById('sustituyeA').value||'',
+    direccion:document.getElementById('direccion').value||'',
+    departamento:document.getElementById('departamento').value||'',
+    division:document.getElementById('division').value||'',
+    seccion:document.getElementById('seccion').value||'',
+    centroServicio:document.getElementById('centroServicio').value||'',
+    direccionResidencia:document.getElementById('direccionResidencia').value||'',
+    sector:document.getElementById('sector').value||'',
+    cuentaBanco:document.getElementById('cuentaBanco').value||'',
+    edad:Number(document.getElementById('edad').value)||'',
+    nivelEscolaridad:document.getElementById('nivelEscolaridad').value||'',
+    estadoCivil:document.getElementById('estadoCivil').value||'',
+    hijos:Number(document.getElementById('hijos').value)||0,
+    tipoSangre:document.getElementById('tipoSangre').value||'',
+    licenciaConducir:document.getElementById('licenciaConducir').value||'',
+    otrosDatos:document.getElementById('otrosDatos').value||'',
+    recomendado:document.getElementById('recomendado').value||'',
+    nota:document.getElementById('nota').value||'',
+    estado:document.getElementById('estado').value||'Activo',
+    fechaSalida:document.getElementById('fechaSalida').value||'',
+    tipoSalida:document.getElementById('tipoSalida').value||''
+  };
+
+  const idx=empleados.findIndex(x=>x.codigo===codigo);
+  if(idx>=0)empleados[idx]=emp;else empleados.push(emp);
+  guardarStorage();
+  limpiarFormulario();
+  renderEmpleados();
+  renderNovedades();
+  actualizarDashboard();
+  alert('Empleado guardado correctamente.');
+});
+
+function empleadoRow(e){
+  const sustituyeDisplay=e.sustituyeA==='VACANTE'?'VACANTE':(e.sustituyeA||'');
+  return `<tr><td>${safeText(e.codigo)}</td><td>${safeText(e.nombre)}</td><td>${safeText(e.apellido)}</td><td>${safeText(e.cedula)}</td><td>${safeText(e.grupoOcupacional||'')}</td><td>${safeText(e.cargo)}</td><td>${safeText(e.estado)}</td><td>${safeText(formatoFechaISO(e.fechaSalida))}</td><td>${safeText(sustituyeDisplay)}</td><td>${e.nota?'Nota':''}</td><td><button class="btn btn-secondary" onclick="mostrarPanelEmpleado('${safeText(e.codigo)}')"><i class="fa-solid fa-eye"></i></button> <button class="btn btn-warning" onclick="cargarParaEditar('${safeText(e.codigo)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarEmpleado('${safeText(e.codigo)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+}
+
+function renderEmpleados(){
+  const tbody=document.querySelector('#tablaEmpleados tbody');
+  tbody.innerHTML=empleadosPermitidos().map(empleadoRow).join('');
+}
+
+function panelItem(label,value){
+  return `<div class="profile-item"><small>${safeText(label)}</small><strong>${safeText(value||'')}</strong></div>`;
+}
+
+function mostrarPanelEmpleado(codigo){
+  const emp=empleados.find(item=>item.codigo===codigo);
+  if(!emp)return;
+  document.getElementById('panelEmpleado').classList.remove('hidden');
+  document.getElementById('panelEmpleadoTitulo').textContent=`${emp.nombre} ${emp.apellido}`;
+  document.getElementById('panelEmpleadoSubtitulo').textContent=`${emp.codigo} | ${emp.cargo||'Sin cargo'} | ${emp.estado||''}`;
+  const ruta=[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' > ');
+  const datos=[
+    ['Nombre',emp.nombre],
+    ['Apellido',emp.apellido],
+    [emp.tipoDocumento||'Cedula',emp.cedula],
+    ['Direccion de residencia',emp.direccionResidencia],
+    ['Sector',emp.sector],
+    ['Salario',formatoNumero(emp.salario)],
+    ['Cuenta de banco',emp.cuentaBanco],
+    ['Direccion / Departamento / Division / Seccion',ruta],
+    ['Direccion',emp.direccion],
+    ['Departamento',emp.departamento],
+    ['Division',emp.division],
+    ['Seccion',emp.seccion],
+    ['Centro de Servicio',emp.centroServicio],
+    ['Edad',emp.edad],
+    ['Nivel de escolaridad',emp.nivelEscolaridad],
+    ['Estado civil',emp.estadoCivil],
+    ['Hijos',emp.hijos],
+    ['Tipo de sangre',emp.tipoSangre],
+    ['Licencia de conducir',emp.licenciaConducir],
+    ['Grupo ocupacional',emp.grupoOcupacional],
+    ['Cargo',emp.cargo],
+    ['Tipo de ingreso',emp.tipoIngreso],
+    ['Fecha de ingreso',formatoFechaISO(emp.fechaIngreso)],
+    ['Estatus laboral',emp.estado],
+    ['Nota',emp.nota],
+    ['Otros datos',emp.otrosDatos]
+  ];
+  document.getElementById('panelEmpleadoDetalle').innerHTML=datos.map(([label,value])=>panelItem(label,value)).join('');
+  document.getElementById('panelEmpleado').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function cerrarPanelEmpleado(){
+  document.getElementById('panelEmpleado').classList.add('hidden');
+}
+
+function cargarParaEditar(codigo){
+  const emp=empleados.find(x=>x.codigo===codigo);
+  if(!emp)return;
+  Object.keys(emp).forEach(k=>{if(document.getElementById(k))document.getElementById(k).value=emp[k];});
+  document.getElementById('tipoDocumento').value=emp.tipoDocumento||'Cedula';
+  actualizarValidacionDocumento();
+  document.getElementById('salarioBase').value=emp.salarioBase||emp.salario||0;
+  seleccionarCargoEmpleado(emp);
+  seleccionarCentroServicio(emp.centroServicio);
+  seleccionarEstructuraEmpleado(emp);
+  actualizarSustitutos();
+  calcularPorcentajeAumento();
+  mostrarFechaTipoSalida();
+  showSection('registro');
+}
+
+function eliminarEmpleado(codigo){
+  if(!confirm('Desea eliminar este empleado?'))return;
+  empleados=empleados.filter(x=>x.codigo!==codigo);
+  guardarStorage();
+  renderEmpleados();
+  renderNovedades();
+  actualizarDashboard();
+}
+
+function buscarEmpleado(){
+  const q=(document.getElementById('busquedaEmpleado').value||'').toLowerCase().trim();
+  const tbody=document.querySelector('#tablaEmpleados tbody');
+  tbody.innerHTML=empleadosPermitidos().filter(e=>(e.nombre||'').toLowerCase().includes(q)||(e.apellido||'').toLowerCase().includes(q)||(e.cedula||'').toLowerCase().includes(q)||(e.codigo||'').toLowerCase().includes(q)).map(empleadoRow).join('');
+}
+
+function excelDateToISO(value){
+  if(!value)return'';
+  if(typeof value==='number'){
+    const date=new Date(Math.round((value-25569)*86400*1000));
+    return date.toISOString().slice(0,10);
+  }
+  const date=new Date(value);
+  return isNaN(date)?String(value):date.toISOString().slice(0,10);
+}
+
+function importarEmpleados(){
+  const file=document.getElementById('archivoImportar').files[0];
+  if(!file)return alert('Seleccione un archivo Excel.');
+  if(!window.XLSX)return alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
+  const reader=new FileReader();
+  reader.onload=function(evt){
+    const data=new Uint8Array(evt.target.result);
+    const wb=XLSX.read(data,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const json=XLSX.utils.sheet_to_json(ws,{defval:''});
+    json.forEach(row=>{
+      empleados.push({
+        codigo:row.codigo||row.Codigo||('EMP'+(contadorCodigo++)),
+        nombre:row.nombre||row.Nombre||'',
+        apellido:row.apellido||row.Apellido||'',
+        tipoDocumento:row.tipoDocumento||row.TipoDocumento||'Cedula',
+        cedula:row.cedula||row.Cedula||'',
+        cargo:row.cargo||row.Cargo||'',
+        grupoOcupacional:row.grupoOcupacional||row.GrupoOcupacional||row.grupo||row.Grupo||grupoPorCargo(row.cargo||row.Cargo||'')?.nombre||'',
+        salario:Number(row.salario||row.Salario||0),
+        salarioInterinato:Number(row.salarioInterinato||row.SalarioInterinato||0),
+        salarioBase:Number(row.salarioBase||row.SalarioBase||row.salario||row.Salario||0),
+        montoAumento:Number(row.montoAumento||row.MontoAumento||0),
+        porcentajeAumento:Number(row.porcentajeAumento||row.PorcentajeAumento||0),
+        fechaAumento:excelDateToISO(row.fechaAumento||row.FechaAumento),
+        fechaIngreso:excelDateToISO(row.fechaIngreso||row.FechaIngreso),
+        tipoIngreso:row.tipoIngreso||row.TipoIngreso||'',
+        sustituyeA:row.sustituyeA||row.SustituyeA||'',
+        direccion:row.direccion||row.Direccion||'',
+        departamento:row.departamento||row.Departamento||'',
+        division:row.division||row.Division||'',
+        seccion:row.seccion||row.Seccion||'',
+        centroServicio:row.centroServicio||row.CentroServicio||'',
+        direccionResidencia:row.direccionResidencia||row.DireccionResidencia||'',
+        sector:row.sector||row.Sector||'',
+        cuentaBanco:row.cuentaBanco||row.CuentaBanco||'',
+        edad:Number(row.edad||row.Edad||0)||'',
+        nivelEscolaridad:row.nivelEscolaridad||row.NivelEscolaridad||'',
+        estadoCivil:row.estadoCivil||row.EstadoCivil||'',
+        hijos:Number(row.hijos||row.Hijos||0)||0,
+        tipoSangre:row.tipoSangre||row.TipoSangre||'',
+        licenciaConducir:row.licenciaConducir||row.LicenciaConducir||'',
+        otrosDatos:row.otrosDatos||row.OtrosDatos||'',
+        recomendado:row.recomendado||row.Recomendado||'',
+        nota:row.nota||row.Nota||'',
+        estado:row.estado||row.Estado||'Activo',
+        fechaSalida:excelDateToISO(row.fechaSalida||row.FechaSalida),
+        tipoSalida:row.tipoSalida||row.TipoSalida||''
+      });
+    });
+    guardarStorage();
+    migrarEstructuraDesdeEmpleados();
+    renderEmpleados();
+    renderNovedades();
+    actualizarDashboard();
+    alert('Importacion completada.');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function descargarPlantilla(){
+  if(!window.XLSX)return alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
+  const wb=XLSX.utils.book_new();
+  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","direccionResidencia","sector","cuentaBanco","edad","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+  XLSX.utils.book_append_sheet(wb,ws,'PlantillaEmpleados');
+  XLSX.writeFile(wb,'PlantillaEmpleados.xlsx');
+}
+
+function actualizarSustitutos(){
+  const tipo=document.getElementById('tipoIngreso').value;
+  const sel=document.getElementById('sustituyeA');
+  sel.innerHTML='';
+  document.getElementById('bloqueAumento').classList.toggle('hidden',tipo!=='Aumento');
+  if(tipo==='Sustitucion'||tipo==='Interinato'){
+    let opts='<option value="">(Seleccione o VACANTE)</option>';
+    empleados.forEach(emp=>opts+=`<option value="${safeText(emp.codigo)}">${safeText(emp.nombre)} ${safeText(emp.apellido)} - ${safeText(emp.cargo)} (${safeText(emp.estado||'Activo')})</option>`);
+    opts+='<option value="VACANTE">VACANTE</option>';
+    sel.innerHTML=opts;
+    sel.classList.remove('hidden');
+    document.getElementById('salarioInterinato').classList.toggle('hidden',tipo!=='Interinato');
+  }else{
+    sel.classList.add('hidden');
+    document.getElementById('salarioInterinato').classList.add('hidden');
+  }
+  if(tipo!=='Aumento'){
+    document.getElementById('salarioBase').value='';
+    document.getElementById('montoAumento').value='';
+    document.getElementById('porcentajeAumento').value='';
+    document.getElementById('fechaAumento').value='';
+  }
+  calcularPorcentajeAumento();
+}
+
+function calcularPorcentajeAumento(origen){
+  const tipo=document.getElementById('tipoIngreso').value;
+  const salario=Number(document.getElementById('salario').value)||0;
+  const salarioBaseInput=document.getElementById('salarioBase');
+  const montoInput=document.getElementById('montoAumento');
+  const porcentajeInput=document.getElementById('porcentajeAumento');
+  const resumen=document.getElementById('resumenAumento');
+  if(tipo!=='Aumento'){
+    resumen.textContent='Seleccione Aumento para registrar el impacto presupuestario.';
+    return;
+  }
+  let base=Number(salarioBaseInput.value)||0;
+  if(!base&&salario){
+    base=salario;
+    salarioBaseInput.value=salario.toFixed(2);
+  }
+  let monto=Number(montoInput.value)||0;
+  let porcentaje=Number(porcentajeInput.value)||0;
+  if(origen==='monto'&&base>0){
+    porcentaje=(monto/base)*100;
+    porcentajeInput.value=porcentaje?porcentaje.toFixed(2):'';
+  }
+  if(origen==='porcentaje'&&base>0){
+    monto=base*(porcentaje/100);
+    montoInput.value=monto?monto.toFixed(2):'';
+  }
+  if(monto>0&&base>0){
+    const salarioNuevo=base+monto;
+    document.getElementById('salario').value=salarioNuevo.toFixed(2);
+    resumen.textContent=`Base: ${formatoNumero(base)} | Aumento: ${formatoNumero(monto)} | Nuevo salario: ${formatoNumero(salarioNuevo)} | ${((monto/base)*100).toFixed(2)}%`;
+  }else{
+    resumen.textContent='Indique salario base y monto o porcentaje del aumento.';
+  }
+}
+
+function mostrarFechaTipoSalida(){
+  const activo=document.getElementById('estado').value==='Inactivo';
+  document.getElementById('fechaSalida').classList.toggle('hidden',!activo);
+  document.getElementById('tipoSalida').classList.toggle('hidden',!activo);
+}
+
+function renderNovedades(){
+  const tbody=document.getElementById('tablaNovedades');
+  tbody.innerHTML=empleados.map(emp=>{
+    let detalle='';
+    if(emp.estado==='Inactivo')detalle=emp.tipoSalida||'Salida';
+    else if(emp.tipoIngreso==='Sustitucion')detalle='Ingreso por Sustitucion';
+    else if(emp.tipoIngreso==='Interinato')detalle='Ingreso por Interinato';
+    else if(emp.tipoIngreso==='Creacion')detalle='Ingreso por Creacion';
+    else if(emp.tipoIngreso==='Aumento')detalle='Aumento salarial';
+    return `<tr><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(detalle)}</td><td>${safeText(emp.nota||'')}</td><td><button class="btn btn-danger" onclick="eliminarEmpleado('${safeText(emp.codigo)}')">Eliminar</button></td></tr>`;
+  }).join('');
+}
+
+function calcularNominaActualTotal(){
+  return empleados.reduce((sum,emp)=>{
+    if(emp.estado==='Inactivo')return sum;
+    return sum+calcularNominaEmpleado(emp);
+  },0);
+}
+
+function calcularNominaEmpleado(emp){
+  if(emp.estado==='Inactivo')return 0;
+  if(emp.tipoIngreso==='Interinato')return Number(emp.salarioInterinato||0);
+  return Number(emp.salario||0);
+}
+
+function calcularImpactoPresupuesto(emp){
+  if(emp.estado==='Inactivo')return 0;
+  if(emp.tipoIngreso==='Interinato')return Number(emp.salarioInterinato||0);
+  if(emp.tipoIngreso==='Aumento')return Number(emp.montoAumento||0)||Math.max(0,Number(emp.salario||0)-Number(emp.salarioBase||0));
+  return Number(emp.salario||0);
+}
+
+function archivePayrollIfNeeded(){
+  const key=ahoraYYYYMM();
+  if(!payrollHistory[key]){
+    payrollHistory[key]={month:key,label:labelMesYYYYMM(key),total:calcularNominaActualTotal(),dateSaved:new Date().toISOString()};
+    guardarStorage();
+  }
+}
+
+function forzarArchivoNomina(){
+  const key=ahoraYYYYMM();
+  payrollHistory[key]={month:key,label:labelMesYYYYMM(key),total:calcularNominaActualTotal(),dateSaved:new Date().toISOString()};
+  guardarStorage();
+  renderPayrollHistorySelect();
+  alert('Nomina archivada para '+payrollHistory[key].label);
+}
+
+function renderPayrollHistorySelect(){
+  const sel=document.getElementById('selectNominas');
+  sel.innerHTML='';
+  const keys=Object.keys(payrollHistory).sort().reverse();
+  keys.forEach(k=>{
+    const p=payrollHistory[k];
+    const opt=document.createElement('option');
+    opt.value=k;
+    opt.textContent=`${p.label} - ${formatoNumero(p.total)}`;
+    sel.appendChild(opt);
+  });
+  if(!keys.length){
+    const opt=document.createElement('option');
+    opt.value='';
+    opt.textContent='Sin registros';
+    sel.appendChild(opt);
+  }
+}
+
+function mostrarNominaSeleccionada(){
+  const k=document.getElementById('selectNominas').value;
+  if(!k)return;
+  alert(`Nomina ${payrollHistory[k].label}: ${formatoNumero(payrollHistory[k].total)}\nGuardada el: ${new Date(payrollHistory[k].dateSaved).toLocaleString()}`);
+}
+
+function actualizarDashboard(){
+  document.getElementById('inputPresupuestoTotal').value=presupuestoTotal||'';
+  renderUsuarioVista();
+  const empleadosVista=empleadosPermitidos();
+  const disponible=empleadosVista.filter(emp=>emp.estado==='Inactivo').reduce((s,emp)=>s+Number(emp.salarioBase||emp.salario||0),0);
+  let consumido=0;
+  empleadosVista.filter(emp=>emp.estado!=='Inactivo').forEach(emp=>{
+    consumido+=calcularImpactoPresupuesto(emp);
+  });
+  document.getElementById('presupuestoTotal').innerText=formatoNumero(presupuestoTotal);
+  document.getElementById('presupuestoDisponible').innerText=formatoNumero(disponible);
+  document.getElementById('presupuestoConsumido').innerText=formatoNumero(consumido);
+  const porcentaje=presupuestoTotal>0?(consumido/presupuestoTotal)*100:0;
+  document.getElementById('circlePercentage').innerText=porcentaje.toFixed(1)+'%';
+
+  const tipos=['Creacion','Sustitucion','Interinato','Aumento'];
+  const labels=['Creacion','Sustitucion','Interinato','Aumento'];
+  const colors=['#3b82f6','#f97316','#10b981','#ef4444'];
+  const counts=tipos.map(t=>empleadosVista.filter(emp=>emp.tipoIngreso===t).length);
+  const sums=tipos.map(t=>{
+    if(t==='Interinato')return empleadosVista.filter(emp=>emp.tipoIngreso==='Interinato').reduce((s,emp)=>s+Number(emp.salarioInterinato||0),0);
+    if(t==='Aumento')return empleadosVista.filter(emp=>emp.tipoIngreso==='Aumento').reduce((s,emp)=>s+calcularImpactoPresupuesto(emp),0);
+    return empleadosVista.filter(emp=>emp.tipoIngreso===t).reduce((s,emp)=>s+Number(emp.salario||0),0);
+  });
+
+  if(window.Chart){
+    if(pieChart)pieChart.destroy();
+    pieChart=new Chart(document.getElementById('graficoCircular').getContext('2d'),{type:'pie',data:{labels,datasets:[{data:counts,backgroundColor:colors}]},options:{plugins:{legend:{position:'bottom'}}}});
+    if(barChart)barChart.destroy();
+    barChart=new Chart(document.getElementById('graficoBarras').getContext('2d'),{type:'bar',data:{labels,datasets:[{label:'Monto (DOP)',data:sums,backgroundColor:colors}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'RD$ '+Number(v).toLocaleString('es-DO')}}}}});
+    if(circleChart)circleChart.destroy();
+    circleChart=new Chart(document.getElementById('circleChart').getContext('2d'),{type:'doughnut',data:{labels:['Consumido','Disponible'],datasets:[{data:[Math.min(porcentaje,100),Math.max(0,100-porcentaje)],backgroundColor:['#ef4444','#e5e7eb'],borderWidth:0}]},options:{cutout:'78%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  }
+
+  archivePayrollIfNeeded();
+  renderPayrollHistorySelect();
+}
+
+function generarReporte(){
+  const tipo=document.getElementById('tipoReporte').value;
+  if(!tipo)return alert('Seleccione un tipo de reporte.');
+  const tabla=document.getElementById('tablaReporte');
+  const thead=tabla.querySelector('thead');
+  const tbody=tabla.querySelector('tbody');
+  thead.innerHTML='';
+  tbody.innerHTML='';
+  const empleadosReporte=empleadosPermitidos();
+
+  const setCache=()=>{reporteCache={headers:Array.from(thead.querySelectorAll('th')).map(t=>t.innerText),rows:Array.from(tbody.querySelectorAll('tr')).map(tr=>Array.from(tr.children).flatMap(td=>[td.innerText,...Array(Math.max(0,(td.colSpan||1)-1)).fill('')]))};};
+  const datosBase=emp=>`<td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre)}</td><td>${safeText(emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.grupoOcupacional||'')}</td><td>${safeText(emp.cargo)}</td>`;
+  const datosOrg=emp=>`<td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td>${safeText(emp.recomendado)}</td>`;
+
+  if(tipo==='entradas'){
+    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Monto Aumento</th><th>% Aumento</th><th>Fecha Aumento</th><th>Fecha de Entrada</th><th>Tipo de Entrada</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Nota</th></tr>';
+    empleadosReporte.forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${emp.tipoIngreso==='Aumento'?formatoNumero(emp.montoAumento||calcularImpactoPresupuesto(emp)):''}</td><td>${emp.tipoIngreso==='Aumento'?safeText(emp.porcentajeAumento||''):''}</td><td>${safeText(formatoFechaISO(emp.fechaAumento))}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(emp.tipoIngreso)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`));
+  }else if(tipo==='salidas'){
+    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Fecha de Entrada</th><th>Fecha de Salida</th><th>Tipo de Salida</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Nota</th></tr>';
+    empleadosReporte.filter(emp=>emp.estado==='Inactivo').forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(formatoFechaISO(emp.fechaSalida))}</td><td>${safeText(emp.tipoSalida)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`));
+  }else if(tipo==='sustituciones'){
+    thead.innerHTML='<tr><th>Nombre + Apellido (Entrante)</th><th>Cedula (Entrante)</th><th>Cargo (Entrante)</th><th>Salario (Entrante)</th><th>Nombre + Apellido (Saliente)</th><th>Cedula (Saliente)</th><th>Diferencia Salarial</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Nota</th></tr>';
+    empleadosReporte.filter(emp=>emp.tipoIngreso==='Sustitucion'||emp.tipoIngreso==='Interinato').forEach(emp=>{const saliente=empleados.find(s=>s.codigo===emp.sustituyeA)||{};const dif=Number(emp.salario||0)-Number(saliente.salario||0);tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.cargo)}</td><td>${formatoNumero(emp.salario)}</td><td>${safeText(saliente.nombre?saliente.nombre+' '+saliente.apellido:'')}</td><td>${safeText(saliente.cedula||'')}</td><td>${formatoNumero(dif)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`);});
+  }else if(tipo==='vacantes'){
+    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Fecha de Entrada</th><th>Fecha de Salida</th><th>Tipo de Salida</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Pendiente por Sustituir</th></tr>';
+    empleadosReporte.filter(emp=>emp.estado==='Inactivo'&&!empleados.some(s=>s.sustituyeA===emp.codigo)).forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(formatoFechaISO(emp.fechaSalida))}</td><td>${safeText(emp.tipoSalida)}</td>${datosOrg(emp)}<td>Si</td></tr>`));
+  }else if(tipo==='estructura'){
+    thead.innerHTML='<tr><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Codigo</th><th>Empleado</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Estado</th><th>Tipo Ingreso</th><th>Aumento</th><th>Fecha Aumento</th><th>Nomina</th></tr>';
+    const sinAsignar='Sin asignar';
+    const grupos={};
+    empleadosReporte.forEach(emp=>{
+      const direccion=(emp.direccion||sinAsignar).trim()||sinAsignar;
+      const departamento=(emp.departamento||'').trim();
+      const division=(emp.division||'').trim();
+      const seccion=(emp.seccion||'').trim();
+      const ruta=[direccion,departamento,division,seccion].filter(Boolean).join(' > ');
+      if(!grupos[ruta])grupos[ruta]={direccion,departamento,division,seccion,empleados:[],activos:0,inactivos:0,nomina:0};
+      grupos[ruta].empleados.push(emp);
+      if(emp.estado==='Inactivo')grupos[ruta].inactivos++;else grupos[ruta].activos++;
+      grupos[ruta].nomina+=calcularNominaEmpleado(emp);
+    });
+    Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'es')).forEach(ruta=>{
+      const grupo=grupos[ruta];
+      tbody.insertAdjacentHTML('beforeend',`<tr class="group-row"><td colspan="14">${safeText(ruta)} | Empleados: ${grupo.empleados.length} | Activos: ${grupo.activos} | Inactivos: ${grupo.inactivos} | Nomina: ${formatoNumero(grupo.nomina)}</td></tr>`);
+      grupo.empleados.sort((a,b)=>(a.apellido+' '+a.nombre).localeCompare(b.apellido+' '+b.nombre,'es')).forEach(emp=>{
+        tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(grupo.direccion)}</td><td>${safeText(grupo.departamento)}</td><td>${safeText(grupo.division)}</td><td>${safeText(grupo.seccion)}</td><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.grupoOcupacional||'')}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.estado)}</td><td>${safeText(emp.tipoIngreso)}</td><td>${emp.tipoIngreso==='Aumento'?formatoNumero(calcularImpactoPresupuesto(emp)):''}</td><td>${safeText(formatoFechaISO(emp.fechaAumento))}</td><td>${formatoNumero(calcularNominaEmpleado(emp))}</td></tr>`);
+      });
+      tbody.insertAdjacentHTML('beforeend',`<tr class="subtotal-row"><td>${safeText(grupo.direccion)}</td><td>${safeText(grupo.departamento)}</td><td>${safeText(grupo.division)}</td><td>${safeText(grupo.seccion)}</td><td colspan="2">Subtotal</td><td>${grupo.empleados.length} empleados</td><td></td><td>${grupo.activos} activos</td><td>${grupo.inactivos} inactivos</td><td></td><td></td><td></td><td>${formatoNumero(grupo.nomina)}</td></tr>`);
+    });
+  }else if(tipo==='nomina'){
+    thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
+    const key=ahoraYYYYMM();
+    const entry=payrollHistory[key]||{label:labelMesYYYYMM(key),total:calcularNominaActualTotal()};
+    tbody.insertAdjacentHTML('beforeend',`<tr><td>Nomina Mensual</td><td>${safeText(entry.label)}</td><td>${formatoNumero(entry.total)}</td></tr>`);
+    Object.keys(payrollHistory).sort().reverse().forEach(k=>{const p=payrollHistory[k];tbody.insertAdjacentHTML('beforeend',`<tr><td>Archivo</td><td>${safeText(p.label)}</td><td>${formatoNumero(p.total)}</td></tr>`);});
+  }
+  setCache();
+}
+
+function exportExcelReporte(){
+  if(!reporteCache.headers.length)return alert('Genere el reporte primero.');
+  if(!window.XLSX)return alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([reporteCache.headers,...reporteCache.rows]);
+  XLSX.utils.book_append_sheet(wb,ws,'Reporte');
+  const tipo=document.getElementById('tipoReporte').value||'reporte';
+  XLSX.writeFile(wb,`Reporte_${tipo}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+function exportPDFReporte(){
+  if(!reporteCache.headers.length)return alert('Genere el reporte primero.');
+  if(!window.jspdf)return alert('No se pudo cargar la libreria de PDF. Revise la conexion a internet.');
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF('l','pt','a4');
+  const tipo=document.getElementById('tipoReporte').value||'Reporte';
+  doc.setFontSize(14);
+  doc.text(`Reporte: ${tipo}`,40,40);
+  doc.autoTable({head:[reporteCache.headers],body:reporteCache.rows,startY:60,styles:{fontSize:9},headStyles:{fillColor:[29,78,216]}});
+  doc.save(`Reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+function limpiarFormulario(){
+  form.reset();
+  document.getElementById('codigo').value='';
+  document.getElementById('tipoDocumento').value='Cedula';
+  actualizarValidacionDocumento();
+  document.getElementById('salarioBase').value='';
+  document.getElementById('montoAumento').value='';
+  document.getElementById('porcentajeAumento').value='';
+  document.getElementById('fechaAumento').value='';
+  document.getElementById('bloqueAumento').classList.add('hidden');
+  document.getElementById('cargo').value='';
+  document.getElementById('grupoOcupacional').value='';
+  document.getElementById('grupoOcupacionalSelect').value='';
+  actualizarCargosEmpleado();
+  seleccionarCentroServicio('');
+  document.getElementById('salarioInterinato').classList.add('hidden');
+  document.getElementById('sustituyeA').classList.add('hidden');
+  document.getElementById('empleadoDireccion').value='';
+  actualizarSelectsEmpleado('direccion');
+  mostrarFechaTipoSalida();
+  cerrarPanelEmpleado();
+}
+
+(async function init(){
+  renderGruposOcupacionales();
+  renderCentrosServicio();
+  await asegurarUsuarioAdminBase();
+  completarGruposOcupacionalesEmpleados();
+  asegurarDireccionesBase();
+  asegurarEstructuraPrincipal();
+  asegurarEstructuraPorDirecciones();
+  asegurarUnidadesDesdeCargosGrupoV();
+  migrarEstructuraDesdeEmpleados();
+  archivePayrollIfNeeded();
+  renderPayrollHistorySelect();
+  renderEstructura();
+  renderUsuarios();
+  renderUsuariosPermisos();
+  renderUsuarioVista();
+  renderEmpleados();
+  renderNovedades();
+  actualizarSelectsEmpleado();
+  actualizarDashboard();
+  aplicarEstadoSesion();
+})();
+</script>
+</body>
+</html>
