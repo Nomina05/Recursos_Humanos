@@ -560,6 +560,34 @@ async function validarUsuarioEnSupabase({id,login,correo}){
   return true;
 }
 
+async function crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado,unidadId,alcance,claveTemporal}){
+  if(!supabaseClient)return null;
+  if(!correo){
+    alert('Para crear usuarios en Supabase Auth debe indicar un correo.');
+    return null;
+  }
+  const {data,error}=await supabaseClient.auth.signUp({
+    email:correo,
+    password,
+    options:{
+      data:{
+        full_name:nombre,
+        username:login,
+        role:rol,
+        status:estado,
+        organization_unit_id:unidadId||null,
+        scope:alcance,
+        access_note:claveTemporal||''
+      }
+    }
+  });
+  if(error){
+    alert('No se pudo crear el usuario en Supabase Auth: '+error.message);
+    return null;
+  }
+  return data.user;
+}
+
 async function hashClave(clave){
   const data=new TextEncoder().encode(clave);
   const hash=await crypto.subtle.digest('SHA-256',data);
@@ -673,8 +701,13 @@ formUsuario.addEventListener('submit',async event=>{
   if(!validadoSupabase)return;
   const actual=usuarios.find(item=>item.id===id);
   if(!id&&!password){alert('Indique una clave para el nuevo usuario.');return;}
+  let authUser=null;
+  if(!id){
+    authUser=await crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado,unidadId,alcance,claveTemporal});
+    if(!authUser)return;
+  }
   const passwordHash=password?await hashClave(password):actual?.passwordHash;
-  const usuario={id:id||crearIdUsuario(),nombre,login,correo,rol,estado,unidadId,alcance,passwordHash,claveTemporal,actualizadoEn:new Date().toISOString()};
+  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',nombre,login,correo,rol,estado,unidadId,alcance,passwordHash,claveTemporal,actualizadoEn:new Date().toISOString()};
   const idx=usuarios.findIndex(item=>item.id===usuario.id);
   if(idx>=0)usuarios[idx]={...usuarios[idx],...usuario};else usuarios.push({...usuario,creadoEn:new Date().toISOString()});
   guardarStorage();
