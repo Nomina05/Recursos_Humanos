@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#f1f5f9;--accent:#1d3557;--card1:#4f46e5;--card2:#059669;--card3:#ef4444}
   body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);display:flex;min-height:100vh}
@@ -452,6 +453,12 @@ let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||'';
 let reporteCache={headers:[],rows:[]};
 let pieChart=null,barChart=null,circleChart=null;
 
+const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY3NsYWVtZHVoZ2NuaXZoa3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NzcyMzMsImV4cCI6MjA5NDM1MzIzM30.7fxHJ0JtYAAzj3dP-QNUXCi21qxg5PRDuGhrAwAoYuY';
+const supabaseClient=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)
+  : null;
+
 const gruposOcupacionales=[
   {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
     'CONSERJE','PARQUEADOR','FOTOCOPIADOR','MENSAJERO INTERNO','PORTERO','VIGILANTE','JARDINERO','AYUDANTE DE MANTENIMIENTO','MENSAJERO EXTERNO','CHOFER I','CHOFER II','AYUDANTE DE PLOMERO','OPERADOR DE EQUIPO DE BOMBEO','RECOLECTOR DE MUESTRAS DE AGUA POTABLE','LECTOR DE MEDIDORES','OPERADOR DE EQUIPO PESADO','OPERADOR DE VALVULA'
@@ -525,6 +532,32 @@ function guardarPresupuesto(){
   document.getElementById('presupuestoMsg').innerText='Guardado';
   setTimeout(()=>document.getElementById('presupuestoMsg').innerText='',2000);
   actualizarDashboard();
+}
+
+async function validarUsuarioEnSupabase({id,login,correo}){
+  if(!supabaseClient){
+    alert('Configure SUPABASE_URL y SUPABASE_ANON_KEY antes de registrar usuarios. La validacion debe realizarse en Supabase.');
+    return false;
+  }
+  const {data,error}=await supabaseClient.rpc('validate_app_user_available',{
+    p_username:login,
+    p_email:correo||null,
+    p_current_id:id||null
+  });
+  if(error){
+    alert('No se pudo validar el usuario en Supabase: '+error.message);
+    return false;
+  }
+  const result=Array.isArray(data)?data[0]:data;
+  if(!result?.username_available){
+    alert('Supabase indica que ese usuario ya existe.');
+    return false;
+  }
+  if(correo&&!result?.email_available){
+    alert('Supabase indica que ese correo ya existe.');
+    return false;
+  }
+  return true;
 }
 
 async function hashClave(clave){
@@ -636,6 +669,8 @@ formUsuario.addEventListener('submit',async event=>{
   if(correo&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)){alert('Correo invalido.');return;}
   const duplicado=usuarios.find(usuario=>usuario.id!==id&&usuario.login.toLowerCase()===login.toLowerCase());
   if(duplicado){alert('Ya existe un usuario con ese nombre de acceso.');return;}
+  const validadoSupabase=await validarUsuarioEnSupabase({id,login,correo});
+  if(!validadoSupabase)return;
   const actual=usuarios.find(item=>item.id===id);
   if(!id&&!password){alert('Indique una clave para el nuevo usuario.');return;}
   const passwordHash=password?await hashClave(password):actual?.passwordHash;
