@@ -1086,6 +1086,29 @@ function listaUnica(items,valueSelector=item=>item){
   return unicos;
 }
 
+function claveUnidadUnica(tipo,nombre){
+  let key=normalizarCatalogo(nombre);
+  if(tipo==='Direccion')key=key.replace(/^DIRECCION /,'');
+  if(tipo==='Departamento')key=key.replace(/^DEPARTAMENTO /,'');
+  if(tipo==='Division')key=key.replace(/^DIVISION /,'');
+  if(tipo==='Seccion')key=key.replace(/^SECCION /,'');
+  return key.trim();
+}
+
+function listaUnicaUnidades(unidades,tipo){
+  const mapa=new Map();
+  unidades.forEach(unidad=>{
+    const key=claveUnidadUnica(tipo,unidad.nombre);
+    if(!key)return;
+    const existente=mapa.get(key);
+    const nombreActual=normalizarCatalogo(unidad.nombre);
+    const nombreExistente=existente?normalizarCatalogo(existente.nombre):'';
+    const actualMasCompleto=nombreActual.startsWith(normalizarCatalogo(tipo))&&!nombreExistente.startsWith(normalizarCatalogo(tipo));
+    if(!existente||actualMasCompleto)mapa.set(key,unidad);
+  });
+  return Array.from(mapa.values());
+}
+
 function grupoPorCargoFlexible(cargo){
   const key=normalizarCatalogo(cargo);
   return gruposOcupacionales.find(grupo=>grupo.cargos.some(item=>normalizarCatalogo(item)===key));
@@ -1730,21 +1753,21 @@ function actualizarSelectsEmpleado(nivel){
   if(nivel==='departamento'){divSel.value='';secSel.value='';}
   if(nivel==='division')secSel.value='';
 
-  const direcciones=listaUnica(estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion'),item=>item.nombre).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  const direcciones=listaUnicaUnidades(estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion'),'Direccion').sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   setOptions('empleadoDireccion',direcciones,'Direccion');
 
   const dirId=dirSel.value;
-  const departamentos=dirId?unidadesHijas(dirId,'Departamento'):[];
+  const departamentos=dirId?listaUnicaUnidades(unidadesHijas(dirId,'Departamento'),'Departamento'):[];
   setOptions('empleadoDepartamento',departamentos,'Departamento');
 
   const depId=depSel.value;
   const divisionPadreId=depId||dirId;
-  const divisiones=divisionPadreId?unidadesHijas(divisionPadreId,'Division'):[];
+  const divisiones=divisionPadreId?listaUnicaUnidades(unidadesHijas(divisionPadreId,'Division'),'Division'):[];
   setOptions('empleadoDivision',divisiones,'Division');
 
   const divId=divSel.value;
   const seccionPadreId=divId||depId||dirId;
-  const secciones=seccionPadreId?unidadesHijas(seccionPadreId,'Seccion'):[];
+  const secciones=seccionPadreId?listaUnicaUnidades(unidadesHijas(seccionPadreId,'Seccion'),'Seccion'):[];
   setOptions('empleadoSeccion',secciones,'Seccion');
   sincronizarCamposOrganizacionales();
 }
@@ -2476,17 +2499,17 @@ function actualizarSelectsCorreccion(nivel){
   setSelectOptions('correccionDireccion',direcciones,'Direccion',item=>item.id,item=>item.nombre);
   if(direcciones.some(unidad=>unidad.id===dirActual))dirSel.value=dirActual;
 
-  const departamentos=dirSel.value?listaUnica(unidadesHijas(dirSel.value,'Departamento'),item=>item.nombre):[];
+  const departamentos=dirSel.value?listaUnicaUnidades(unidadesHijas(dirSel.value,'Departamento'),'Departamento'):[];
   setSelectOptions('correccionDepartamento',departamentos,'Departamento',item=>item.id,item=>item.nombre);
   if(nivel!=='direccion'&&departamentos.some(unidad=>unidad.id===depActual))depSel.value=depActual;
 
   const divisionPadreId=depSel.value||dirSel.value;
-  const divisiones=divisionPadreId?listaUnica(unidadesHijas(divisionPadreId,'Division'),item=>item.nombre):[];
+  const divisiones=divisionPadreId?listaUnicaUnidades(unidadesHijas(divisionPadreId,'Division'),'Division'):[];
   setSelectOptions('correccionDivision',divisiones,'Division',item=>item.id,item=>item.nombre);
   if(!['direccion','departamento'].includes(nivel)&&divisiones.some(unidad=>unidad.id===divActual))divSel.value=divActual;
 
   const seccionPadreId=divSel.value||depSel.value||dirSel.value;
-  const secciones=seccionPadreId?listaUnica(unidadesHijas(seccionPadreId,'Seccion'),item=>item.nombre):[];
+  const secciones=seccionPadreId?listaUnicaUnidades(unidadesHijas(seccionPadreId,'Seccion'),'Seccion'):[];
   setSelectOptions('correccionSeccion',secciones,'Seccion',item=>item.id,item=>item.nombre);
   if(nivel!=='direccion'&&nivel!=='departamento'&&nivel!=='division'&&secciones.some(unidad=>unidad.id===secActual))secSel.value=secActual;
 }
