@@ -115,7 +115,7 @@
           <select id="usuarioVista" onchange="cambiarUsuarioVista()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;width:100%"></select>
         </div>
         <div style="min-width:240px;flex:1">
-          <label class="inline">Presupuesto Total (editable)</label>
+          <label class="inline">Tope de nomina 2026 (editable)</label>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <input id="inputPresupuestoTotal" type="number" min="0" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;width:180px">
             <button class="btn btn-primary" onclick="guardarPresupuesto()">Guardar Presupuesto</button>
@@ -136,8 +136,17 @@
 
       <div class="dashboard-cards">
         <div class="card presupuesto-total"><h3>Presupuesto Total</h3><p id="presupuestoTotal">RD$ 0</p></div>
+        <div class="card presupuesto-total"><h3>Tope Fondo 30</h3><p id="presupuestoFondo30">RD$ 0</p></div>
+        <div class="card presupuesto-total"><h3>Tope Fondo 10</h3><p id="presupuestoFondo10">RD$ 0</p></div>
         <div class="card presupuesto-disponible"><h3>Presupuesto Disponible (inactivos)</h3><p id="presupuestoDisponible">RD$ 0</p></div>
         <div class="card presupuesto-consumido"><h3>Total Consumido</h3><p id="presupuestoConsumido">RD$ 0</p></div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:16px">
+        <table>
+          <thead><tr><th>Fondo</th><th>Programa</th><th>Actividad / Renglon</th><th>Monto Programado</th></tr></thead>
+          <tbody id="tablaPresupuestoNomina"></tbody>
+        </table>
       </div>
 
       <div class="circular-indicator">
@@ -602,6 +611,23 @@ const ADMIN_PASSWORD='Coraamoca2025*';
 const ADMIN_SEED_VERSION='admin-coraamoca-2025-v1';
 const NOMINA_VALIDADA_ARCHIVO='NOMINA ABRIL 2026 VALIDADA.xlsx';
 const NOMINA_VALIDADA_VERSION='nomina-abril-2026-validada-v1';
+const presupuestoNomina2026=[
+  {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 1',monto:857250.00},
+  {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 2',monto:4336105.00},
+  {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 3',monto:20000.00},
+  {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 4',monto:30000.00},
+  {fondo:'Fondo 30',programa:'Programa 1 - Personal no fijo',actividad:'Suplencia',monto:10000.00},
+  {fondo:'Fondo 30',programa:'Programa 1 - Personal no fijo',actividad:'Interinato',monto:150000.00},
+  {fondo:'Fondo 30',programa:'Programa 1 - Personal no fijo',actividad:'Temporal',monto:326750.00},
+  {fondo:'Fondo 30',programa:'Programa 11',actividad:'Act. 1 - P3',monto:1913989.00},
+  {fondo:'Fondo 30',programa:'Programa 11',actividad:'Act. 2 - P3',monto:455000.00},
+  {fondo:'Fondo 30',programa:'Programa 11',actividad:'Act. 3 - P3',monto:632550.00},
+  {fondo:'Fondo 30',programa:'Programa 12',actividad:'Act. 1 - P3',monto:108000.00},
+  {fondo:'Fondo 30',programa:'Programa 12',actividad:'Act. 2 - P3',monto:202000.00},
+  {fondo:'Fondo 30',programa:'Programa 13',actividad:'Act. 1 - P3',monto:363663.73},
+  {fondo:'Fondo 10',programa:'Programa 13',actividad:'Act. 1 - P3',monto:3378618.60}
+];
+const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
 
 const gruposOcupacionales=[
   {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
@@ -713,6 +739,35 @@ function guardarPresupuesto(){
   document.getElementById('presupuestoMsg').innerText='Guardado';
   setTimeout(()=>document.getElementById('presupuestoMsg').innerText='',2000);
   actualizarDashboard();
+}
+
+function totalPresupuestoPorFondo(fondo){
+  return presupuestoNomina2026.filter(item=>item.fondo===fondo).reduce((sum,item)=>sum+Number(item.monto||0),0);
+}
+
+function totalPresupuestoPorPrograma(fondo,programa){
+  return presupuestoNomina2026
+    .filter(item=>item.fondo===fondo&&item.programa===programa)
+    .reduce((sum,item)=>sum+Number(item.monto||0),0);
+}
+
+function renderPresupuestoNomina(){
+  const tbody=document.getElementById('tablaPresupuestoNomina');
+  if(!tbody)return;
+  const rows=[];
+  const fondos=[...new Set(presupuestoNomina2026.map(item=>item.fondo))];
+  fondos.forEach(fondo=>{
+    rows.push(`<tr class="group-row"><td>${safeText(fondo)}</td><td colspan="2">Subtotal fondo</td><td>${formatoNumero(totalPresupuestoPorFondo(fondo))}</td></tr>`);
+    const programas=[...new Set(presupuestoNomina2026.filter(item=>item.fondo===fondo).map(item=>item.programa))];
+    programas.forEach(programa=>{
+      rows.push(`<tr class="subtotal-row"><td>${safeText(fondo)}</td><td>${safeText(programa)}</td><td>Subtotal programa</td><td>${formatoNumero(totalPresupuestoPorPrograma(fondo,programa))}</td></tr>`);
+      presupuestoNomina2026
+        .filter(item=>item.fondo===fondo&&item.programa===programa)
+        .forEach(item=>rows.push(`<tr><td>${safeText(item.fondo)}</td><td>${safeText(item.programa)}</td><td>${safeText(item.actividad)}</td><td>${formatoNumero(item.monto)}</td></tr>`));
+    });
+  });
+  rows.push(`<tr class="group-row"><td colspan="3">Total de nomina por programa</td><td>${formatoNumero(PRESUPUESTO_NOMINA_2026_TOTAL)}</td></tr>`);
+  tbody.innerHTML=rows.join('');
 }
 
 async function validarUsuarioEnSupabase({id,login,correo}){
@@ -2692,8 +2747,13 @@ function mostrarNominaSeleccionada(){
 }
 
 function actualizarDashboard(){
+  if(!presupuestoTotal){
+    presupuestoTotal=PRESUPUESTO_NOMINA_2026_TOTAL;
+    guardarStorage();
+  }
   document.getElementById('inputPresupuestoTotal').value=presupuestoTotal||'';
   renderUsuarioVista();
+  renderPresupuestoNomina();
   const empleadosVista=empleadosPermitidos();
   const disponible=empleadosVista.filter(emp=>emp.estado==='Inactivo').reduce((s,emp)=>s+Number(emp.salarioBase||emp.salario||0),0);
   let consumido=0;
@@ -2701,6 +2761,8 @@ function actualizarDashboard(){
     consumido+=calcularImpactoPresupuesto(emp);
   });
   document.getElementById('presupuestoTotal').innerText=formatoNumero(presupuestoTotal);
+  document.getElementById('presupuestoFondo30').innerText=formatoNumero(totalPresupuestoPorFondo('Fondo 30'));
+  document.getElementById('presupuestoFondo10').innerText=formatoNumero(totalPresupuestoPorFondo('Fondo 10'));
   document.getElementById('presupuestoDisponible').innerText=formatoNumero(disponible);
   document.getElementById('presupuestoConsumido').innerText=formatoNumero(consumido);
   const porcentaje=presupuestoTotal>0?(consumido/presupuestoTotal)*100:0;
