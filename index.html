@@ -58,6 +58,11 @@
   .profile-item{border:1px solid #e5e7eb;border-radius:8px;padding:10px;background:#f8fafc}
   .profile-item small{display:block;color:#64748b;font-size:11px;text-transform:uppercase;margin-bottom:4px}
   .profile-item strong{color:#111827;font-size:14px}
+  .employee-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .employee-tabs button{background:#eef2ff;color:#1d3557;border:1px solid #c7d2fe}
+  .employee-tabs button.active{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+  .employee-module{display:none}
+  .employee-module.active{display:block}
   .login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1d3557,#457b9d);display:grid;place-items:center;padding:20px;z-index:50}
   .login-card{width:min(420px,100%);background:#fff;border-radius:12px;box-shadow:0 22px 70px rgba(0,0,0,.22);padding:26px}
   .login-card h1{margin:0 0 6px;color:#1d3557}
@@ -330,6 +335,23 @@
           </div>
         </div>
 
+        <div class="form-block">
+          <h3>Expediente digital y datos complementarios</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <input id="contactoEmergenciaNombre" placeholder="Contacto de emergencia">
+            <input id="contactoEmergenciaTelefono" placeholder="Telefono de emergencia">
+            <input id="contactoEmergenciaParentesco" placeholder="Parentesco">
+            <textarea id="documentosArchivos" placeholder="Documentos y archivos"></textarea>
+            <textarea id="historialLaboral" placeholder="Historial laboral"></textarea>
+            <textarea id="historialSalarial" placeholder="Historial salarial"></textarea>
+            <textarea id="dependientesDetalle" placeholder="Dependientes"></textarea>
+            <textarea id="contratosDetalle" placeholder="Contratos"></textarea>
+            <input id="firmaDigital" placeholder="Firma digital / referencia">
+            <input id="fotoUrl" placeholder="Foto / URL o referencia">
+            <input id="biometria" placeholder="Biometria / referencia">
+          </div>
+        </div>
+
         <input id="recomendado" placeholder="Recomendacion">
         <textarea id="nota" placeholder="Nota"></textarea>
 
@@ -384,7 +406,8 @@
           </div>
           <button class="btn" type="button" onclick="cerrarPanelEmpleado()">Cerrar</button>
         </div>
-        <div class="profile-grid" id="panelEmpleadoDetalle"></div>
+        <div class="employee-tabs" id="panelEmpleadoTabs"></div>
+        <div id="panelEmpleadoModulos"></div>
 
         <div class="form-block" style="margin-top:14px">
           <h3>Accion de Personal</h3>
@@ -2054,6 +2077,17 @@ form.addEventListener('submit',e=>{
     tipoSangre:document.getElementById('tipoSangre').value||'',
     licenciaConducir:document.getElementById('licenciaConducir').value||'',
     otrosDatos:document.getElementById('otrosDatos').value||'',
+    contactoEmergenciaNombre:document.getElementById('contactoEmergenciaNombre').value||'',
+    contactoEmergenciaTelefono:document.getElementById('contactoEmergenciaTelefono').value||'',
+    contactoEmergenciaParentesco:document.getElementById('contactoEmergenciaParentesco').value||'',
+    documentosArchivos:document.getElementById('documentosArchivos').value||'',
+    historialLaboral:document.getElementById('historialLaboral').value||'',
+    historialSalarial:document.getElementById('historialSalarial').value||'',
+    dependientesDetalle:document.getElementById('dependientesDetalle').value||'',
+    contratosDetalle:document.getElementById('contratosDetalle').value||'',
+    firmaDigital:document.getElementById('firmaDigital').value||'',
+    fotoUrl:document.getElementById('fotoUrl').value||'',
+    biometria:document.getElementById('biometria').value||'',
     recomendado:document.getElementById('recomendado').value||'',
     nota:document.getElementById('nota').value||'',
     estado:document.getElementById('estado').value||'Activo',
@@ -2088,6 +2122,17 @@ function panelItem(label,value){
   return `<div class="profile-item"><small>${safeText(label)}</small><strong>${safeText(value||'')}</strong></div>`;
 }
 
+function moduloEmpleado(id,titulo,items){
+  return `<div class="employee-module" id="modulo-${safeText(id)}"><h3 style="color:#1d3557;margin:0 0 10px">${safeText(titulo)}</h3><div class="profile-grid">${items.map(([label,value])=>panelItem(label,value)).join('')}</div></div>`;
+}
+
+function activarModuloEmpleado(id){
+  document.querySelectorAll('.employee-module').forEach(modulo=>modulo.classList.remove('active'));
+  document.querySelectorAll('#panelEmpleadoTabs button').forEach(btn=>btn.classList.remove('active'));
+  document.getElementById('modulo-'+id)?.classList.add('active');
+  document.querySelector(`#panelEmpleadoTabs button[data-module="${id}"]`)?.classList.add('active');
+}
+
 function mostrarPanelEmpleado(codigo){
   const emp=empleados.find(item=>item.codigo===codigo);
   if(!emp)return;
@@ -2096,40 +2141,41 @@ function mostrarPanelEmpleado(codigo){
   document.getElementById('panelEmpleadoTitulo').textContent=`${emp.nombre} ${emp.apellido}`;
   document.getElementById('panelEmpleadoSubtitulo').textContent=`${emp.codigo} | ${emp.cargo||'Sin cargo'} | ${emp.estado||''}`;
   const ruta=[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' > ');
-  const datos=[
-    ['Nombre',emp.nombre],
-    ['Apellido',emp.apellido],
-    [emp.tipoDocumento||'Cedula',emp.cedula],
-    ['Direccion de residencia',emp.direccionResidencia],
-    ['Sector',emp.sector],
-    ['Salario',formatoNumero(emp.salario)],
-    ['Cuenta de banco',emp.cuentaBanco],
-    ['Direccion / Departamento / Division / Seccion',ruta],
-    ['Direccion',emp.direccion],
-    ['Departamento',emp.departamento],
-    ['Division',emp.division],
-    ['Seccion',emp.seccion],
-    ['Centro de Servicio',emp.centroServicio],
-    ['Fondo',emp.fondo],
-    ['Programa',emp.programa],
-    ['SubProg',emp.subProg],
-    ['Actividad',emp.actividad],
-    ['Edad',emp.edad],
-    ['Fecha de nacimiento',formatoFechaISO(emp.fechaNacimiento)],
-    ['Nivel de escolaridad',emp.nivelEscolaridad],
-    ['Estado civil',emp.estadoCivil],
-    ['Hijos',emp.hijos],
-    ['Tipo de sangre',emp.tipoSangre],
-    ['Licencia de conducir',emp.licenciaConducir],
-    ['Grupo ocupacional',emp.grupoOcupacional],
-    ['Cargo',emp.cargo],
-    ['Tipo de ingreso',emp.tipoIngreso],
-    ['Fecha de ingreso',formatoFechaISO(emp.fechaIngreso)],
-    ['Estatus laboral',emp.estado],
-    ['Nota',emp.nota],
-    ['Otros datos',emp.otrosDatos]
+  const modulos=[
+    ['registro','Registro de empleados',[
+      ['Codigo',emp.codigo],['Nombre',emp.nombre],['Apellido',emp.apellido],[emp.tipoDocumento||'Cedula',emp.cedula],['Estatus laboral',emp.estado],['Fecha de ingreso',formatoFechaISO(emp.fechaIngreso)]
+    ]],
+    ['expediente','Expediente digital',[
+      ['Documentos y archivos',emp.documentosArchivos],['Firma digital',emp.firmaDigital],['Foto / referencia',emp.fotoUrl],['Biometria',emp.biometria],['Nota',emp.nota]
+    ]],
+    ['personal','Informacion personal',[
+      ['Direccion de residencia',emp.direccionResidencia],['Sector',emp.sector],['Edad',emp.edad],['Fecha de nacimiento',formatoFechaISO(emp.fechaNacimiento)],['Nivel de escolaridad',emp.nivelEscolaridad],['Estado civil',emp.estadoCivil],['Hijos',emp.hijos],['Tipo de sangre',emp.tipoSangre],['Licencia de conducir',emp.licenciaConducir],['Otros datos',emp.otrosDatos]
+    ]],
+    ['laboral','Informacion laboral',[
+      ['Direccion / Departamento / Division / Seccion',ruta],['Direccion',emp.direccion],['Departamento',emp.departamento],['Division',emp.division],['Seccion',emp.seccion],['Centro de Servicio',emp.centroServicio],['Grupo ocupacional',emp.grupoOcupacional],['Cargo',emp.cargo],['Tipo de ingreso',emp.tipoIngreso],['Fondo',emp.fondo],['Programa',emp.programa],['SubProg',emp.subProg],['Actividad',emp.actividad]
+    ]],
+    ['contactos','Contactos de emergencia',[
+      ['Contacto',emp.contactoEmergenciaNombre],['Telefono',emp.contactoEmergenciaTelefono],['Parentesco',emp.contactoEmergenciaParentesco]
+    ]],
+    ['historialLaboral','Historial laboral',[
+      ['Historial laboral',emp.historialLaboral],['Recomendacion',emp.recomendado],['Fecha salida',formatoFechaISO(emp.fechaSalida)],['Tipo salida',emp.tipoSalida]
+    ]],
+    ['historialSalarial','Historial salarial',[
+      ['Salario actual',formatoNumero(emp.salario)],['Salario base',formatoNumero(emp.salarioBase)],['Monto aumento',formatoNumero(emp.montoAumento)],['% aumento',emp.porcentajeAumento],['Fecha aumento',formatoFechaISO(emp.fechaAumento)],['Historial salarial',emp.historialSalarial]
+    ]],
+    ['dependientes','Dependientes',[
+      ['Cantidad de hijos',emp.hijos],['Dependientes',emp.dependientesDetalle]
+    ]],
+    ['contratos','Contratos',[
+      ['Contratos',emp.contratosDetalle],['Cuenta de banco',emp.cuentaBanco]
+    ]],
+    ['estado','Estado del empleado',[
+      ['Estado',emp.estado],['Fecha salida',formatoFechaISO(emp.fechaSalida)],['Tipo salida',emp.tipoSalida],['Correccion pendiente',emp.correccionPendiente?'Si':'No']
+    ]]
   ];
-  document.getElementById('panelEmpleadoDetalle').innerHTML=datos.map(([label,value])=>panelItem(label,value)).join('');
+  document.getElementById('panelEmpleadoTabs').innerHTML=modulos.map(([id,titulo])=>`<button class="btn" type="button" data-module="${safeText(id)}" onclick="activarModuloEmpleado('${safeText(id)}')">${safeText(titulo)}</button>`).join('');
+  document.getElementById('panelEmpleadoModulos').innerHTML=modulos.map(([id,titulo,items])=>moduloEmpleado(id,titulo,items)).join('');
+  activarModuloEmpleado('registro');
   prepararAccionPersonal(emp);
   document.getElementById('panelEmpleado').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -2433,6 +2479,17 @@ function empleadoDesdeFilaNomina(row){
     hijos:0,
     tipoSangre:'',
     licenciaConducir:'',
+    contactoEmergenciaNombre:'',
+    contactoEmergenciaTelefono:'',
+    contactoEmergenciaParentesco:'',
+    documentosArchivos:'',
+    historialLaboral:'',
+    historialSalarial:'',
+    dependientesDetalle:String(rowValue(row,'Depend. Adicionales','Dependientes')).trim(),
+    contratosDetalle:'',
+    firmaDigital:'',
+    fotoUrl:'',
+    biometria:'',
     otrosDatos:String(rowValue(row,'Depend. Adicionales','Telefono','Teléfono','TelÃ©fono')).trim(),
     recomendado:'',
     nota:camposPendientes.length?'Requiere accion de correccion: '+camposPendientes.join(', '):'',
@@ -2515,7 +2572,7 @@ function importarEmpleados(){
 function descargarPlantilla(){
   if(!window.XLSX)return alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
   const wb=XLSX.utils.book_new();
-  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","fondo","programa","subProg","actividad","direccionResidencia","sector","cuentaBanco","edad","fechaNacimiento","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
+  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","fondo","programa","subProg","actividad","direccionResidencia","sector","cuentaBanco","edad","fechaNacimiento","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","contactoEmergenciaNombre","contactoEmergenciaTelefono","contactoEmergenciaParentesco","documentosArchivos","historialLaboral","historialSalarial","dependientesDetalle","contratosDetalle","firmaDigital","fotoUrl","biometria","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
   const ws=XLSX.utils.aoa_to_sheet(wsData);
   XLSX.utils.book_append_sheet(wb,ws,'PlantillaEmpleados');
   XLSX.writeFile(wb,'PlantillaEmpleados.xlsx');
