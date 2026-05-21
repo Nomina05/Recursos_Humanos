@@ -299,6 +299,32 @@
           <button class="btn" type="button" onclick="cerrarPanelEmpleado()">Cerrar</button>
         </div>
         <div class="profile-grid" id="panelEmpleadoDetalle"></div>
+
+        <div class="form-block" style="margin-top:14px">
+          <h3>Accion de Personal</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <select id="accionTipo" onchange="validarAccionPersonal()">
+              <option value="">Tipo de accion</option>
+              <option>Entrada</option>
+              <option>Salida</option>
+              <option>Cambio de puesto</option>
+              <option>Aumento salarial</option>
+              <option>Licencia medica</option>
+              <option>Vacaciones</option>
+              <option>Traslado</option>
+              <option>Interinato</option>
+            </select>
+            <input id="accionFecha" type="date" onchange="validarAccionPersonal()">
+            <input id="accionPuestoAnterior" placeholder="Puesto anterior" oninput="validarAccionPersonal()">
+            <input id="accionPuestoNuevo" placeholder="Puesto nuevo" oninput="validarAccionPersonal()">
+            <input id="accionSalarioAnterior" type="number" min="0" step="0.01" placeholder="Salario anterior" oninput="validarAccionPersonal()">
+            <input id="accionSalarioNuevo" type="number" min="0" step="0.01" placeholder="Salario nuevo" oninput="validarAccionPersonal()">
+            <input id="accionMotivo" placeholder="Motivo" oninput="validarAccionPersonal()">
+            <textarea id="accionObservaciones" placeholder="Observaciones" oninput="validarAccionPersonal()"></textarea>
+            <div class="org-path" id="accionEstado">Complete tipo, fecha y motivo para imprimir.</div>
+            <button class="btn btn-primary hidden" type="button" id="btnImprimirAccion" onclick="imprimirAccionPersonal()"><i class="fa-solid fa-print"></i> Imprimir accion</button>
+          </div>
+        </div>
       </section>
     </section>
 
@@ -450,6 +476,7 @@ let estructuraOrganizacional=JSON.parse(localStorage.getItem('estructuraOrganiza
 let usuarios=JSON.parse(localStorage.getItem('usuariosSistema')||'[]');
 let usuarioVistaId=localStorage.getItem('usuarioVistaId')||'';
 let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||'';
+let empleadoPanelCodigo='';
 let reporteCache={headers:[],rows:[]};
 let pieChart=null,barChart=null,circleChart=null;
 
@@ -1531,6 +1558,7 @@ function panelItem(label,value){
 function mostrarPanelEmpleado(codigo){
   const emp=empleados.find(item=>item.codigo===codigo);
   if(!emp)return;
+  empleadoPanelCodigo=codigo;
   document.getElementById('panelEmpleado').classList.remove('hidden');
   document.getElementById('panelEmpleadoTitulo').textContent=`${emp.nombre} ${emp.apellido}`;
   document.getElementById('panelEmpleadoSubtitulo').textContent=`${emp.codigo} | ${emp.cargo||'Sin cargo'} | ${emp.estado||''}`;
@@ -1564,11 +1592,111 @@ function mostrarPanelEmpleado(codigo){
     ['Otros datos',emp.otrosDatos]
   ];
   document.getElementById('panelEmpleadoDetalle').innerHTML=datos.map(([label,value])=>panelItem(label,value)).join('');
+  prepararAccionPersonal(emp);
   document.getElementById('panelEmpleado').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function cerrarPanelEmpleado(){
   document.getElementById('panelEmpleado').classList.add('hidden');
+  empleadoPanelCodigo='';
+}
+
+function prepararAccionPersonal(emp){
+  document.getElementById('accionTipo').value=emp.tipoIngreso==='Aumento'?'Aumento salarial':'';
+  document.getElementById('accionFecha').value=emp.fechaAumento||new Date().toISOString().slice(0,10);
+  document.getElementById('accionPuestoAnterior').value='';
+  document.getElementById('accionPuestoNuevo').value=emp.cargo||'';
+  document.getElementById('accionSalarioAnterior').value=emp.salarioBase||'';
+  document.getElementById('accionSalarioNuevo').value=emp.salario||'';
+  document.getElementById('accionMotivo').value=emp.tipoIngreso==='Aumento'?'Aumento salarial':'';
+  document.getElementById('accionObservaciones').value=emp.nota||'';
+  validarAccionPersonal();
+}
+
+function validarAccionPersonal(){
+  const listo=Boolean(
+    empleadoPanelCodigo&&
+    document.getElementById('accionTipo').value&&
+    document.getElementById('accionFecha').value&&
+    document.getElementById('accionMotivo').value.trim()
+  );
+  document.getElementById('btnImprimirAccion').classList.toggle('hidden',!listo);
+  document.getElementById('accionEstado').textContent=listo?'Accion completa. Puede imprimir.':'Complete tipo, fecha y motivo para imprimir.';
+}
+
+function accionValor(id){
+  return document.getElementById(id).value||'';
+}
+
+function imprimirAccionPersonal(){
+  const emp=empleados.find(item=>item.codigo===empleadoPanelCodigo);
+  if(!emp)return;
+  const ruta=[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' > ');
+  const html=`<!doctype html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Accion de Personal - ${safeText(emp.codigo)}</title>
+    <style>
+      @page{size:letter;margin:14mm}
+      body{font-family:Arial,sans-serif;color:#111;margin:0}
+      .sheet{border:2px solid #111;padding:16px}
+      .header{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}
+      .header h1{font-size:18px;margin:0;text-transform:uppercase}
+      .header p{margin:4px 0 0;font-size:12px}
+      .grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #111;border-left:1px solid #111}
+      .cell{min-height:42px;border-right:1px solid #111;border-bottom:1px solid #111;padding:6px;font-size:12px}
+      .cell.span2{grid-column:span 2}.cell.span3{grid-column:span 3}.cell.span4{grid-column:span 4}
+      .label{display:block;font-size:10px;text-transform:uppercase;color:#333;margin-bottom:4px}
+      .value{font-weight:bold;white-space:pre-wrap}
+      .section-title{background:#e5e7eb;font-weight:bold;text-transform:uppercase}
+      .signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px;text-align:center;font-size:12px}
+      .line{border-top:1px solid #111;padding-top:6px}
+      @media print{button{display:none}}
+    </style>
+  </head>
+  <body>
+    <div class="sheet">
+      <div class="header">
+        <h1>Accion de Personal</h1>
+        <p>Formulario generado desde el Sistema de Recursos Humanos</p>
+      </div>
+      <div class="grid">
+        <div class="cell span4 section-title">Datos del empleado</div>
+        <div class="cell"><span class="label">Codigo</span><span class="value">${safeText(emp.codigo)}</span></div>
+        <div class="cell"><span class="label">Nombre</span><span class="value">${safeText(emp.nombre)} ${safeText(emp.apellido)}</span></div>
+        <div class="cell"><span class="label">${safeText(emp.tipoDocumento||'Cedula')}</span><span class="value">${safeText(emp.cedula)}</span></div>
+        <div class="cell"><span class="label">Estado</span><span class="value">${safeText(emp.estado)}</span></div>
+        <div class="cell span2"><span class="label">Cargo actual</span><span class="value">${safeText(emp.cargo)}</span></div>
+        <div class="cell"><span class="label">Salario actual</span><span class="value">${formatoNumero(emp.salario)}</span></div>
+        <div class="cell"><span class="label">Fecha ingreso</span><span class="value">${safeText(formatoFechaISO(emp.fechaIngreso))}</span></div>
+        <div class="cell span4"><span class="label">Estructura</span><span class="value">${safeText(ruta)}</span></div>
+        <div class="cell span2"><span class="label">Centro de servicio</span><span class="value">${safeText(emp.centroServicio)}</span></div>
+        <div class="cell span2"><span class="label">Cuenta banco</span><span class="value">${safeText(emp.cuentaBanco)}</span></div>
+
+        <div class="cell span4 section-title">Detalle de la accion</div>
+        <div class="cell"><span class="label">Tipo de accion</span><span class="value">${safeText(accionValor('accionTipo'))}</span></div>
+        <div class="cell"><span class="label">Fecha efectiva</span><span class="value">${safeText(formatoFechaISO(accionValor('accionFecha')))}</span></div>
+        <div class="cell span2"><span class="label">Motivo</span><span class="value">${safeText(accionValor('accionMotivo'))}</span></div>
+        <div class="cell span2"><span class="label">Puesto anterior</span><span class="value">${safeText(accionValor('accionPuestoAnterior'))}</span></div>
+        <div class="cell span2"><span class="label">Puesto nuevo</span><span class="value">${safeText(accionValor('accionPuestoNuevo'))}</span></div>
+        <div class="cell span2"><span class="label">Salario anterior</span><span class="value">${formatoNumero(accionValor('accionSalarioAnterior'))}</span></div>
+        <div class="cell span2"><span class="label">Salario nuevo</span><span class="value">${formatoNumero(accionValor('accionSalarioNuevo'))}</span></div>
+        <div class="cell span4"><span class="label">Observaciones</span><span class="value">${safeText(accionValor('accionObservaciones'))}</span></div>
+      </div>
+      <div class="signatures">
+        <div class="line">Preparado por</div>
+        <div class="line">Superior inmediato</div>
+        <div class="line">Recursos Humanos</div>
+      </div>
+    </div>
+    <script>window.onload=function(){window.print();};<\/script>
+  </body>
+  </html>`;
+  const printWindow=window.open('','_blank');
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
 }
 
 function cargarParaEditar(codigo){
