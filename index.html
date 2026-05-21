@@ -113,6 +113,7 @@
     <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
     <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
     <a id="menu-ia" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i>IA</a>
+    <a id="menu-ess" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i>Autoservicio</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -195,6 +196,7 @@
           <button class="btn btn-secondary" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i> Comunicacion</button>
           <button class="btn btn-secondary" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i> Supervisor</button>
           <button class="btn btn-secondary" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i> IA</button>
+          <button class="btn btn-secondary" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i> Autoservicio</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1601,6 +1603,122 @@
       </div>
     </section>
 
+    <section id="ess" class="hidden">
+      <h1>Panel de Autoservicio del Empleado</h1>
+
+      <div class="dashboard-section">
+        <h2>Perfil del empleado</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+          <select id="essEmpleado" onchange="renderAutoservicioEmpleado()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;min-width:280px"></select>
+        </div>
+        <div class="profile-grid" id="essPerfil"></div>
+      </div>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Recibos disponibles</h3><p id="essRecibosTotal">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Asistencias</h3><p id="essAsistenciasTotal">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Solicitudes pendientes</h3><p id="essSolicitudesTotal">0</p></div>
+        <div class="card presupuesto-total"><h3>Tickets abiertos</h3><p id="essTicketsTotal">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Descargar recibos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Salario</th><th>Deducciones</th><th>Neto</th><th>Accion</th></tr></thead>
+            <tbody id="tablaESSRecibos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Solicitar vacaciones y permisos</h2>
+        <form id="formESSSolicitud" novalidate>
+          <select id="essSolicitudTipo">
+            <option>Vacaciones</option>
+            <option>Permiso especial</option>
+            <option>Ausencia justificada</option>
+            <option>Licencia medica</option>
+          </select>
+          <input id="essSolicitudInicio" type="date" required>
+          <input id="essSolicitudFin" type="date" required>
+          <input id="essSolicitudDias" type="number" min="0" step="0.5" placeholder="Dias solicitados">
+          <textarea id="essSolicitudMotivo" placeholder="Motivo de la solicitud"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Enviar solicitud</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Desde</th><th>Hasta</th><th>Dias</th><th>Estado</th><th>Motivo</th></tr></thead>
+            <tbody id="tablaESSSolicitudes"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Actualizar informacion y firma electronica</h2>
+        <form id="formESSInformacion" novalidate>
+          <input id="essDireccionResidencia" placeholder="Direccion residencial">
+          <input id="essSector" placeholder="Sector">
+          <input id="essContactoNombre" placeholder="Contacto de emergencia">
+          <input id="essContactoTelefono" placeholder="Telefono de emergencia">
+          <input id="essContactoParentesco" placeholder="Parentesco">
+          <input id="essFirmaDigital" placeholder="Firma electronica / referencia">
+          <textarea id="essOtrosDatos" placeholder="Informacion adicional para RRHH"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Actualizar informacion</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Ver asistencia y evaluaciones</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Estado</th><th>Entrada</th><th>Salida</th><th>Horas extras</th><th>Nota</th></tr></thead>
+            <tbody id="tablaESSAsistencia"></tbody>
+          </table>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Tipo</th><th>Resultado</th><th>Evaluador</th><th>Feedback</th></tr></thead>
+            <tbody id="tablaESSEvaluaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Tickets de soporte RRHH</h2>
+        <form id="formESSTicket" novalidate>
+          <input id="essTicketAsunto" placeholder="Asunto del ticket" required>
+          <select id="essTicketCategoria">
+            <option>Nomina</option>
+            <option>Vacaciones</option>
+            <option>Datos personales</option>
+            <option>Asistencia</option>
+            <option>Documentos</option>
+            <option>Otro</option>
+          </select>
+          <select id="essTicketPrioridad">
+            <option>Normal</option>
+            <option>Alta</option>
+            <option>Baja</option>
+          </select>
+          <textarea id="essTicketDetalle" placeholder="Detalle de la solicitud"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-ticket"></i> Crear ticket</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Asunto</th><th>Categoria</th><th>Prioridad</th><th>Estado</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaESSTickets"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1621,6 +1739,7 @@
           <option value="comunicacion">Comunicacion Interna</option>
           <option value="supervisor">Supervisor / Manager</option>
           <option value="ia">IA y Automatizacion</option>
+          <option value="ess">Autoservicio del Empleado</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1758,6 +1877,7 @@ let publicacionesInternas=JSON.parse(localStorage.getItem('publicacionesInternas
 let mensajesInternos=JSON.parse(localStorage.getItem('mensajesInternos')||'[]');
 let reconocimientosInternos=JSON.parse(localStorage.getItem('reconocimientosInternos')||'[]');
 let reportesIA=JSON.parse(localStorage.getItem('reportesIA')||'[]');
+let ticketsSoporteRRHH=JSON.parse(localStorage.getItem('ticketsSoporteRRHH')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1882,6 +2002,7 @@ function showSection(id){
   if(id==='comunicacion')renderComunicacionInterna();
   if(id==='supervisor')renderSupervisorManager();
   if(id==='ia')renderIAAutomatizacion();
+  if(id==='ess')renderAutoservicioEmpleado();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1925,6 +2046,7 @@ function guardarStorage(){
   localStorage.setItem('mensajesInternos',JSON.stringify(mensajesInternos));
   localStorage.setItem('reconocimientosInternos',JSON.stringify(reconocimientosInternos));
   localStorage.setItem('reportesIA',JSON.stringify(reportesIA));
+  localStorage.setItem('ticketsSoporteRRHH',JSON.stringify(ticketsSoporteRRHH));
 }
 
 function guardarPresupuesto(){
@@ -4214,6 +4336,9 @@ function generarReporte(){
     analizarRotacionIA().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>Rotacion</td><td>${safeText(item.empleado)}</td><td>${item.score}</td><td>${safeText(item.riesgo+' - '+item.factores.join(', '))}</td></tr>`));
     analizarCandidatosIA().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>Candidatos</td><td>${safeText(item.candidato)}</td><td>${item.score}</td><td>${safeText(item.recomendacion)}</td></tr>`));
     analizarClimaIA().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>Clima</td><td>${safeText(item.indicador)}</td><td>${safeText(item.valor)}</td><td>${safeText(item.lectura)}</td></tr>`));
+  }else if(tipo==='ess'){
+    thead.innerHTML='<tr><th>Fecha</th><th>Codigo</th><th>Empleado</th><th>Categoria</th><th>Asunto</th><th>Prioridad</th><th>Estado</th><th>Detalle</th></tr>';
+    ticketsSoporteVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.categoria)}</td><td>${safeText(item.asunto)}</td><td>${safeText(item.prioridad)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.detalle)}</td></tr>`));
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -6537,6 +6662,187 @@ function generarReporteIA(){
   ].map(([label,value])=>panelItem(label,value)).join('');
 }
 
+function empleadoAutoservicio(){
+  return empleados.find(emp=>emp.codigo===document.getElementById('essEmpleado')?.value);
+}
+
+function ticketsSoporteVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return ticketsSoporteRRHH.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function renderSelectAutoservicio(){
+  const sel=document.getElementById('essEmpleado');
+  if(!sel)return;
+  const actual=sel.value;
+  sel.innerHTML='<option value="">Seleccione empleado</option>';
+  empleadosPermitidos()
+    .filter(emp=>emp.estado!=='Inactivo')
+    .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+    .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+  if(actual&&Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+  if(!sel.value&&sel.options.length===2)sel.selectedIndex=1;
+}
+
+function renderAutoservicioEmpleado(){
+  renderSelectAutoservicio();
+  const emp=empleadoAutoservicio();
+  renderPerfilAutoservicio(emp);
+  renderRecibosAutoservicio(emp);
+  renderSolicitudesAutoservicio(emp);
+  renderInformacionAutoservicio(emp);
+  renderAsistenciaAutoservicio(emp);
+  renderEvaluacionesAutoservicio(emp);
+  renderTicketsAutoservicio(emp);
+  document.getElementById('essRecibosTotal').textContent=emp?nominaProcesada.filter(item=>item.empleadoCodigo===emp.codigo).length:0;
+  document.getElementById('essAsistenciasTotal').textContent=emp?asistenciasTiempo.filter(item=>item.empleadoCodigo===emp.codigo).length:0;
+  document.getElementById('essSolicitudesTotal').textContent=emp?vacacionesLicencias.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado==='Pendiente').length:0;
+  document.getElementById('essTicketsTotal').textContent=emp?ticketsSoporteRRHH.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado!=='Cerrado').length:0;
+}
+
+function renderPerfilAutoservicio(emp){
+  const box=document.getElementById('essPerfil');
+  if(!box)return;
+  if(!emp){box.innerHTML=panelItem('Perfil','Seleccione un empleado para ver su autoservicio.');return;}
+  box.innerHTML=[
+    ['Empleado',`${emp.nombre} ${emp.apellido}`],
+    ['Documento',emp.cedula],
+    ['Cargo',emp.cargo],
+    ['Unidad',[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' / ')],
+    ['Salario',formatoNumero(emp.salario)],
+    ['Centro servicio',emp.centroServicio],
+    ['Firma electronica',emp.firmaDigital||'Pendiente']
+  ].map(([label,value])=>panelItem(label,value)).join('');
+}
+
+function renderRecibosAutoservicio(emp){
+  const tbody=document.getElementById('tablaESSRecibos');
+  if(!tbody)return;
+  tbody.innerHTML=emp?nominaProcesada.filter(item=>item.empleadoCodigo===emp.codigo).map(item=>
+    `<tr><td>${safeText(item.periodo)}</td><td>${formatoNumero(item.salario)}</td><td>${formatoNumero(item.totalDeducciones)}</td><td>${formatoNumero(item.neto)}</td><td><button class="btn btn-secondary" onclick="imprimirReciboNomina('${safeText(item.empleadoCodigo)}')"><i class="fa-solid fa-print"></i> Recibo</button></td></tr>`
+  ).join(''):'';
+}
+
+document.getElementById('formESSSolicitud').addEventListener('submit',event=>{
+  event.preventDefault();
+  const emp=empleadoAutoservicio();
+  if(!emp){alert('Seleccione el empleado.');return;}
+  const inicio=document.getElementById('essSolicitudInicio').value;
+  const fin=document.getElementById('essSolicitudFin').value;
+  const dias=diasEntreFechas(inicio,fin);
+  if(!dias){alert('Revise el rango de fechas.');return;}
+  vacacionesLicencias.push({
+    id:crearIdVacacion('ESS'),
+    empleadoCodigo:emp.codigo,
+    tipo:document.getElementById('essSolicitudTipo').value,
+    fechaSolicitud:fechaHoyISO(),
+    fechaInicio:inicio,
+    fechaFin:fin,
+    dias:Number(document.getElementById('essSolicitudDias').value)||dias,
+    estado:'Pendiente',
+    aprobador:'',
+    motivo:document.getElementById('essSolicitudMotivo').value
+  });
+  guardarStorage();
+  document.getElementById('formESSSolicitud').reset();
+  renderAutoservicioEmpleado();
+  renderVacacionesLicencias();
+  renderSupervisorManager();
+  actualizarDashboard();
+  mostrarToast('Solicitud enviada');
+});
+
+function renderSolicitudesAutoservicio(emp){
+  const tbody=document.getElementById('tablaESSSolicitudes');
+  if(!tbody)return;
+  tbody.innerHTML=emp?vacacionesLicencias
+    .filter(item=>item.empleadoCodigo===emp.codigo)
+    .sort((a,b)=>(b.fechaSolicitud||'').localeCompare(a.fechaSolicitud||''))
+    .map(item=>`<tr><td>${safeText(item.tipo)}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.dias)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.motivo)}</td></tr>`)
+    .join(''):'';
+}
+
+function renderInformacionAutoservicio(emp){
+  const map={
+    essDireccionResidencia:emp?.direccionResidencia||'',
+    essSector:emp?.sector||'',
+    essContactoNombre:emp?.contactoEmergenciaNombre||'',
+    essContactoTelefono:emp?.contactoEmergenciaTelefono||'',
+    essContactoParentesco:emp?.contactoEmergenciaParentesco||'',
+    essFirmaDigital:emp?.firmaDigital||'',
+    essOtrosDatos:emp?.otrosDatos||''
+  };
+  Object.keys(map).forEach(id=>{const el=document.getElementById(id);if(el)el.value=map[id];});
+}
+
+document.getElementById('formESSInformacion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const emp=empleadoAutoservicio();
+  if(!emp){alert('Seleccione el empleado.');return;}
+  emp.direccionResidencia=document.getElementById('essDireccionResidencia').value.trim();
+  emp.sector=document.getElementById('essSector').value.trim();
+  emp.contactoEmergenciaNombre=document.getElementById('essContactoNombre').value.trim();
+  emp.contactoEmergenciaTelefono=document.getElementById('essContactoTelefono').value.trim();
+  emp.contactoEmergenciaParentesco=document.getElementById('essContactoParentesco').value.trim();
+  emp.firmaDigital=document.getElementById('essFirmaDigital').value.trim();
+  emp.otrosDatos=document.getElementById('essOtrosDatos').value;
+  guardarStorage();
+  renderAutoservicioEmpleado();
+  renderEmpleados();
+  mostrarToast('Informacion actualizada');
+});
+
+function renderAsistenciaAutoservicio(emp){
+  const tbody=document.getElementById('tablaESSAsistencia');
+  if(!tbody)return;
+  tbody.innerHTML=emp?asistenciasTiempo
+    .filter(item=>item.empleadoCodigo===emp.codigo)
+    .sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))
+    .slice(0,24)
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.entrada)}</td><td>${safeText(item.salida)}</td><td>${safeText(item.horasExtra||0)}</td><td>${safeText(item.nota)}</td></tr>`)
+    .join(''):'';
+}
+
+function renderEvaluacionesAutoservicio(emp){
+  const tbody=document.getElementById('tablaESSEvaluaciones');
+  if(!tbody)return;
+  tbody.innerHTML=emp?evaluacionesDesempeno
+    .filter(item=>item.empleadoCodigo===emp.codigo)
+    .sort((a,b)=>(b.periodo||'').localeCompare(a.periodo||''))
+    .map(item=>`<tr><td>${safeText(item.periodo)}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.resultado)}</td><td>${safeText(item.evaluador)}</td><td>${safeText(item.comentarios)}</td></tr>`)
+    .join(''):'';
+}
+
+document.getElementById('formESSTicket').addEventListener('submit',event=>{
+  event.preventDefault();
+  const emp=empleadoAutoservicio();
+  const asunto=document.getElementById('essTicketAsunto').value.trim();
+  if(!emp||!asunto){alert('Seleccione empleado e indique el asunto.');return;}
+  ticketsSoporteRRHH.unshift({
+    id:'TCK'+Date.now(),
+    empleadoCodigo:emp.codigo,
+    fecha:new Date().toISOString(),
+    asunto,
+    categoria:document.getElementById('essTicketCategoria').value,
+    prioridad:document.getElementById('essTicketPrioridad').value,
+    detalle:document.getElementById('essTicketDetalle').value,
+    estado:'Abierto'
+  });
+  guardarStorage();
+  document.getElementById('formESSTicket').reset();
+  renderAutoservicioEmpleado();
+  mostrarToast('Ticket creado');
+});
+
+function renderTicketsAutoservicio(emp){
+  const tbody=document.getElementById('tablaESSTickets');
+  if(!tbody)return;
+  tbody.innerHTML=emp?ticketsSoporteRRHH
+    .filter(item=>item.empleadoCodigo===emp.codigo)
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.asunto)}</td><td>${safeText(item.categoria)}</td><td>${safeText(item.prioridad)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.detalle)}</td></tr>`)
+    .join(''):'';
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -6571,6 +6877,7 @@ function generarReporteIA(){
   renderComunicacionInterna();
   renderSupervisorManager();
   renderIAAutomatizacion();
+  renderAutoservicioEmpleado();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
