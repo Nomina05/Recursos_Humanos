@@ -1981,7 +1981,7 @@ let payrollHistory=JSON.parse(localStorage.getItem('payrollHistory')||'{}');
 let estructuraOrganizacional=JSON.parse(localStorage.getItem('estructuraOrganizacional')||'[]');
 let usuarios=JSON.parse(localStorage.getItem('usuariosSistema')||'[]');
 let usuarioVistaId=localStorage.getItem('usuarioVistaId')||'';
-let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||'';
+let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||localStorage.getItem('sesionUsuarioId')||'';
 let empleadoPanelCodigo='';
 let reporteCache={headers:[],rows:[]};
 let novedadesCorreccion=JSON.parse(localStorage.getItem('novedadesCorreccion')||'[]');
@@ -2267,14 +2267,20 @@ async function crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado
         username:login,
         role:rol,
         status:estado,
-        organization_unit_id:unidadId||null,
+        // The organizational catalog is still browser-side for this phase.
+        // Sending a local unit id to Auth can break the Supabase profile trigger
+        // when that unit has not been inserted in public.organization_units yet.
+        organization_unit_local_id:unidadId||'',
         scope:alcance,
         access_note:claveTemporal||''
       }
     }
   });
   if(error){
-    alert('No se pudo crear el usuario en Supabase Auth: '+error.message);
+    const detalle=error.message==='Database error saving new user'
+      ? 'El trigger de usuarios de Supabase no pudo guardar el perfil. Ejecute supabase_auth_user_fix.sql en Supabase SQL Editor y revise Auth/Postgres Logs si persiste.'
+      : error.message;
+    alert('No se pudo crear el usuario en Supabase Auth: '+detalle);
     return null;
   }
   return data.user;
@@ -2290,9 +2296,23 @@ function usuarioSesionActual(){
   return usuarios.find(usuario=>usuario.id===sesionActualId&&usuario.estado==='Activo');
 }
 
+function guardarSesionUsuario(id){
+  sesionActualId=id||'';
+  if(!sesionActualId)return;
+  sessionStorage.setItem('sesionUsuarioId',sesionActualId);
+  localStorage.setItem('sesionUsuarioId',sesionActualId);
+}
+
+function limpiarSesionUsuario(){
+  sessionStorage.removeItem('sesionUsuarioId');
+  localStorage.removeItem('sesionUsuarioId');
+  sesionActualId='';
+}
+
 function aplicarEstadoSesion(){
   const usuario=usuarioSesionActual();
   const autenticado=Boolean(usuario);
+  if(sesionActualId&&!autenticado)limpiarSesionUsuario();
   document.getElementById('loginScreen').classList.toggle('hidden',autenticado);
   document.getElementById('mainSidebar').classList.toggle('hidden',!autenticado);
   document.getElementById('mainContent').classList.toggle('hidden',!autenticado);
@@ -2314,8 +2334,7 @@ function aplicarPermisosMenu(usuario){
 }
 
 function cerrarSesion(){
-  sessionStorage.removeItem('sesionUsuarioId');
-  sesionActualId='';
+  limpiarSesionUsuario();
   usuarioVistaId='';
   document.getElementById('loginClave').value='';
   document.getElementById('loginError').textContent='';
@@ -2339,8 +2358,7 @@ document.getElementById('formLogin').addEventListener('submit',async event=>{
     document.getElementById('loginError').textContent='Clave incorrecta.';
     return;
   }
-  sesionActualId=usuario.id;
-  sessionStorage.setItem('sesionUsuarioId',usuario.id);
+  guardarSesionUsuario(usuario.id);
   document.getElementById('loginError').textContent='';
   aplicarEstadoSesion();
 });
