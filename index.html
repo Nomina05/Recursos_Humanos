@@ -106,6 +106,7 @@
     <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
     <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
     <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
+    <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -181,6 +182,7 @@
           <button class="btn btn-secondary" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i> Asistencia</button>
           <button class="btn btn-secondary" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i> Nomina</button>
           <button class="btn btn-secondary" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i> Vacaciones</button>
+          <button class="btn btn-secondary" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i> Desempeno</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -912,6 +914,114 @@
       </div>
     </section>
 
+    <section id="desempeno" class="hidden">
+      <h1>Panel de Evaluacion de Desempeno</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Evaluaciones registradas</h3><p id="desTotalEvaluaciones">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Promedio general</h3><p id="desPromedioGeneral">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Planes de mejora abiertos</h3><p id="desPlanesAbiertos">0</p></div>
+        <div class="card presupuesto-total"><h3>Metas completadas</h3><p id="desMetasCompletadas">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Evaluaciones 90, 180 y 360</h2>
+        <form id="formEvaluacionDesempeno" novalidate>
+          <input type="hidden" id="desEvaluacionId">
+          <select id="desEmpleado" required></select>
+          <select id="desTipoEvaluacion">
+            <option>90</option>
+            <option>180</option>
+            <option>360</option>
+          </select>
+          <input id="desPeriodo" type="month" required>
+          <input id="desEvaluador" placeholder="Evaluador">
+          <input id="desProductividad" type="number" min="0" max="100" placeholder="Productividad">
+          <input id="desCompetencias" type="number" min="0" max="100" placeholder="Competencias">
+          <input id="desMetas" type="number" min="0" max="100" placeholder="Objetivos y metas">
+          <input id="desKpis" type="number" min="0" max="100" placeholder="KPIs individuales">
+          <textarea id="desComentarios" placeholder="Feedback continuo / comentarios"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar evaluacion</button>
+            <button class="btn" type="button" onclick="limpiarEvaluacionDesempeno()">Nueva</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Empleado</th><th>Tipo</th><th>Evaluador</th><th>Productividad</th><th>Competencias</th><th>Metas</th><th>KPIs</th><th>Resultado</th><th>Feedback</th><th>Accion</th></tr></thead>
+            <tbody id="tablaEvaluacionesDesempeno"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Objetivos, metas y KPIs individuales</h2>
+        <form id="formMetaDesempeno" novalidate>
+          <input type="hidden" id="desMetaId">
+          <select id="desMetaEmpleado" required></select>
+          <input id="desMetaTitulo" placeholder="Objetivo / meta" required>
+          <input id="desMetaKpi" placeholder="KPI individual">
+          <input id="desMetaPeso" type="number" min="0" max="100" placeholder="Peso %">
+          <input id="desMetaAvance" type="number" min="0" max="100" placeholder="Avance %">
+          <input id="desMetaFechaLimite" type="date">
+          <select id="desMetaEstado">
+            <option>En progreso</option>
+            <option>Completada</option>
+            <option>Detenida</option>
+          </select>
+          <textarea id="desMetaNota" placeholder="Nota de seguimiento"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar meta</button>
+            <button class="btn" type="button" onclick="limpiarMetaDesempeno()">Nueva</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Meta</th><th>KPI</th><th>Peso</th><th>Avance</th><th>Fecha limite</th><th>Estado</th><th>Nota</th><th>Accion</th></tr></thead>
+            <tbody id="tablaMetasDesempeno"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Planes de mejora</h2>
+        <form id="formPlanMejora" novalidate>
+          <input type="hidden" id="desPlanId">
+          <select id="desPlanEmpleado" required></select>
+          <input id="desPlanArea" placeholder="Area a mejorar" required>
+          <input id="desPlanResponsable" placeholder="Responsable">
+          <input id="desPlanFechaInicio" type="date">
+          <input id="desPlanFechaFin" type="date">
+          <select id="desPlanEstado">
+            <option>Abierto</option>
+            <option>En seguimiento</option>
+            <option>Cerrado</option>
+          </select>
+          <textarea id="desPlanAcciones" placeholder="Acciones del plan de mejora"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar plan</button>
+            <button class="btn" type="button" onclick="limpiarPlanMejora()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Area</th><th>Responsable</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Acciones</th><th>Accion</th></tr></thead>
+            <tbody id="tablaPlanesMejora"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Ranking de desempeno</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ranking</th><th>Empleado</th><th>Promedio evaluacion</th><th>Metas promedio</th><th>Resultado final</th><th>Ultima evaluacion</th></tr></thead>
+            <tbody id="tablaRankingDesempeno"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -925,6 +1035,7 @@
           <option value="asistencia">Asistencia y Tiempo</option>
           <option value="nomina_procesada">Nomina Procesada</option>
           <option value="vacaciones">Vacaciones y Licencias</option>
+          <option value="desempeno">Evaluacion de Desempeno</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1046,6 +1157,9 @@ let liquidacionesNomina=JSON.parse(localStorage.getItem('liquidacionesNomina')||
 let transferenciasNomina=JSON.parse(localStorage.getItem('transferenciasNomina')||'[]');
 let vacacionesLicencias=JSON.parse(localStorage.getItem('vacacionesLicencias')||'[]');
 let politicasVacaciones=JSON.parse(localStorage.getItem('politicasVacaciones')||'{"diasAnuales":14,"mesesMinimos":12,"maxContinuos":15,"texto":"Las vacaciones deben solicitarse y aprobarse antes de su disfrute."}');
+let evaluacionesDesempeno=JSON.parse(localStorage.getItem('evaluacionesDesempeno')||'[]');
+let metasDesempeno=JSON.parse(localStorage.getItem('metasDesempeno')||'[]');
+let planesMejora=JSON.parse(localStorage.getItem('planesMejora')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1163,6 +1277,7 @@ function showSection(id){
   if(id==='asistencia')renderAsistenciaTiempo();
   if(id==='nomina')renderNominaPanel();
   if(id==='vacaciones')renderVacacionesLicencias();
+  if(id==='desempeno')renderDesempeno();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1190,6 +1305,9 @@ function guardarStorage(){
   localStorage.setItem('transferenciasNomina',JSON.stringify(transferenciasNomina));
   localStorage.setItem('vacacionesLicencias',JSON.stringify(vacacionesLicencias));
   localStorage.setItem('politicasVacaciones',JSON.stringify(politicasVacaciones));
+  localStorage.setItem('evaluacionesDesempeno',JSON.stringify(evaluacionesDesempeno));
+  localStorage.setItem('metasDesempeno',JSON.stringify(metasDesempeno));
+  localStorage.setItem('planesMejora',JSON.stringify(planesMejora));
 }
 
 function guardarPresupuesto(){
@@ -3438,6 +3556,11 @@ function generarReporte(){
     vacacionesVisibles().forEach(item=>{
       tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(formatoFechaISO(item.fechaSolicitud))}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.dias)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.aprobador)}</td><td>${safeText(item.motivo)}</td></tr>`);
     });
+  }else if(tipo==='desempeno'){
+    thead.innerHTML='<tr><th>Periodo</th><th>Codigo</th><th>Empleado</th><th>Tipo</th><th>Evaluador</th><th>Productividad</th><th>Competencias</th><th>Metas</th><th>KPIs</th><th>Resultado</th><th>Feedback</th></tr>';
+    evaluacionesVisibles().forEach(item=>{
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.periodo)}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.evaluador)}</td><td>${safeText(item.productividad)}</td><td>${safeText(item.competencias)}</td><td>${safeText(item.metas)}</td><td>${safeText(item.kpis)}</td><td>${safeText(item.resultado)}</td><td>${safeText(item.comentarios)}</td></tr>`);
+    });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -4353,6 +4476,269 @@ document.getElementById('formPoliticaVacaciones').addEventListener('submit',even
   mostrarToast('Politicas guardadas');
 });
 
+function crearIdDesempeno(prefix='DES'){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function renderSelectsDesempeno(){
+  ['desEmpleado','desMetaEmpleado','desPlanEmpleado'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const actual=sel.value;
+    sel.innerHTML='<option value="">Empleado</option>';
+    empleadosPermitidos()
+      .filter(emp=>emp.estado!=='Inactivo')
+      .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+      .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+    if(actual&&Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+  });
+}
+
+function evaluacionesVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return evaluacionesDesempeno.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function metasVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return metasDesempeno.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function planesVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return planesMejora.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function resultadoEvaluacionDesempeno(productividad,competencias,metas,kpis){
+  const valores=[productividad,competencias,metas,kpis].map(Number).filter(v=>!Number.isNaN(v));
+  if(!valores.length)return 0;
+  return Number((valores.reduce((sum,v)=>sum+v,0)/valores.length).toFixed(2));
+}
+
+function renderDesempeno(){
+  renderSelectsDesempeno();
+  renderEvaluacionesDesempeno();
+  renderMetasDesempeno();
+  renderPlanesMejora();
+  renderRankingDesempeno();
+  const evaluaciones=evaluacionesVisibles();
+  const promedio=evaluaciones.length?evaluaciones.reduce((sum,item)=>sum+Number(item.resultado||0),0)/evaluaciones.length:0;
+  document.getElementById('desTotalEvaluaciones').textContent=evaluaciones.length;
+  document.getElementById('desPromedioGeneral').textContent=promedio.toFixed(1);
+  document.getElementById('desPlanesAbiertos').textContent=planesVisibles().filter(item=>item.estado!=='Cerrado').length;
+  document.getElementById('desMetasCompletadas').textContent=metasVisibles().filter(item=>item.estado==='Completada').length;
+  if(!document.getElementById('desPeriodo').value)document.getElementById('desPeriodo').value=periodoActualYYYYMM();
+}
+
+function limpiarEvaluacionDesempeno(){
+  document.getElementById('formEvaluacionDesempeno').reset();
+  document.getElementById('desEvaluacionId').value='';
+  document.getElementById('desPeriodo').value=periodoActualYYYYMM();
+  renderSelectsDesempeno();
+}
+
+document.getElementById('formEvaluacionDesempeno').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('desEvaluacionId').value||crearIdDesempeno('EVA');
+  const empleadoCodigo=document.getElementById('desEmpleado').value;
+  if(!empleadoCodigo){alert('Seleccione el empleado.');return;}
+  const productividad=Number(document.getElementById('desProductividad').value)||0;
+  const competencias=Number(document.getElementById('desCompetencias').value)||0;
+  const metas=Number(document.getElementById('desMetas').value)||0;
+  const kpis=Number(document.getElementById('desKpis').value)||0;
+  const item={
+    id,
+    empleadoCodigo,
+    tipo:document.getElementById('desTipoEvaluacion').value,
+    periodo:document.getElementById('desPeriodo').value||periodoActualYYYYMM(),
+    evaluador:document.getElementById('desEvaluador').value.trim(),
+    productividad,
+    competencias,
+    metas,
+    kpis,
+    resultado:resultadoEvaluacionDesempeno(productividad,competencias,metas,kpis),
+    comentarios:document.getElementById('desComentarios').value,
+    fecha:new Date().toISOString()
+  };
+  const idx=evaluacionesDesempeno.findIndex(e=>e.id===id);
+  if(idx>=0)evaluacionesDesempeno[idx]=item;else evaluacionesDesempeno.push(item);
+  guardarStorage();
+  limpiarEvaluacionDesempeno();
+  renderDesempeno();
+});
+
+function renderEvaluacionesDesempeno(){
+  const tbody=document.getElementById('tablaEvaluacionesDesempeno');
+  if(!tbody)return;
+  tbody.innerHTML=evaluacionesVisibles()
+    .slice()
+    .sort((a,b)=>(b.periodo||'').localeCompare(a.periodo||'')||Number(b.resultado||0)-Number(a.resultado||0))
+    .map(item=>`<tr><td>${safeText(item.periodo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.evaluador)}</td><td>${safeText(item.productividad)}</td><td>${safeText(item.competencias)}</td><td>${safeText(item.metas)}</td><td>${safeText(item.kpis)}</td><td>${safeText(item.resultado)}</td><td>${safeText(item.comentarios)}</td><td><button class="btn btn-warning" onclick="cargarEvaluacionDesempeno('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarEvaluacionDesempeno('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarEvaluacionDesempeno(id){
+  const item=evaluacionesDesempeno.find(e=>e.id===id);
+  if(!item)return;
+  renderSelectsDesempeno();
+  document.getElementById('desEvaluacionId').value=item.id;
+  document.getElementById('desEmpleado').value=item.empleadoCodigo;
+  document.getElementById('desTipoEvaluacion').value=item.tipo||'90';
+  document.getElementById('desPeriodo').value=item.periodo||periodoActualYYYYMM();
+  document.getElementById('desEvaluador').value=item.evaluador||'';
+  document.getElementById('desProductividad').value=item.productividad||'';
+  document.getElementById('desCompetencias').value=item.competencias||'';
+  document.getElementById('desMetas').value=item.metas||'';
+  document.getElementById('desKpis').value=item.kpis||'';
+  document.getElementById('desComentarios').value=item.comentarios||'';
+}
+
+function eliminarEvaluacionDesempeno(id){
+  if(!confirm('Desea eliminar esta evaluacion?'))return;
+  evaluacionesDesempeno=evaluacionesDesempeno.filter(item=>item.id!==id);
+  guardarStorage();
+  renderDesempeno();
+}
+
+function limpiarMetaDesempeno(){
+  document.getElementById('formMetaDesempeno').reset();
+  document.getElementById('desMetaId').value='';
+  renderSelectsDesempeno();
+}
+
+document.getElementById('formMetaDesempeno').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('desMetaId').value||crearIdDesempeno('META');
+  const empleadoCodigo=document.getElementById('desMetaEmpleado').value;
+  const titulo=document.getElementById('desMetaTitulo').value.trim();
+  if(!empleadoCodigo||!titulo){alert('Seleccione empleado e indique la meta.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    titulo,
+    kpi:document.getElementById('desMetaKpi').value.trim(),
+    peso:Number(document.getElementById('desMetaPeso').value)||0,
+    avance:Number(document.getElementById('desMetaAvance').value)||0,
+    fechaLimite:document.getElementById('desMetaFechaLimite').value,
+    estado:document.getElementById('desMetaEstado').value,
+    nota:document.getElementById('desMetaNota').value
+  };
+  const idx=metasDesempeno.findIndex(m=>m.id===id);
+  if(idx>=0)metasDesempeno[idx]=item;else metasDesempeno.push(item);
+  guardarStorage();
+  limpiarMetaDesempeno();
+  renderDesempeno();
+});
+
+function renderMetasDesempeno(){
+  const tbody=document.getElementById('tablaMetasDesempeno');
+  if(!tbody)return;
+  tbody.innerHTML=metasVisibles().map(item=>
+    `<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.titulo)}</td><td>${safeText(item.kpi)}</td><td>${safeText(item.peso)}%</td><td>${safeText(item.avance)}%</td><td>${safeText(formatoFechaISO(item.fechaLimite))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.nota)}</td><td><button class="btn btn-warning" onclick="cargarMetaDesempeno('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarMetaDesempeno('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function cargarMetaDesempeno(id){
+  const item=metasDesempeno.find(m=>m.id===id);
+  if(!item)return;
+  renderSelectsDesempeno();
+  document.getElementById('desMetaId').value=item.id;
+  document.getElementById('desMetaEmpleado').value=item.empleadoCodigo;
+  document.getElementById('desMetaTitulo').value=item.titulo||'';
+  document.getElementById('desMetaKpi').value=item.kpi||'';
+  document.getElementById('desMetaPeso').value=item.peso||'';
+  document.getElementById('desMetaAvance').value=item.avance||'';
+  document.getElementById('desMetaFechaLimite').value=item.fechaLimite||'';
+  document.getElementById('desMetaEstado').value=item.estado||'En progreso';
+  document.getElementById('desMetaNota').value=item.nota||'';
+}
+
+function eliminarMetaDesempeno(id){
+  if(!confirm('Desea eliminar esta meta?'))return;
+  metasDesempeno=metasDesempeno.filter(item=>item.id!==id);
+  guardarStorage();
+  renderDesempeno();
+}
+
+function limpiarPlanMejora(){
+  document.getElementById('formPlanMejora').reset();
+  document.getElementById('desPlanId').value='';
+  renderSelectsDesempeno();
+}
+
+document.getElementById('formPlanMejora').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('desPlanId').value||crearIdDesempeno('PLAN');
+  const empleadoCodigo=document.getElementById('desPlanEmpleado').value;
+  const area=document.getElementById('desPlanArea').value.trim();
+  if(!empleadoCodigo||!area){alert('Seleccione empleado e indique el area a mejorar.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    area,
+    responsable:document.getElementById('desPlanResponsable').value.trim(),
+    fechaInicio:document.getElementById('desPlanFechaInicio').value,
+    fechaFin:document.getElementById('desPlanFechaFin').value,
+    estado:document.getElementById('desPlanEstado').value,
+    acciones:document.getElementById('desPlanAcciones').value
+  };
+  const idx=planesMejora.findIndex(p=>p.id===id);
+  if(idx>=0)planesMejora[idx]=item;else planesMejora.push(item);
+  guardarStorage();
+  limpiarPlanMejora();
+  renderDesempeno();
+});
+
+function renderPlanesMejora(){
+  const tbody=document.getElementById('tablaPlanesMejora');
+  if(!tbody)return;
+  tbody.innerHTML=planesVisibles().map(item=>
+    `<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.area)}</td><td>${safeText(item.responsable)}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.acciones)}</td><td><button class="btn btn-warning" onclick="cargarPlanMejora('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarPlanMejora('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function cargarPlanMejora(id){
+  const item=planesMejora.find(p=>p.id===id);
+  if(!item)return;
+  renderSelectsDesempeno();
+  document.getElementById('desPlanId').value=item.id;
+  document.getElementById('desPlanEmpleado').value=item.empleadoCodigo;
+  document.getElementById('desPlanArea').value=item.area||'';
+  document.getElementById('desPlanResponsable').value=item.responsable||'';
+  document.getElementById('desPlanFechaInicio').value=item.fechaInicio||'';
+  document.getElementById('desPlanFechaFin').value=item.fechaFin||'';
+  document.getElementById('desPlanEstado').value=item.estado||'Abierto';
+  document.getElementById('desPlanAcciones').value=item.acciones||'';
+}
+
+function eliminarPlanMejora(id){
+  if(!confirm('Desea eliminar este plan?'))return;
+  planesMejora=planesMejora.filter(item=>item.id!==id);
+  guardarStorage();
+  renderDesempeno();
+}
+
+function rankingDesempeno(){
+  return empleadosPermitidos().map(emp=>{
+    const evaluaciones=evaluacionesDesempeno.filter(item=>item.empleadoCodigo===emp.codigo);
+    const metas=metasDesempeno.filter(item=>item.empleadoCodigo===emp.codigo);
+    const promedioEval=evaluaciones.length?evaluaciones.reduce((sum,item)=>sum+Number(item.resultado||0),0)/evaluaciones.length:0;
+    const promedioMetas=metas.length?metas.reduce((sum,item)=>sum+Number(item.avance||0),0)/metas.length:0;
+    const resultado=(promedioEval*.7)+(promedioMetas*.3);
+    const ultima=evaluaciones.slice().sort((a,b)=>(b.periodo||'').localeCompare(a.periodo||''))[0];
+    return {emp,promedioEval,promedioMetas,resultado,ultima:ultima?.periodo||''};
+  }).filter(row=>row.promedioEval||row.promedioMetas).sort((a,b)=>b.resultado-a.resultado);
+}
+
+function renderRankingDesempeno(){
+  const tbody=document.getElementById('tablaRankingDesempeno');
+  if(!tbody)return;
+  tbody.innerHTML=rankingDesempeno().map((row,index)=>
+    `<tr><td>${index+1}</td><td>${safeText(row.emp.nombre+' '+row.emp.apellido)}</td><td>${row.promedioEval.toFixed(1)}</td><td>${row.promedioMetas.toFixed(1)}</td><td>${row.resultado.toFixed(1)}</td><td>${safeText(row.ultima)}</td></tr>`
+  ).join('');
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -4380,6 +4766,7 @@ document.getElementById('formPoliticaVacaciones').addEventListener('submit',even
   renderAsistenciaTiempo();
   renderNominaPanel();
   renderVacacionesLicencias();
+  renderDesempeno();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
