@@ -114,6 +114,7 @@
     <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
     <a id="menu-ia" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i>IA</a>
     <a id="menu-ess" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i>Autoservicio</a>
+    <a id="menu-configuracion" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i>Configuracion</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -197,6 +198,7 @@
           <button class="btn btn-secondary" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i> Supervisor</button>
           <button class="btn btn-secondary" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i> IA</button>
           <button class="btn btn-secondary" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i> Autoservicio</button>
+          <button class="btn" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i> Configuracion</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1719,6 +1721,105 @@
       </div>
     </section>
 
+    <section id="configuracion" class="hidden">
+      <h1>Panel de Configuracion y Seguridad</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Usuarios activos</h3><p id="cfgUsuariosActivos">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Sucursales</h3><p id="cfgSucursalesTotal">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Integraciones API</h3><p id="cfgApisTotal">0</p></div>
+        <div class="card presupuesto-total"><h3>Logs</h3><p id="cfgLogsTotal">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Roles, permisos y usuarios</h2>
+        <div class="quick-actions" style="margin-bottom:10px">
+          <button class="btn btn-primary" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i> Usuarios</button>
+          <button class="btn btn-secondary" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Departamentos y cargos</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Rol</th><th>Usuarios</th><th>Permiso base</th></tr></thead><tbody id="tablaCfgRoles"></tbody></table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Configuracion de empresa, correo y seguridad MFA</h2>
+        <form id="formConfiguracionEmpresa" novalidate>
+          <input id="cfgEmpresaNombre" placeholder="Nombre de la empresa">
+          <input id="cfgEmpresaRnc" placeholder="RNC / identificador">
+          <input id="cfgEmpresaCorreo" type="email" placeholder="Correo general">
+          <input id="cfgEmpresaTelefono" placeholder="Telefono">
+          <input id="cfgCorreoServidor" placeholder="Servidor correo / SMTP">
+          <input id="cfgCorreoRemitente" placeholder="Remitente por defecto">
+          <select id="cfgMfaEstado"><option value="No requerido">MFA no requerido</option><option value="Requerido admins">MFA para administradores</option><option value="Requerido todos">MFA para todos</option></select>
+          <select id="cfgIdiomaDefecto"></select>
+          <select id="cfgMonedaDefecto"></select>
+          <textarea id="cfgEmpresaDireccion" placeholder="Direccion / notas de configuracion"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar configuracion</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Sucursales, monedas e idiomas</h2>
+        <form id="formSucursalConfig" novalidate>
+          <input type="hidden" id="cfgSucursalId">
+          <input id="cfgSucursalNombre" placeholder="Sucursal / oficina" required>
+          <input id="cfgSucursalCiudad" placeholder="Ciudad">
+          <input id="cfgSucursalDireccion" placeholder="Direccion">
+          <select id="cfgSucursalEstado"><option>Activa</option><option>Inactiva</option></select>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar sucursal</button>
+            <button class="btn" type="button" onclick="limpiarSucursalConfig()">Nueva</button>
+          </div>
+        </form>
+        <form id="formCatalogoConfig" novalidate>
+          <select id="cfgCatalogoTipo"><option>Moneda</option><option>Idioma</option></select>
+          <input id="cfgCatalogoValor" placeholder="Codigo y nombre, ej. DOP - Peso Dominicano" required>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-secondary" type="submit"><i class="fa-solid fa-plus"></i> Agregar catalogo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table><thead><tr><th>Sucursal</th><th>Ciudad</th><th>Direccion</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaCfgSucursales"></tbody></table>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Catalogo</th><th>Valor</th><th>Accion</th></tr></thead><tbody id="tablaCfgCatalogos"></tbody></table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Integraciones API</h2>
+        <form id="formIntegracionConfig" novalidate>
+          <input type="hidden" id="cfgIntegracionId">
+          <input id="cfgIntegracionNombre" placeholder="Nombre integracion" required>
+          <input id="cfgIntegracionEndpoint" placeholder="Endpoint / referencia API">
+          <select id="cfgIntegracionTipo"><option>RRHH</option><option>Nomina</option><option>Correo</option><option>Biometrico</option><option>Otro</option></select>
+          <select id="cfgIntegracionEstado"><option>Activa</option><option>En prueba</option><option>Inactiva</option></select>
+          <textarea id="cfgIntegracionNota" placeholder="Nota segura / alcance de la integracion"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-plug"></i> Guardar integracion</button>
+            <button class="btn" type="button" onclick="limpiarIntegracionConfig()">Nueva</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table><thead><tr><th>Integracion</th><th>Tipo</th><th>Endpoint</th><th>Estado</th><th>Nota</th><th>Accion</th></tr></thead><tbody id="tablaCfgIntegraciones"></tbody></table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Auditoria, logs y backups</h2>
+        <div class="quick-actions">
+          <button class="btn btn-warning" type="button" onclick="exportarBackupLocal()"><i class="fa-solid fa-database"></i> Descargar backup</button>
+          <button class="btn btn-secondary" type="button" onclick="registrarLogSistema('Revision manual','Configuracion')"><i class="fa-solid fa-clipboard-check"></i> Registrar revision</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Fecha</th><th>Usuario</th><th>Accion</th><th>Modulo</th><th>Detalle</th></tr></thead><tbody id="tablaCfgLogs"></tbody></table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1740,6 +1841,7 @@
           <option value="supervisor">Supervisor / Manager</option>
           <option value="ia">IA y Automatizacion</option>
           <option value="ess">Autoservicio del Empleado</option>
+          <option value="configuracion">Configuracion y Seguridad</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1878,6 +1980,7 @@ let mensajesInternos=JSON.parse(localStorage.getItem('mensajesInternos')||'[]');
 let reconocimientosInternos=JSON.parse(localStorage.getItem('reconocimientosInternos')||'[]');
 let reportesIA=JSON.parse(localStorage.getItem('reportesIA')||'[]');
 let ticketsSoporteRRHH=JSON.parse(localStorage.getItem('ticketsSoporteRRHH')||'[]');
+let configuracionSistema=JSON.parse(localStorage.getItem('configuracionSistema')||'{"empresa":{},"sucursales":[],"monedas":["DOP - Peso Dominicano"],"idiomas":["es-DO - Espanol"],"integraciones":[],"logs":[]}');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1980,7 +2083,7 @@ function cargarCatalogosPersonalizados(){
 
 function showSection(id){
   const sesion=usuarioSesionActual();
-  if((id==='usuarios'||id==='estructura')&&sesion?.rol!=='Administrador'){
+  if((id==='usuarios'||id==='estructura'||id==='configuracion')&&sesion?.rol!=='Administrador'){
     alert('No tiene permiso para acceder a este modulo.');
     id='dashboard';
   }
@@ -2003,6 +2106,7 @@ function showSection(id){
   if(id==='supervisor')renderSupervisorManager();
   if(id==='ia')renderIAAutomatizacion();
   if(id==='ess')renderAutoservicioEmpleado();
+  if(id==='configuracion')renderConfiguracionSeguridad();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -2047,6 +2151,7 @@ function guardarStorage(){
   localStorage.setItem('reconocimientosInternos',JSON.stringify(reconocimientosInternos));
   localStorage.setItem('reportesIA',JSON.stringify(reportesIA));
   localStorage.setItem('ticketsSoporteRRHH',JSON.stringify(ticketsSoporteRRHH));
+  localStorage.setItem('configuracionSistema',JSON.stringify(configuracionSistema));
 }
 
 function guardarPresupuesto(){
@@ -2172,6 +2277,7 @@ function aplicarPermisosMenu(usuario){
   const esAdmin=usuario.rol==='Administrador';
   document.getElementById('menu-usuarios').classList.toggle('hidden',!esAdmin);
   document.getElementById('menu-estructura').classList.toggle('hidden',!esAdmin);
+  document.getElementById('menu-configuracion').classList.toggle('hidden',!esAdmin);
 }
 
 function cerrarSesion(){
@@ -4339,6 +4445,9 @@ function generarReporte(){
   }else if(tipo==='ess'){
     thead.innerHTML='<tr><th>Fecha</th><th>Codigo</th><th>Empleado</th><th>Categoria</th><th>Asunto</th><th>Prioridad</th><th>Estado</th><th>Detalle</th></tr>';
     ticketsSoporteVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.categoria)}</td><td>${safeText(item.asunto)}</td><td>${safeText(item.prioridad)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.detalle)}</td></tr>`));
+  }else if(tipo==='configuracion'){
+    thead.innerHTML='<tr><th>Fecha</th><th>Usuario</th><th>Accion</th><th>Modulo</th><th>Detalle</th></tr>';
+    (configuracionSistema.logs||[]).forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(new Date(item.fecha).toLocaleString())}</td><td>${safeText(item.usuario)}</td><td>${safeText(item.accion)}</td><td>${safeText(item.modulo)}</td><td>${safeText(item.detalle)}</td></tr>`));
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -6843,6 +6952,223 @@ function renderTicketsAutoservicio(emp){
     .join(''):'';
 }
 
+function asegurarConfiguracionSistema(){
+  configuracionSistema.empresa=configuracionSistema.empresa||{};
+  configuracionSistema.sucursales=Array.isArray(configuracionSistema.sucursales)?configuracionSistema.sucursales:[];
+  configuracionSistema.monedas=Array.isArray(configuracionSistema.monedas)&&configuracionSistema.monedas.length?configuracionSistema.monedas:['DOP - Peso Dominicano'];
+  configuracionSistema.idiomas=Array.isArray(configuracionSistema.idiomas)&&configuracionSistema.idiomas.length?configuracionSistema.idiomas:['es-DO - Espanol'];
+  configuracionSistema.integraciones=Array.isArray(configuracionSistema.integraciones)?configuracionSistema.integraciones:[];
+  configuracionSistema.logs=Array.isArray(configuracionSistema.logs)?configuracionSistema.logs:[];
+}
+
+function crearIdConfig(prefix='CFG'){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function registrarLogSistema(accion,modulo,detalle=''){
+  asegurarConfiguracionSistema();
+  const usuario=usuarioSesionActual();
+  configuracionSistema.logs.unshift({id:crearIdConfig('LOG'),fecha:new Date().toISOString(),usuario:usuario?.login||usuario?.nombre||'Sistema',accion,modulo,detalle});
+  configuracionSistema.logs=configuracionSistema.logs.slice(0,250);
+  guardarStorage();
+  renderConfiguracionSeguridad();
+}
+
+function renderConfiguracionSeguridad(){
+  asegurarConfiguracionSistema();
+  renderCfgRoles();
+  renderConfiguracionEmpresa();
+  renderCfgSucursales();
+  renderCfgCatalogos();
+  renderCfgIntegraciones();
+  renderCfgLogs();
+  document.getElementById('cfgUsuariosActivos').textContent=usuarios.filter(item=>item.estado==='Activo').length;
+  document.getElementById('cfgSucursalesTotal').textContent=configuracionSistema.sucursales.length;
+  document.getElementById('cfgApisTotal').textContent=configuracionSistema.integraciones.length;
+  document.getElementById('cfgLogsTotal').textContent=configuracionSistema.logs.length;
+}
+
+function renderCfgRoles(){
+  const tbody=document.getElementById('tablaCfgRoles');
+  if(!tbody)return;
+  const permisos={Administrador:'Todo el sistema, usuarios, seguridad y estructura', 'Recursos Humanos':'Gestion RRHH y expedientes', Nomina:'Nomina y reportes financieros', Consulta:'Lectura segun alcance'};
+  const roles=[...new Set(['Administrador','Recursos Humanos','Nomina','Consulta',...usuarios.map(item=>item.rol).filter(Boolean)])];
+  tbody.innerHTML=roles.map(rol=>`<tr><td>${safeText(rol)}</td><td>${usuarios.filter(item=>item.rol===rol).length}</td><td>${safeText(permisos[rol]||'Permisos por alcance configurado')}</td></tr>`).join('');
+}
+
+function renderConfiguracionEmpresa(){
+  const emp=configuracionSistema.empresa||{};
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||'';};
+  set('cfgEmpresaNombre',emp.nombre);
+  set('cfgEmpresaRnc',emp.rnc);
+  set('cfgEmpresaCorreo',emp.correo);
+  set('cfgEmpresaTelefono',emp.telefono);
+  set('cfgCorreoServidor',emp.correoServidor);
+  set('cfgCorreoRemitente',emp.correoRemitente);
+  set('cfgMfaEstado',emp.mfaEstado||'No requerido');
+  set('cfgEmpresaDireccion',emp.direccion);
+  setSelectValores('cfgIdiomaDefecto',configuracionSistema.idiomas,'Idioma por defecto',emp.idioma||configuracionSistema.idiomas[0]);
+  setSelectValores('cfgMonedaDefecto',configuracionSistema.monedas,'Moneda por defecto',emp.moneda||configuracionSistema.monedas[0]);
+}
+
+document.getElementById('formConfiguracionEmpresa').addEventListener('submit',event=>{
+  event.preventDefault();
+  asegurarConfiguracionSistema();
+  configuracionSistema.empresa={
+    nombre:document.getElementById('cfgEmpresaNombre').value.trim(),
+    rnc:document.getElementById('cfgEmpresaRnc').value.trim(),
+    correo:document.getElementById('cfgEmpresaCorreo').value.trim(),
+    telefono:document.getElementById('cfgEmpresaTelefono').value.trim(),
+    correoServidor:document.getElementById('cfgCorreoServidor').value.trim(),
+    correoRemitente:document.getElementById('cfgCorreoRemitente').value.trim(),
+    mfaEstado:document.getElementById('cfgMfaEstado').value,
+    idioma:document.getElementById('cfgIdiomaDefecto').value,
+    moneda:document.getElementById('cfgMonedaDefecto').value,
+    direccion:document.getElementById('cfgEmpresaDireccion').value
+  };
+  guardarStorage();
+  registrarLogSistema('Actualizo configuracion','Seguridad','Empresa, correo, moneda, idioma o MFA');
+  mostrarToast('Configuracion guardada');
+});
+
+function limpiarSucursalConfig(){
+  document.getElementById('formSucursalConfig').reset();
+  document.getElementById('cfgSucursalId').value='';
+  document.getElementById('cfgSucursalEstado').value='Activa';
+}
+
+document.getElementById('formSucursalConfig').addEventListener('submit',event=>{
+  event.preventDefault();
+  asegurarConfiguracionSistema();
+  const id=document.getElementById('cfgSucursalId').value||crearIdConfig('SUC');
+  const nombre=document.getElementById('cfgSucursalNombre').value.trim();
+  if(!nombre){alert('Indique el nombre de la sucursal.');return;}
+  const item={id,nombre,ciudad:document.getElementById('cfgSucursalCiudad').value.trim(),direccion:document.getElementById('cfgSucursalDireccion').value.trim(),estado:document.getElementById('cfgSucursalEstado').value};
+  const idx=configuracionSistema.sucursales.findIndex(row=>row.id===id);
+  if(idx>=0)configuracionSistema.sucursales[idx]=item;else configuracionSistema.sucursales.push(item);
+  guardarStorage();
+  limpiarSucursalConfig();
+  registrarLogSistema('Guardo sucursal','Configuracion',nombre);
+});
+
+function renderCfgSucursales(){
+  const tbody=document.getElementById('tablaCfgSucursales');
+  if(!tbody)return;
+  tbody.innerHTML=configuracionSistema.sucursales.map(item=>`<tr><td>${safeText(item.nombre)}</td><td>${safeText(item.ciudad)}</td><td>${safeText(item.direccion)}</td><td>${safeText(item.estado)}</td><td><button class="btn btn-warning" onclick="cargarSucursalConfig('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarSucursalConfig('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+}
+
+function cargarSucursalConfig(id){
+  const item=configuracionSistema.sucursales.find(row=>row.id===id);
+  if(!item)return;
+  document.getElementById('cfgSucursalId').value=item.id;
+  document.getElementById('cfgSucursalNombre').value=item.nombre||'';
+  document.getElementById('cfgSucursalCiudad').value=item.ciudad||'';
+  document.getElementById('cfgSucursalDireccion').value=item.direccion||'';
+  document.getElementById('cfgSucursalEstado').value=item.estado||'Activa';
+}
+
+function eliminarSucursalConfig(id){
+  if(!confirm('Desea eliminar esta sucursal?'))return;
+  const item=configuracionSistema.sucursales.find(row=>row.id===id);
+  configuracionSistema.sucursales=configuracionSistema.sucursales.filter(row=>row.id!==id);
+  guardarStorage();
+  registrarLogSistema('Elimino sucursal','Configuracion',item?.nombre||'');
+}
+
+document.getElementById('formCatalogoConfig').addEventListener('submit',event=>{
+  event.preventDefault();
+  asegurarConfiguracionSistema();
+  const tipo=document.getElementById('cfgCatalogoTipo').value;
+  const valor=document.getElementById('cfgCatalogoValor').value.trim();
+  if(!valor){alert('Indique el valor del catalogo.');return;}
+  const key=tipo==='Moneda'?'monedas':'idiomas';
+  if(!configuracionSistema[key].some(item=>normalizarCatalogo(item)===normalizarCatalogo(valor)))configuracionSistema[key].push(valor);
+  guardarStorage();
+  document.getElementById('formCatalogoConfig').reset();
+  registrarLogSistema('Agrego catalogo','Configuracion',`${tipo}: ${valor}`);
+});
+
+function renderCfgCatalogos(){
+  const tbody=document.getElementById('tablaCfgCatalogos');
+  if(!tbody)return;
+  tbody.innerHTML=[
+    ...configuracionSistema.monedas.map(valor=>({tipo:'Moneda',valor})),
+    ...configuracionSistema.idiomas.map(valor=>({tipo:'Idioma',valor}))
+  ].map(item=>`<tr><td>${item.tipo}</td><td>${safeText(item.valor)}</td><td><button class="btn btn-danger" onclick="eliminarCatalogoConfig('${item.tipo}','${safeText(item.valor)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+}
+
+function eliminarCatalogoConfig(tipo,valor){
+  const key=tipo==='Moneda'?'monedas':'idiomas';
+  if(configuracionSistema[key].length<=1){alert('Debe conservar al menos un valor.');return;}
+  configuracionSistema[key]=configuracionSistema[key].filter(item=>item!==valor);
+  guardarStorage();
+  registrarLogSistema('Elimino catalogo','Configuracion',`${tipo}: ${valor}`);
+}
+
+function limpiarIntegracionConfig(){
+  document.getElementById('formIntegracionConfig').reset();
+  document.getElementById('cfgIntegracionId').value='';
+  document.getElementById('cfgIntegracionEstado').value='Activa';
+}
+
+document.getElementById('formIntegracionConfig').addEventListener('submit',event=>{
+  event.preventDefault();
+  asegurarConfiguracionSistema();
+  const id=document.getElementById('cfgIntegracionId').value||crearIdConfig('API');
+  const nombre=document.getElementById('cfgIntegracionNombre').value.trim();
+  if(!nombre){alert('Indique la integracion.');return;}
+  const item={id,nombre,endpoint:document.getElementById('cfgIntegracionEndpoint').value.trim(),tipo:document.getElementById('cfgIntegracionTipo').value,estado:document.getElementById('cfgIntegracionEstado').value,nota:document.getElementById('cfgIntegracionNota').value};
+  const idx=configuracionSistema.integraciones.findIndex(row=>row.id===id);
+  if(idx>=0)configuracionSistema.integraciones[idx]=item;else configuracionSistema.integraciones.push(item);
+  guardarStorage();
+  limpiarIntegracionConfig();
+  registrarLogSistema('Guardo integracion','Seguridad',nombre);
+});
+
+function renderCfgIntegraciones(){
+  const tbody=document.getElementById('tablaCfgIntegraciones');
+  if(!tbody)return;
+  tbody.innerHTML=configuracionSistema.integraciones.map(item=>`<tr><td>${safeText(item.nombre)}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.endpoint)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.nota)}</td><td><button class="btn btn-warning" onclick="cargarIntegracionConfig('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarIntegracionConfig('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+}
+
+function cargarIntegracionConfig(id){
+  const item=configuracionSistema.integraciones.find(row=>row.id===id);
+  if(!item)return;
+  document.getElementById('cfgIntegracionId').value=item.id;
+  document.getElementById('cfgIntegracionNombre').value=item.nombre||'';
+  document.getElementById('cfgIntegracionEndpoint').value=item.endpoint||'';
+  document.getElementById('cfgIntegracionTipo').value=item.tipo||'RRHH';
+  document.getElementById('cfgIntegracionEstado').value=item.estado||'Activa';
+  document.getElementById('cfgIntegracionNota').value=item.nota||'';
+}
+
+function eliminarIntegracionConfig(id){
+  if(!confirm('Desea eliminar esta integracion?'))return;
+  const item=configuracionSistema.integraciones.find(row=>row.id===id);
+  configuracionSistema.integraciones=configuracionSistema.integraciones.filter(row=>row.id!==id);
+  guardarStorage();
+  registrarLogSistema('Elimino integracion','Seguridad',item?.nombre||'');
+}
+
+function renderCfgLogs(){
+  const tbody=document.getElementById('tablaCfgLogs');
+  if(!tbody)return;
+  tbody.innerHTML=(configuracionSistema.logs||[]).map(item=>`<tr><td>${safeText(new Date(item.fecha).toLocaleString())}</td><td>${safeText(item.usuario)}</td><td>${safeText(item.accion)}</td><td>${safeText(item.modulo)}</td><td>${safeText(item.detalle)}</td></tr>`).join('');
+}
+
+function exportarBackupLocal(){
+  const respaldo={fecha:new Date().toISOString(),empleados,usuarios,estructuraOrganizacional,payrollHistory,asistenciasTiempo,nominaProcesada,vacacionesLicencias,evaluacionesDesempeno,cursosCapacitacion,beneficiosEmpleado,casosDisciplinarios,configuracionSistema};
+  const blob=new Blob([JSON.stringify(respaldo,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download=`Backup_RRHH_${fechaHoyISO()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  registrarLogSistema('Exporto backup','Backups',`${Object.keys(respaldo).length} bloques de datos`);
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -6878,6 +7204,7 @@ function renderTicketsAutoservicio(emp){
   renderSupervisorManager();
   renderIAAutomatizacion();
   renderAutoservicioEmpleado();
+  renderConfiguracionSeguridad();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
