@@ -108,6 +108,7 @@
     <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
     <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
     <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
+    <a id="menu-beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -185,6 +186,7 @@
           <button class="btn btn-secondary" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i> Vacaciones</button>
           <button class="btn btn-secondary" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i> Desempeno</button>
           <button class="btn btn-secondary" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i> Capacitacion</button>
+          <button class="btn btn-secondary" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i> Beneficios</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1164,6 +1166,100 @@
       </div>
     </section>
 
+    <section id="beneficios" class="hidden">
+      <h1>Panel de Beneficios y Compensaciones</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Beneficios activos</h3><p id="benActivosTotal">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Costo mensual</h3><p id="benCostoMensual">RD$ 0</p></div>
+        <div class="card presupuesto-consumido"><h3>Bonos e incentivos</h3><p id="benBonosIncentivos">RD$ 0</p></div>
+        <div class="card presupuesto-total"><h3>Programas bienestar</h3><p id="benBienestarTotal">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Asignacion de beneficios laborales</h2>
+        <form id="formBeneficioEmpleado" novalidate>
+          <input type="hidden" id="beneficioId">
+          <select id="beneficioEmpleado" required></select>
+          <select id="beneficioTipo">
+            <option>Seguro medico</option>
+            <option>Beneficio corporativo</option>
+            <option>Bono</option>
+            <option>Incentivo</option>
+            <option>Viatico</option>
+            <option>Subsidio</option>
+            <option>Programa de bienestar</option>
+            <option>Plan de compensacion</option>
+          </select>
+          <input id="beneficioNombre" placeholder="Nombre del beneficio" required>
+          <input id="beneficioProveedor" placeholder="Proveedor / entidad">
+          <input id="beneficioMonto" type="number" min="0" step="0.01" placeholder="Monto mensual / valor">
+          <input id="beneficioFechaInicio" type="date">
+          <input id="beneficioFechaFin" type="date">
+          <select id="beneficioEstado">
+            <option>Activo</option>
+            <option>Pendiente</option>
+            <option>Suspendido</option>
+            <option>Finalizado</option>
+          </select>
+          <textarea id="beneficioNota" placeholder="Condiciones, cobertura u observaciones"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar beneficio</button>
+            <button class="btn" type="button" onclick="limpiarBeneficioEmpleado()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Tipo</th><th>Beneficio</th><th>Proveedor</th><th>Monto</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Nota</th><th>Accion</th></tr></thead>
+            <tbody id="tablaBeneficiosEmpleado"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Planes de compensacion y bienestar</h2>
+        <form id="formPlanCompensacion" novalidate>
+          <input type="hidden" id="planCompId">
+          <input id="planCompNombre" placeholder="Nombre del plan / programa" required>
+          <select id="planCompTipo">
+            <option>Plan de compensacion</option>
+            <option>Programa de bienestar</option>
+            <option>Beneficio corporativo</option>
+            <option>Seguro medico</option>
+          </select>
+          <input id="planCompElegibilidad" placeholder="Elegibilidad">
+          <input id="planCompPresupuesto" type="number" min="0" step="0.01" placeholder="Presupuesto">
+          <select id="planCompEstado">
+            <option>Activo</option>
+            <option>En diseno</option>
+            <option>Suspendido</option>
+            <option>Cerrado</option>
+          </select>
+          <textarea id="planCompDescripcion" placeholder="Descripcion del plan, cobertura y reglas"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar plan</button>
+            <button class="btn" type="button" onclick="limpiarPlanCompensacion()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Plan</th><th>Tipo</th><th>Elegibilidad</th><th>Presupuesto</th><th>Estado</th><th>Descripcion</th><th>Accion</th></tr></thead>
+            <tbody id="tablaPlanesCompensacion"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Resumen por tipo de beneficio</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Cantidad</th><th>Costo mensual</th></tr></thead>
+            <tbody id="tablaResumenBeneficios"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1179,6 +1275,7 @@
           <option value="vacaciones">Vacaciones y Licencias</option>
           <option value="desempeno">Evaluacion de Desempeno</option>
           <option value="capacitacion">Capacitacion y Desarrollo</option>
+          <option value="beneficios">Beneficios y Compensaciones</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1307,6 +1404,8 @@ let cursosCapacitacion=JSON.parse(localStorage.getItem('cursosCapacitacion')||'[
 let participantesCapacitacion=JSON.parse(localStorage.getItem('participantesCapacitacion')||'[]');
 let planesCarrera=JSON.parse(localStorage.getItem('planesCarrera')||'[]');
 let bibliotecaCapacitacion=JSON.parse(localStorage.getItem('bibliotecaCapacitacion')||'[]');
+let beneficiosEmpleado=JSON.parse(localStorage.getItem('beneficiosEmpleado')||'[]');
+let planesCompensacion=JSON.parse(localStorage.getItem('planesCompensacion')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1426,6 +1525,7 @@ function showSection(id){
   if(id==='vacaciones')renderVacacionesLicencias();
   if(id==='desempeno')renderDesempeno();
   if(id==='capacitacion')renderCapacitacion();
+  if(id==='beneficios')renderBeneficiosCompensaciones();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1460,6 +1560,8 @@ function guardarStorage(){
   localStorage.setItem('participantesCapacitacion',JSON.stringify(participantesCapacitacion));
   localStorage.setItem('planesCarrera',JSON.stringify(planesCarrera));
   localStorage.setItem('bibliotecaCapacitacion',JSON.stringify(bibliotecaCapacitacion));
+  localStorage.setItem('beneficiosEmpleado',JSON.stringify(beneficiosEmpleado));
+  localStorage.setItem('planesCompensacion',JSON.stringify(planesCompensacion));
 }
 
 function guardarPresupuesto(){
@@ -3719,6 +3821,11 @@ function generarReporte(){
       const curso=cursoCapacitacionPorId(item.cursoId)||{};
       tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(curso.titulo||'')}</td><td>${safeText(curso.tipo||'')}</td><td>${safeText(curso.modalidad||'')}</td><td>${safeText(curso.instructor||'')}</td><td>${safeText(formatoFechaISO(curso.fechaInicio))}</td><td>${safeText(formatoFechaISO(curso.fechaFin))}</td><td>${safeText(item.progreso)}%</td><td>${safeText(item.evaluacion)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.certificado)}</td></tr>`);
     });
+  }else if(tipo==='beneficios'){
+    thead.innerHTML='<tr><th>Codigo</th><th>Empleado</th><th>Tipo</th><th>Beneficio</th><th>Proveedor</th><th>Monto</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Nota</th></tr>';
+    beneficiosVisibles().forEach(item=>{
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.nombre)}</td><td>${safeText(item.proveedor)}</td><td>${formatoNumero(item.monto)}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.nota)}</td></tr>`);
+    });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -5181,6 +5288,175 @@ function eliminarRecursoCapacitacion(id){
   renderCapacitacion();
 }
 
+function crearIdBeneficio(prefix='BEN'){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function beneficiosVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return beneficiosEmpleado.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function renderSelectBeneficiosEmpleados(actual=''){
+  const sel=document.getElementById('beneficioEmpleado');
+  if(!sel)return;
+  const current=actual||sel.value;
+  sel.innerHTML='<option value="">Empleado</option>';
+  empleadosPermitidos()
+    .filter(emp=>emp.estado!=='Inactivo')
+    .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+    .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+  if(current&&Array.from(sel.options).some(option=>option.value===current))sel.value=current;
+}
+
+function renderBeneficiosCompensaciones(){
+  renderSelectBeneficiosEmpleados();
+  renderBeneficiosEmpleado();
+  renderPlanesCompensacion();
+  renderResumenBeneficios();
+  const activos=beneficiosVisibles().filter(item=>item.estado==='Activo');
+  const costo=activos.reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const bonos=activos.filter(item=>['Bono','Incentivo'].includes(item.tipo)).reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const bienestar=activos.filter(item=>item.tipo==='Programa de bienestar').length+planesCompensacion.filter(item=>item.tipo==='Programa de bienestar'&&item.estado==='Activo').length;
+  document.getElementById('benActivosTotal').textContent=activos.length;
+  document.getElementById('benCostoMensual').textContent=formatoNumero(costo);
+  document.getElementById('benBonosIncentivos').textContent=formatoNumero(bonos);
+  document.getElementById('benBienestarTotal').textContent=bienestar;
+}
+
+function limpiarBeneficioEmpleado(){
+  document.getElementById('formBeneficioEmpleado').reset();
+  document.getElementById('beneficioId').value='';
+  document.getElementById('beneficioEstado').value='Activo';
+  renderSelectBeneficiosEmpleados();
+}
+
+document.getElementById('formBeneficioEmpleado').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('beneficioId').value||crearIdBeneficio('BEN');
+  const empleadoCodigo=document.getElementById('beneficioEmpleado').value;
+  const nombre=document.getElementById('beneficioNombre').value.trim();
+  if(!empleadoCodigo||!nombre){alert('Seleccione empleado e indique el beneficio.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    tipo:document.getElementById('beneficioTipo').value,
+    nombre,
+    proveedor:document.getElementById('beneficioProveedor').value.trim(),
+    monto:Number(document.getElementById('beneficioMonto').value)||0,
+    fechaInicio:document.getElementById('beneficioFechaInicio').value,
+    fechaFin:document.getElementById('beneficioFechaFin').value,
+    estado:document.getElementById('beneficioEstado').value,
+    nota:document.getElementById('beneficioNota').value
+  };
+  const idx=beneficiosEmpleado.findIndex(row=>row.id===id);
+  if(idx>=0)beneficiosEmpleado[idx]=item;else beneficiosEmpleado.push(item);
+  guardarStorage();
+  limpiarBeneficioEmpleado();
+  renderBeneficiosCompensaciones();
+});
+
+function renderBeneficiosEmpleado(){
+  const tbody=document.getElementById('tablaBeneficiosEmpleado');
+  if(!tbody)return;
+  tbody.innerHTML=beneficiosVisibles()
+    .slice()
+    .sort((a,b)=>a.tipo.localeCompare(b.tipo,'es')||empleadoNombrePorCodigo(a.empleadoCodigo).localeCompare(empleadoNombrePorCodigo(b.empleadoCodigo),'es'))
+    .map(item=>`<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.nombre)}</td><td>${safeText(item.proveedor)}</td><td>${formatoNumero(item.monto)}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.nota)}</td><td><button class="btn btn-warning" onclick="cargarBeneficioEmpleado('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarBeneficioEmpleado('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarBeneficioEmpleado(id){
+  const item=beneficiosEmpleado.find(row=>row.id===id);
+  if(!item)return;
+  renderSelectBeneficiosEmpleados(item.empleadoCodigo);
+  document.getElementById('beneficioId').value=item.id;
+  document.getElementById('beneficioTipo').value=item.tipo||'Seguro medico';
+  document.getElementById('beneficioNombre').value=item.nombre||'';
+  document.getElementById('beneficioProveedor').value=item.proveedor||'';
+  document.getElementById('beneficioMonto').value=item.monto||'';
+  document.getElementById('beneficioFechaInicio').value=item.fechaInicio||'';
+  document.getElementById('beneficioFechaFin').value=item.fechaFin||'';
+  document.getElementById('beneficioEstado').value=item.estado||'Activo';
+  document.getElementById('beneficioNota').value=item.nota||'';
+}
+
+function eliminarBeneficioEmpleado(id){
+  if(!confirm('Desea eliminar este beneficio?'))return;
+  beneficiosEmpleado=beneficiosEmpleado.filter(item=>item.id!==id);
+  guardarStorage();
+  renderBeneficiosCompensaciones();
+}
+
+function limpiarPlanCompensacion(){
+  document.getElementById('formPlanCompensacion').reset();
+  document.getElementById('planCompId').value='';
+  document.getElementById('planCompEstado').value='Activo';
+}
+
+document.getElementById('formPlanCompensacion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('planCompId').value||crearIdBeneficio('PLC');
+  const nombre=document.getElementById('planCompNombre').value.trim();
+  if(!nombre){alert('Indique el nombre del plan.');return;}
+  const item={
+    id,
+    nombre,
+    tipo:document.getElementById('planCompTipo').value,
+    elegibilidad:document.getElementById('planCompElegibilidad').value.trim(),
+    presupuesto:Number(document.getElementById('planCompPresupuesto').value)||0,
+    estado:document.getElementById('planCompEstado').value,
+    descripcion:document.getElementById('planCompDescripcion').value
+  };
+  const idx=planesCompensacion.findIndex(row=>row.id===id);
+  if(idx>=0)planesCompensacion[idx]=item;else planesCompensacion.push(item);
+  guardarStorage();
+  limpiarPlanCompensacion();
+  renderBeneficiosCompensaciones();
+});
+
+function renderPlanesCompensacion(){
+  const tbody=document.getElementById('tablaPlanesCompensacion');
+  if(!tbody)return;
+  tbody.innerHTML=planesCompensacion.map(item=>
+    `<tr><td>${safeText(item.nombre)}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.elegibilidad)}</td><td>${formatoNumero(item.presupuesto)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.descripcion)}</td><td><button class="btn btn-warning" onclick="cargarPlanCompensacion('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarPlanCompensacion('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function cargarPlanCompensacion(id){
+  const item=planesCompensacion.find(row=>row.id===id);
+  if(!item)return;
+  document.getElementById('planCompId').value=item.id;
+  document.getElementById('planCompNombre').value=item.nombre||'';
+  document.getElementById('planCompTipo').value=item.tipo||'Plan de compensacion';
+  document.getElementById('planCompElegibilidad').value=item.elegibilidad||'';
+  document.getElementById('planCompPresupuesto').value=item.presupuesto||'';
+  document.getElementById('planCompEstado').value=item.estado||'Activo';
+  document.getElementById('planCompDescripcion').value=item.descripcion||'';
+}
+
+function eliminarPlanCompensacion(id){
+  if(!confirm('Desea eliminar este plan?'))return;
+  planesCompensacion=planesCompensacion.filter(item=>item.id!==id);
+  guardarStorage();
+  renderBeneficiosCompensaciones();
+}
+
+function renderResumenBeneficios(){
+  const tbody=document.getElementById('tablaResumenBeneficios');
+  if(!tbody)return;
+  const resumen={};
+  beneficiosVisibles().filter(item=>item.estado==='Activo').forEach(item=>{
+    if(!resumen[item.tipo])resumen[item.tipo]={cantidad:0,costo:0};
+    resumen[item.tipo].cantidad++;
+    resumen[item.tipo].costo+=Number(item.monto||0);
+  });
+  tbody.innerHTML=Object.keys(resumen).sort((a,b)=>a.localeCompare(b,'es')).map(tipo=>
+    `<tr><td>${safeText(tipo)}</td><td>${resumen[tipo].cantidad}</td><td>${formatoNumero(resumen[tipo].costo)}</td></tr>`
+  ).join('');
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -5210,6 +5486,7 @@ function eliminarRecursoCapacitacion(id){
   renderVacacionesLicencias();
   renderDesempeno();
   renderCapacitacion();
+  renderBeneficiosCompensaciones();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
