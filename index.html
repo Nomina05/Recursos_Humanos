@@ -107,6 +107,7 @@
     <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
     <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
     <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
+    <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -183,6 +184,7 @@
           <button class="btn btn-secondary" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i> Nomina</button>
           <button class="btn btn-secondary" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i> Vacaciones</button>
           <button class="btn btn-secondary" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i> Desempeno</button>
+          <button class="btn btn-secondary" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i> Capacitacion</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1022,6 +1024,146 @@
       </div>
     </section>
 
+    <section id="capacitacion" class="hidden">
+      <h1>Panel de Capacitacion y Desarrollo</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Cursos activos</h3><p id="capCursosActivos">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Participantes</h3><p id="capParticipantes">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Certificaciones</h3><p id="capCertificaciones">0</p></div>
+        <div class="card presupuesto-total"><h3>Progreso promedio</h3><p id="capProgresoPromedio">0%</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Cursos, eventos y talleres</h2>
+        <form id="formCursoCapacitacion" novalidate>
+          <input type="hidden" id="capCursoId">
+          <input id="capCursoTitulo" placeholder="Curso / capacitacion / taller" required>
+          <select id="capCursoTipo">
+            <option>Curso</option>
+            <option>Capacitacion interna</option>
+            <option>Certificacion</option>
+            <option>Evento</option>
+            <option>Taller</option>
+            <option>LMS</option>
+          </select>
+          <select id="capCursoModalidad">
+            <option>Presencial</option>
+            <option>Virtual</option>
+            <option>Mixta</option>
+            <option>LMS</option>
+          </select>
+          <input id="capCursoInstructor" placeholder="Instructor / proveedor">
+          <input id="capCursoInicio" type="date">
+          <input id="capCursoFin" type="date">
+          <input id="capCursoHoras" type="number" min="0" step="0.5" placeholder="Horas">
+          <select id="capCursoEstado">
+            <option>Planificado</option>
+            <option>Activo</option>
+            <option>Finalizado</option>
+            <option>Suspendido</option>
+          </select>
+          <textarea id="capCursoDescripcion" placeholder="Contenido / competencias a desarrollar"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar curso</button>
+            <button class="btn" type="button" onclick="limpiarCursoCapacitacion()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Titulo</th><th>Tipo</th><th>Modalidad</th><th>Instructor</th><th>Inicio</th><th>Fin</th><th>Horas</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaCursosCapacitacion"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Seguimiento de aprendizaje y evaluaciones</h2>
+        <form id="formParticipanteCapacitacion" novalidate>
+          <input type="hidden" id="capParticipanteId">
+          <select id="capParticipanteEmpleado" required></select>
+          <select id="capParticipanteCurso" required></select>
+          <input id="capParticipanteProgreso" type="number" min="0" max="100" placeholder="Progreso %">
+          <input id="capParticipanteEvaluacion" type="number" min="0" max="100" placeholder="Evaluacion capacitacion">
+          <select id="capParticipanteEstado">
+            <option>Inscrito</option>
+            <option>En curso</option>
+            <option>Aprobado</option>
+            <option>No aprobado</option>
+            <option>Completado</option>
+          </select>
+          <input id="capParticipanteCertificado" placeholder="Certificacion / codigo">
+          <textarea id="capParticipanteNota" placeholder="Seguimiento de aprendizaje"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar seguimiento</button>
+            <button class="btn" type="button" onclick="limpiarParticipanteCapacitacion()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Curso</th><th>Progreso</th><th>Evaluacion</th><th>Estado</th><th>Certificacion</th><th>Nota</th><th>Accion</th></tr></thead>
+            <tbody id="tablaParticipantesCapacitacion"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Planes de carrera</h2>
+        <form id="formPlanCarrera" novalidate>
+          <input type="hidden" id="capPlanId">
+          <select id="capPlanEmpleado" required></select>
+          <input id="capPlanPuestoObjetivo" placeholder="Puesto objetivo" required>
+          <input id="capPlanCompetencias" placeholder="Competencias a desarrollar">
+          <input id="capPlanFechaObjetivo" type="date">
+          <select id="capPlanEstado">
+            <option>Activo</option>
+            <option>En seguimiento</option>
+            <option>Completado</option>
+            <option>Pausado</option>
+          </select>
+          <textarea id="capPlanAcciones" placeholder="Acciones de desarrollo"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar plan</button>
+            <button class="btn" type="button" onclick="limpiarPlanCarrera()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Puesto objetivo</th><th>Competencias</th><th>Fecha objetivo</th><th>Estado</th><th>Acciones</th><th>Accion</th></tr></thead>
+            <tbody id="tablaPlanesCarrera"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Biblioteca digital</h2>
+        <form id="formBibliotecaCapacitacion" novalidate>
+          <input type="hidden" id="capRecursoId">
+          <input id="capRecursoTitulo" placeholder="Titulo del recurso" required>
+          <select id="capRecursoTipo">
+            <option>Documento</option>
+            <option>Video</option>
+            <option>Enlace</option>
+            <option>Manual</option>
+            <option>Presentacion</option>
+          </select>
+          <input id="capRecursoCategoria" placeholder="Categoria">
+          <input id="capRecursoUrl" placeholder="URL / archivo / referencia">
+          <textarea id="capRecursoDescripcion" placeholder="Descripcion del recurso"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar recurso</button>
+            <button class="btn" type="button" onclick="limpiarRecursoCapacitacion()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Titulo</th><th>Tipo</th><th>Categoria</th><th>Referencia</th><th>Descripcion</th><th>Accion</th></tr></thead>
+            <tbody id="tablaBibliotecaCapacitacion"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1036,6 +1178,7 @@
           <option value="nomina_procesada">Nomina Procesada</option>
           <option value="vacaciones">Vacaciones y Licencias</option>
           <option value="desempeno">Evaluacion de Desempeno</option>
+          <option value="capacitacion">Capacitacion y Desarrollo</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1160,6 +1303,10 @@ let politicasVacaciones=JSON.parse(localStorage.getItem('politicasVacaciones')||
 let evaluacionesDesempeno=JSON.parse(localStorage.getItem('evaluacionesDesempeno')||'[]');
 let metasDesempeno=JSON.parse(localStorage.getItem('metasDesempeno')||'[]');
 let planesMejora=JSON.parse(localStorage.getItem('planesMejora')||'[]');
+let cursosCapacitacion=JSON.parse(localStorage.getItem('cursosCapacitacion')||'[]');
+let participantesCapacitacion=JSON.parse(localStorage.getItem('participantesCapacitacion')||'[]');
+let planesCarrera=JSON.parse(localStorage.getItem('planesCarrera')||'[]');
+let bibliotecaCapacitacion=JSON.parse(localStorage.getItem('bibliotecaCapacitacion')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1278,6 +1425,7 @@ function showSection(id){
   if(id==='nomina')renderNominaPanel();
   if(id==='vacaciones')renderVacacionesLicencias();
   if(id==='desempeno')renderDesempeno();
+  if(id==='capacitacion')renderCapacitacion();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1308,6 +1456,10 @@ function guardarStorage(){
   localStorage.setItem('evaluacionesDesempeno',JSON.stringify(evaluacionesDesempeno));
   localStorage.setItem('metasDesempeno',JSON.stringify(metasDesempeno));
   localStorage.setItem('planesMejora',JSON.stringify(planesMejora));
+  localStorage.setItem('cursosCapacitacion',JSON.stringify(cursosCapacitacion));
+  localStorage.setItem('participantesCapacitacion',JSON.stringify(participantesCapacitacion));
+  localStorage.setItem('planesCarrera',JSON.stringify(planesCarrera));
+  localStorage.setItem('bibliotecaCapacitacion',JSON.stringify(bibliotecaCapacitacion));
 }
 
 function guardarPresupuesto(){
@@ -3561,6 +3713,12 @@ function generarReporte(){
     evaluacionesVisibles().forEach(item=>{
       tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.periodo)}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.evaluador)}</td><td>${safeText(item.productividad)}</td><td>${safeText(item.competencias)}</td><td>${safeText(item.metas)}</td><td>${safeText(item.kpis)}</td><td>${safeText(item.resultado)}</td><td>${safeText(item.comentarios)}</td></tr>`);
     });
+  }else if(tipo==='capacitacion'){
+    thead.innerHTML='<tr><th>Empleado</th><th>Curso</th><th>Tipo</th><th>Modalidad</th><th>Instructor</th><th>Inicio</th><th>Fin</th><th>Progreso</th><th>Evaluacion</th><th>Estado</th><th>Certificacion</th></tr>';
+    participantesVisibles().forEach(item=>{
+      const curso=cursoCapacitacionPorId(item.cursoId)||{};
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(curso.titulo||'')}</td><td>${safeText(curso.tipo||'')}</td><td>${safeText(curso.modalidad||'')}</td><td>${safeText(curso.instructor||'')}</td><td>${safeText(formatoFechaISO(curso.fechaInicio))}</td><td>${safeText(formatoFechaISO(curso.fechaFin))}</td><td>${safeText(item.progreso)}%</td><td>${safeText(item.evaluacion)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.certificado)}</td></tr>`);
+    });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -4739,6 +4897,290 @@ function renderRankingDesempeno(){
   ).join('');
 }
 
+function crearIdCapacitacion(prefix='CAP'){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function cursoCapacitacionPorId(id){
+  return cursosCapacitacion.find(item=>item.id===id);
+}
+
+function participantesVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return participantesCapacitacion.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function planesCarreraVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return planesCarrera.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function renderSelectsCapacitacion(){
+  ['capParticipanteEmpleado','capPlanEmpleado'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const actual=sel.value;
+    sel.innerHTML='<option value="">Empleado</option>';
+    empleadosPermitidos()
+      .filter(emp=>emp.estado!=='Inactivo')
+      .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+      .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+    if(actual&&Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+  });
+  const cursoSel=document.getElementById('capParticipanteCurso');
+  if(cursoSel){
+    const actual=cursoSel.value;
+    cursoSel.innerHTML='<option value="">Curso / capacitacion</option>';
+    cursosCapacitacion.slice().sort((a,b)=>a.titulo.localeCompare(b.titulo,'es')).forEach(curso=>{
+      cursoSel.insertAdjacentHTML('beforeend',`<option value="${safeText(curso.id)}">${safeText(curso.titulo+' - '+curso.tipo)}</option>`);
+    });
+    if(actual&&Array.from(cursoSel.options).some(option=>option.value===actual))cursoSel.value=actual;
+  }
+}
+
+function renderCapacitacion(){
+  renderSelectsCapacitacion();
+  renderCursosCapacitacion();
+  renderParticipantesCapacitacion();
+  renderPlanesCarrera();
+  renderBibliotecaCapacitacion();
+  const participantes=participantesVisibles();
+  const promedio=participantes.length?participantes.reduce((sum,item)=>sum+Number(item.progreso||0),0)/participantes.length:0;
+  document.getElementById('capCursosActivos').textContent=cursosCapacitacion.filter(item=>item.estado==='Activo'||item.estado==='Planificado').length;
+  document.getElementById('capParticipantes').textContent=participantes.length;
+  document.getElementById('capCertificaciones').textContent=participantes.filter(item=>item.certificado).length;
+  document.getElementById('capProgresoPromedio').textContent=promedio.toFixed(1)+'%';
+}
+
+function limpiarCursoCapacitacion(){
+  document.getElementById('formCursoCapacitacion').reset();
+  document.getElementById('capCursoId').value='';
+}
+
+document.getElementById('formCursoCapacitacion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('capCursoId').value||crearIdCapacitacion('CUR');
+  const titulo=document.getElementById('capCursoTitulo').value.trim();
+  if(!titulo){alert('Indique el titulo del curso.');return;}
+  const curso={
+    id,
+    titulo,
+    tipo:document.getElementById('capCursoTipo').value,
+    modalidad:document.getElementById('capCursoModalidad').value,
+    instructor:document.getElementById('capCursoInstructor').value.trim(),
+    fechaInicio:document.getElementById('capCursoInicio').value,
+    fechaFin:document.getElementById('capCursoFin').value,
+    horas:Number(document.getElementById('capCursoHoras').value)||0,
+    estado:document.getElementById('capCursoEstado').value,
+    descripcion:document.getElementById('capCursoDescripcion').value
+  };
+  const idx=cursosCapacitacion.findIndex(item=>item.id===id);
+  if(idx>=0)cursosCapacitacion[idx]=curso;else cursosCapacitacion.push(curso);
+  guardarStorage();
+  limpiarCursoCapacitacion();
+  renderCapacitacion();
+});
+
+function renderCursosCapacitacion(){
+  const tbody=document.getElementById('tablaCursosCapacitacion');
+  if(!tbody)return;
+  tbody.innerHTML=cursosCapacitacion
+    .slice()
+    .sort((a,b)=>(b.fechaInicio||'').localeCompare(a.fechaInicio||'')||a.titulo.localeCompare(b.titulo,'es'))
+    .map(curso=>`<tr><td>${safeText(curso.titulo)}</td><td>${safeText(curso.tipo)}</td><td>${safeText(curso.modalidad)}</td><td>${safeText(curso.instructor)}</td><td>${safeText(formatoFechaISO(curso.fechaInicio))}</td><td>${safeText(formatoFechaISO(curso.fechaFin))}</td><td>${safeText(curso.horas)}</td><td>${safeText(curso.estado)}</td><td><button class="btn btn-warning" onclick="cargarCursoCapacitacion('${safeText(curso.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarCursoCapacitacion('${safeText(curso.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarCursoCapacitacion(id){
+  const curso=cursoCapacitacionPorId(id);
+  if(!curso)return;
+  document.getElementById('capCursoId').value=curso.id;
+  document.getElementById('capCursoTitulo').value=curso.titulo||'';
+  document.getElementById('capCursoTipo').value=curso.tipo||'Curso';
+  document.getElementById('capCursoModalidad').value=curso.modalidad||'Presencial';
+  document.getElementById('capCursoInstructor').value=curso.instructor||'';
+  document.getElementById('capCursoInicio').value=curso.fechaInicio||'';
+  document.getElementById('capCursoFin').value=curso.fechaFin||'';
+  document.getElementById('capCursoHoras').value=curso.horas||'';
+  document.getElementById('capCursoEstado').value=curso.estado||'Planificado';
+  document.getElementById('capCursoDescripcion').value=curso.descripcion||'';
+}
+
+function eliminarCursoCapacitacion(id){
+  if(participantesCapacitacion.some(item=>item.cursoId===id)){alert('No puede eliminar un curso con participantes registrados.');return;}
+  if(!confirm('Desea eliminar este curso?'))return;
+  cursosCapacitacion=cursosCapacitacion.filter(item=>item.id!==id);
+  guardarStorage();
+  renderCapacitacion();
+}
+
+function limpiarParticipanteCapacitacion(){
+  document.getElementById('formParticipanteCapacitacion').reset();
+  document.getElementById('capParticipanteId').value='';
+  renderSelectsCapacitacion();
+}
+
+document.getElementById('formParticipanteCapacitacion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('capParticipanteId').value||crearIdCapacitacion('PAR');
+  const empleadoCodigo=document.getElementById('capParticipanteEmpleado').value;
+  const cursoId=document.getElementById('capParticipanteCurso').value;
+  if(!empleadoCodigo||!cursoId){alert('Seleccione empleado y curso.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    cursoId,
+    progreso:Number(document.getElementById('capParticipanteProgreso').value)||0,
+    evaluacion:Number(document.getElementById('capParticipanteEvaluacion').value)||0,
+    estado:document.getElementById('capParticipanteEstado').value,
+    certificado:document.getElementById('capParticipanteCertificado').value.trim(),
+    nota:document.getElementById('capParticipanteNota').value
+  };
+  const idx=participantesCapacitacion.findIndex(row=>row.id===id);
+  if(idx>=0)participantesCapacitacion[idx]=item;else participantesCapacitacion.push(item);
+  guardarStorage();
+  limpiarParticipanteCapacitacion();
+  renderCapacitacion();
+});
+
+function renderParticipantesCapacitacion(){
+  const tbody=document.getElementById('tablaParticipantesCapacitacion');
+  if(!tbody)return;
+  tbody.innerHTML=participantesVisibles().map(item=>{
+    const curso=cursoCapacitacionPorId(item.cursoId)||{};
+    return `<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(curso.titulo||'')}</td><td>${safeText(item.progreso)}%</td><td>${safeText(item.evaluacion)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.certificado)}</td><td>${safeText(item.nota)}</td><td><button class="btn btn-warning" onclick="cargarParticipanteCapacitacion('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarParticipanteCapacitacion('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+  }).join('');
+}
+
+function cargarParticipanteCapacitacion(id){
+  const item=participantesCapacitacion.find(row=>row.id===id);
+  if(!item)return;
+  renderSelectsCapacitacion();
+  document.getElementById('capParticipanteId').value=item.id;
+  document.getElementById('capParticipanteEmpleado').value=item.empleadoCodigo;
+  document.getElementById('capParticipanteCurso').value=item.cursoId;
+  document.getElementById('capParticipanteProgreso').value=item.progreso||'';
+  document.getElementById('capParticipanteEvaluacion').value=item.evaluacion||'';
+  document.getElementById('capParticipanteEstado').value=item.estado||'Inscrito';
+  document.getElementById('capParticipanteCertificado').value=item.certificado||'';
+  document.getElementById('capParticipanteNota').value=item.nota||'';
+}
+
+function eliminarParticipanteCapacitacion(id){
+  if(!confirm('Desea eliminar este seguimiento?'))return;
+  participantesCapacitacion=participantesCapacitacion.filter(item=>item.id!==id);
+  guardarStorage();
+  renderCapacitacion();
+}
+
+function limpiarPlanCarrera(){
+  document.getElementById('formPlanCarrera').reset();
+  document.getElementById('capPlanId').value='';
+  renderSelectsCapacitacion();
+}
+
+document.getElementById('formPlanCarrera').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('capPlanId').value||crearIdCapacitacion('CAR');
+  const empleadoCodigo=document.getElementById('capPlanEmpleado').value;
+  const puestoObjetivo=document.getElementById('capPlanPuestoObjetivo').value.trim();
+  if(!empleadoCodigo||!puestoObjetivo){alert('Seleccione empleado e indique el puesto objetivo.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    puestoObjetivo,
+    competencias:document.getElementById('capPlanCompetencias').value.trim(),
+    fechaObjetivo:document.getElementById('capPlanFechaObjetivo').value,
+    estado:document.getElementById('capPlanEstado').value,
+    acciones:document.getElementById('capPlanAcciones').value
+  };
+  const idx=planesCarrera.findIndex(row=>row.id===id);
+  if(idx>=0)planesCarrera[idx]=item;else planesCarrera.push(item);
+  guardarStorage();
+  limpiarPlanCarrera();
+  renderCapacitacion();
+});
+
+function renderPlanesCarrera(){
+  const tbody=document.getElementById('tablaPlanesCarrera');
+  if(!tbody)return;
+  tbody.innerHTML=planesCarreraVisibles().map(item=>
+    `<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.puestoObjetivo)}</td><td>${safeText(item.competencias)}</td><td>${safeText(formatoFechaISO(item.fechaObjetivo))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.acciones)}</td><td><button class="btn btn-warning" onclick="cargarPlanCarrera('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarPlanCarrera('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function cargarPlanCarrera(id){
+  const item=planesCarrera.find(row=>row.id===id);
+  if(!item)return;
+  renderSelectsCapacitacion();
+  document.getElementById('capPlanId').value=item.id;
+  document.getElementById('capPlanEmpleado').value=item.empleadoCodigo;
+  document.getElementById('capPlanPuestoObjetivo').value=item.puestoObjetivo||'';
+  document.getElementById('capPlanCompetencias').value=item.competencias||'';
+  document.getElementById('capPlanFechaObjetivo').value=item.fechaObjetivo||'';
+  document.getElementById('capPlanEstado').value=item.estado||'Activo';
+  document.getElementById('capPlanAcciones').value=item.acciones||'';
+}
+
+function eliminarPlanCarrera(id){
+  if(!confirm('Desea eliminar este plan de carrera?'))return;
+  planesCarrera=planesCarrera.filter(item=>item.id!==id);
+  guardarStorage();
+  renderCapacitacion();
+}
+
+function limpiarRecursoCapacitacion(){
+  document.getElementById('formBibliotecaCapacitacion').reset();
+  document.getElementById('capRecursoId').value='';
+}
+
+document.getElementById('formBibliotecaCapacitacion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('capRecursoId').value||crearIdCapacitacion('REC');
+  const titulo=document.getElementById('capRecursoTitulo').value.trim();
+  if(!titulo){alert('Indique el titulo del recurso.');return;}
+  const item={
+    id,
+    titulo,
+    tipo:document.getElementById('capRecursoTipo').value,
+    categoria:document.getElementById('capRecursoCategoria').value.trim(),
+    url:document.getElementById('capRecursoUrl').value.trim(),
+    descripcion:document.getElementById('capRecursoDescripcion').value
+  };
+  const idx=bibliotecaCapacitacion.findIndex(row=>row.id===id);
+  if(idx>=0)bibliotecaCapacitacion[idx]=item;else bibliotecaCapacitacion.push(item);
+  guardarStorage();
+  limpiarRecursoCapacitacion();
+  renderCapacitacion();
+});
+
+function renderBibliotecaCapacitacion(){
+  const tbody=document.getElementById('tablaBibliotecaCapacitacion');
+  if(!tbody)return;
+  tbody.innerHTML=bibliotecaCapacitacion.map(item=>
+    `<tr><td>${safeText(item.titulo)}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.categoria)}</td><td>${safeText(item.url)}</td><td>${safeText(item.descripcion)}</td><td><button class="btn btn-warning" onclick="cargarRecursoCapacitacion('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarRecursoCapacitacion('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function cargarRecursoCapacitacion(id){
+  const item=bibliotecaCapacitacion.find(row=>row.id===id);
+  if(!item)return;
+  document.getElementById('capRecursoId').value=item.id;
+  document.getElementById('capRecursoTitulo').value=item.titulo||'';
+  document.getElementById('capRecursoTipo').value=item.tipo||'Documento';
+  document.getElementById('capRecursoCategoria').value=item.categoria||'';
+  document.getElementById('capRecursoUrl').value=item.url||'';
+  document.getElementById('capRecursoDescripcion').value=item.descripcion||'';
+}
+
+function eliminarRecursoCapacitacion(id){
+  if(!confirm('Desea eliminar este recurso?'))return;
+  bibliotecaCapacitacion=bibliotecaCapacitacion.filter(item=>item.id!==id);
+  guardarStorage();
+  renderCapacitacion();
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -4767,6 +5209,7 @@ function renderRankingDesempeno(){
   renderNominaPanel();
   renderVacacionesLicencias();
   renderDesempeno();
+  renderCapacitacion();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
