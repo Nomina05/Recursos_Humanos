@@ -1632,65 +1632,50 @@ function imprimirAccionPersonal(){
   const emp=empleados.find(item=>item.codigo===empleadoPanelCodigo);
   if(!emp)return;
   const ruta=[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' > ');
+  const campo=(label,value,left,top,width=180,size=10)=>`<div class="field" style="left:${left}%;top:${top}%;width:${width}px;font-size:${size}px"><span>${safeText(label)}</span>${safeText(value||'')}</div>`;
   const html=`<!doctype html>
   <html lang="es">
   <head>
     <meta charset="utf-8">
     <title>Accion de Personal - ${safeText(emp.codigo)}</title>
     <style>
-      @page{size:letter;margin:14mm}
-      body{font-family:Arial,sans-serif;color:#111;margin:0}
-      .sheet{border:2px solid #111;padding:16px}
-      .header{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px}
-      .header h1{font-size:18px;margin:0;text-transform:uppercase}
-      .header p{margin:4px 0 0;font-size:12px}
-      .grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #111;border-left:1px solid #111}
-      .cell{min-height:42px;border-right:1px solid #111;border-bottom:1px solid #111;padding:6px;font-size:12px}
-      .cell.span2{grid-column:span 2}.cell.span3{grid-column:span 3}.cell.span4{grid-column:span 4}
-      .label{display:block;font-size:10px;text-transform:uppercase;color:#333;margin-bottom:4px}
-      .value{font-weight:bold;white-space:pre-wrap}
-      .section-title{background:#e5e7eb;font-weight:bold;text-transform:uppercase}
-      .signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:42px;text-align:center;font-size:12px}
-      .line{border-top:1px solid #111;padding-top:6px}
-      @media print{button{display:none}}
+      @page{size:letter;margin:0}
+      html,body{width:8.5in;height:11in;margin:0;background:#777;font-family:Arial,sans-serif;color:#111}
+      .page{position:relative;width:8.5in;height:11in;margin:0 auto;background:#fff;overflow:hidden}
+      .template{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1}
+      .overlay{position:absolute;inset:0;z-index:2;pointer-events:none}
+      .field{position:absolute;min-height:14px;font-weight:700;line-height:1.15;background:rgba(255,255,255,.78);padding:1px 3px;box-sizing:border-box}
+      .field span{display:block;font-size:7px;font-weight:400;text-transform:uppercase;color:#333}
+      .hint{position:fixed;right:12px;top:12px;z-index:3;background:#fff;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:12px}
+      @media print{html,body{background:#fff}.hint{display:none}.page{margin:0}.field{background:transparent}}
     </style>
   </head>
   <body>
-    <div class="sheet">
-      <div class="header">
-        <h1>Accion de Personal</h1>
-        <p>Formulario generado desde el Sistema de Recursos Humanos</p>
-      </div>
-      <div class="grid">
-        <div class="cell span4 section-title">Datos del empleado</div>
-        <div class="cell"><span class="label">Codigo</span><span class="value">${safeText(emp.codigo)}</span></div>
-        <div class="cell"><span class="label">Nombre</span><span class="value">${safeText(emp.nombre)} ${safeText(emp.apellido)}</span></div>
-        <div class="cell"><span class="label">${safeText(emp.tipoDocumento||'Cedula')}</span><span class="value">${safeText(emp.cedula)}</span></div>
-        <div class="cell"><span class="label">Estado</span><span class="value">${safeText(emp.estado)}</span></div>
-        <div class="cell span2"><span class="label">Cargo actual</span><span class="value">${safeText(emp.cargo)}</span></div>
-        <div class="cell"><span class="label">Salario actual</span><span class="value">${formatoNumero(emp.salario)}</span></div>
-        <div class="cell"><span class="label">Fecha ingreso</span><span class="value">${safeText(formatoFechaISO(emp.fechaIngreso))}</span></div>
-        <div class="cell span4"><span class="label">Estructura</span><span class="value">${safeText(ruta)}</span></div>
-        <div class="cell span2"><span class="label">Centro de servicio</span><span class="value">${safeText(emp.centroServicio)}</span></div>
-        <div class="cell span2"><span class="label">Cuenta banco</span><span class="value">${safeText(emp.cuentaBanco)}</span></div>
-
-        <div class="cell span4 section-title">Detalle de la accion</div>
-        <div class="cell"><span class="label">Tipo de accion</span><span class="value">${safeText(accionValor('accionTipo'))}</span></div>
-        <div class="cell"><span class="label">Fecha efectiva</span><span class="value">${safeText(formatoFechaISO(accionValor('accionFecha')))}</span></div>
-        <div class="cell span2"><span class="label">Motivo</span><span class="value">${safeText(accionValor('accionMotivo'))}</span></div>
-        <div class="cell span2"><span class="label">Puesto anterior</span><span class="value">${safeText(accionValor('accionPuestoAnterior'))}</span></div>
-        <div class="cell span2"><span class="label">Puesto nuevo</span><span class="value">${safeText(accionValor('accionPuestoNuevo'))}</span></div>
-        <div class="cell span2"><span class="label">Salario anterior</span><span class="value">${formatoNumero(accionValor('accionSalarioAnterior'))}</span></div>
-        <div class="cell span2"><span class="label">Salario nuevo</span><span class="value">${formatoNumero(accionValor('accionSalarioNuevo'))}</span></div>
-        <div class="cell span4"><span class="label">Observaciones</span><span class="value">${safeText(accionValor('accionObservaciones'))}</span></div>
-      </div>
-      <div class="signatures">
-        <div class="line">Preparado por</div>
-        <div class="line">Superior inmediato</div>
-        <div class="line">Recursos Humanos</div>
+    <div class="hint">Si los datos no caen exactamente sobre el formulario, ajusta escala/margenes de impresion a 100%.</div>
+    <div class="page">
+      <iframe class="template" src="accion_personal.pdf#toolbar=0&navpanes=0&scrollbar=0"></iframe>
+      <div class="overlay">
+        ${campo('Codigo',emp.codigo,8,16,90)}
+        ${campo('Fecha accion',formatoFechaISO(accionValor('accionFecha')),68,16,150)}
+        ${campo('Tipo accion',accionValor('accionTipo'),8,22,180)}
+        ${campo('Empleado',`${emp.nombre} ${emp.apellido}`,31,22,260)}
+        ${campo(emp.tipoDocumento||'Cedula',emp.cedula,68,22,160)}
+        ${campo('Cargo actual',emp.cargo,8,29,250)}
+        ${campo('Cargo anterior',accionValor('accionPuestoAnterior'),45,29,230)}
+        ${campo('Cargo nuevo',accionValor('accionPuestoNuevo'),8,36,250)}
+        ${campo('Salario anterior',formatoNumero(accionValor('accionSalarioAnterior')),45,36,160)}
+        ${campo('Salario nuevo',formatoNumero(accionValor('accionSalarioNuevo')),68,36,160)}
+        ${campo('Direccion',emp.direccion,8,44,220)}
+        ${campo('Departamento',emp.departamento,38,44,220)}
+        ${campo('Division / Seccion',[emp.division,emp.seccion].filter(Boolean).join(' / '),8,51,320)}
+        ${campo('Centro servicio',emp.centroServicio,52,51,220)}
+        ${campo('Fecha ingreso',formatoFechaISO(emp.fechaIngreso),8,58,140)}
+        ${campo('Estado',emp.estado,28,58,120)}
+        ${campo('Motivo',accionValor('accionMotivo'),8,66,520,9)}
+        ${campo('Observaciones',accionValor('accionObservaciones'),8,74,560,9)}
       </div>
     </div>
-    <script>window.onload=function(){window.print();};<\/script>
+    <script>window.onload=function(){setTimeout(function(){window.print();},900);};<\/script>
   </body>
   </html>`;
   const printWindow=window.open('','_blank');
