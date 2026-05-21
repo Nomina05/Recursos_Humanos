@@ -1821,10 +1821,41 @@
     </section>
 
     <section id="reportes" class="hidden">
-      <h1>Reportes</h1>
+      <h1>Panel de Reportes y Analitica</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Rotacion estimada</h3><p id="repRotacion">0%</p></div>
+        <div class="card presupuesto-consumido"><h3>Ausentismo</h3><p id="repAusentismo">0%</p></div>
+        <div class="card presupuesto-disponible"><h3>Costo nomina</h3><p id="repCostoNomina">RD$ 0</p></div>
+        <div class="card presupuesto-total"><h3>Productividad</h3><p id="repProductividad">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Dashboard analitico</h2>
+        <div class="charts">
+          <div class="chart-box">
+            <h4 style="margin:0 0 8px">Rotacion y ausentismo</h4>
+            <canvas id="graficoAnaliticaRotacion"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4 style="margin:0 0 8px">Costos y productividad</h4>
+            <canvas id="graficoAnaliticaRRHH"></canvas>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Indicador RRHH</th><th>Valor</th><th>Lectura</th></tr></thead>
+            <tbody id="tablaIndicadoresAnalitica"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Reportes dinamicos</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <select id="tipoReporte">
           <option value="">-- Seleccione reporte --</option>
+          <option value="analitica">Indicadores Analiticos RRHH</option>
           <option value="entradas">Entradas</option>
           <option value="salidas">Salidas</option>
           <option value="sustituciones">Comparativo Sustitucion/Interinato</option>
@@ -1854,6 +1885,7 @@
           <thead></thead>
           <tbody></tbody>
         </table>
+      </div>
       </div>
     </section>
 
@@ -1981,7 +2013,7 @@ let reconocimientosInternos=JSON.parse(localStorage.getItem('reconocimientosInte
 let reportesIA=JSON.parse(localStorage.getItem('reportesIA')||'[]');
 let ticketsSoporteRRHH=JSON.parse(localStorage.getItem('ticketsSoporteRRHH')||'[]');
 let configuracionSistema=JSON.parse(localStorage.getItem('configuracionSistema')||'{"empresa":{},"sucursales":[],"monedas":["DOP - Peso Dominicano"],"idiomas":["es-DO - Espanol"],"integraciones":[],"logs":[]}');
-let pieChart=null,barChart=null,circleChart=null;
+let pieChart=null,barChart=null,circleChart=null,analiticaRotacionChart=null,analiticaRRHHChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY3NsYWVtZHVoZ2NuaXZoa3F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NzcyMzMsImV4cCI6MjA5NDM1MzIzM30.7fxHJ0JtYAAzj3dP-QNUXCi21qxg5PRDuGhrAwAoYuY';
@@ -2107,6 +2139,7 @@ function showSection(id){
   if(id==='ia')renderIAAutomatizacion();
   if(id==='ess')renderAutoservicioEmpleado();
   if(id==='configuracion')renderConfiguracionSeguridad();
+  if(id==='reportes')renderAnaliticaReportes();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -4333,6 +4366,62 @@ function actualizarDashboard(){
   renderPayrollHistorySelect();
 }
 
+function calcularAnaliticaReportes(){
+  const vista=empleadosPermitidos();
+  const codigos=new Set(vista.map(emp=>emp.codigo));
+  const total=vista.length;
+  const activos=vista.filter(emp=>emp.estado!=='Inactivo').length;
+  const inactivos=vista.filter(emp=>emp.estado==='Inactivo').length;
+  const asistencias=asistenciasTiempo.filter(item=>codigos.has(item.empleadoCodigo));
+  const ausencias=asistencias.filter(item=>item.estado==='Ausente').length;
+  const tardanzas=asistencias.filter(item=>item.estado==='Tarde').length;
+  const horasExtra=asistencias.reduce((sum,item)=>sum+Number(item.horasExtra||0),0);
+  const costoNominaProcesada=nominaProcesada.filter(item=>codigos.has(item.empleadoCodigo)).reduce((sum,item)=>sum+Number(item.neto||item.bruto||0),0);
+  const costoNomina=costoNominaProcesada||vista.reduce((sum,emp)=>sum+calcularNominaEmpleado(emp),0);
+  const evaluaciones=evaluacionesDesempeno.filter(item=>codigos.has(item.empleadoCodigo));
+  const productividad=evaluaciones.length?evaluaciones.reduce((sum,item)=>sum+Number(item.resultado||0),0)/evaluaciones.length:0;
+  const rotacion=total?inactivos/total*100:0;
+  const ausentismo=asistencias.length?ausencias/asistencias.length*100:0;
+  const vacPend=vacacionesLicencias.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Pendiente').length;
+  const riesgoRotacion=analizarRotacionIA().filter(item=>item.riesgo==='Alto').length;
+  return {total,activos,inactivos,rotacion,ausentismo,costoNomina,productividad,asistencias,ausencias,tardanzas,horasExtra,vacPend,riesgoRotacion,evaluaciones};
+}
+
+function renderAnaliticaReportes(){
+  const a=calcularAnaliticaReportes();
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  set('repRotacion',a.rotacion.toFixed(1)+'%');
+  set('repAusentismo',a.ausentismo.toFixed(1)+'%');
+  set('repCostoNomina',formatoNumero(a.costoNomina));
+  set('repProductividad',a.productividad.toFixed(1));
+  const indicadores=[
+    ['Empleados activos',a.activos,'Base laboral visible para el usuario'],
+    ['Salidas / inactivos',a.inactivos,a.rotacion>=15?'Revisar rotacion':'Rotacion controlada'],
+    ['Ausencias registradas',a.ausencias,a.ausentismo>=10?'Ausentismo requiere seguimiento':'Ausentismo estable'],
+    ['Tardanzas registradas',a.tardanzas,a.tardanzas?'Comparar por unidad y turno':'Sin tardanzas registradas'],
+    ['Horas extras',a.horasExtra.toLocaleString('es-DO'),'Impacta costo de nomina'],
+    ['Evaluaciones disponibles',a.evaluaciones.length,a.productividad?'Productividad basada en desempeno':'Faltan evaluaciones'],
+    ['Solicitudes pendientes',a.vacPend,'Vacaciones, permisos o licencias por aprobar'],
+    ['Riesgo rotacion alto IA',a.riesgoRotacion,'Empleados con alertas combinadas']
+  ];
+  const tbody=document.getElementById('tablaIndicadoresAnalitica');
+  if(tbody)tbody.innerHTML=indicadores.map(([label,value,lectura])=>`<tr><td>${safeText(label)}</td><td>${safeText(value)}</td><td>${safeText(lectura)}</td></tr>`).join('');
+  if(window.Chart&&document.getElementById('graficoAnaliticaRotacion')){
+    if(analiticaRotacionChart)analiticaRotacionChart.destroy();
+    analiticaRotacionChart=new Chart(document.getElementById('graficoAnaliticaRotacion').getContext('2d'),{
+      type:'bar',
+      data:{labels:['Rotacion %','Ausentismo %','Tardanzas','Ausencias'],datasets:[{data:[a.rotacion,a.ausentismo,a.tardanzas,a.ausencias],backgroundColor:['#ef4444','#f97316','#3b82f6','#64748b']}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    });
+    if(analiticaRRHHChart)analiticaRRHHChart.destroy();
+    analiticaRRHHChart=new Chart(document.getElementById('graficoAnaliticaRRHH').getContext('2d'),{
+      type:'bar',
+      data:{labels:['Costo nomina / 1000','Productividad','Horas extra','Activos'],datasets:[{data:[a.costoNomina/1000,a.productividad,a.horasExtra,a.activos],backgroundColor:['#059669','#1d4ed8','#a855f7','#f59e0b']}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+    });
+  }
+}
+
 function generarReporte(){
   const tipo=document.getElementById('tipoReporte').value;
   if(!tipo)return alert('Seleccione un tipo de reporte.');
@@ -4347,7 +4436,20 @@ function generarReporte(){
   const datosBase=emp=>`<td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre)}</td><td>${safeText(emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.grupoOcupacional||'')}</td><td>${safeText(emp.cargo)}</td>`;
   const datosOrg=emp=>`<td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td>${safeText(emp.fondo||'')}</td><td>${safeText(emp.programa||'')}</td><td>${safeText(emp.subProg||'')}</td><td>${safeText(emp.actividad||'')}</td><td>${safeText(emp.recomendado)}</td>`;
 
-  if(tipo==='entradas'){
+  if(tipo==='analitica'){
+    thead.innerHTML='<tr><th>Indicador</th><th>Valor</th><th>Detalle</th></tr>';
+    const a=calcularAnaliticaReportes();
+    [
+      ['Total empleados',a.total,'Empleados visibles en el alcance actual'],
+      ['Activos',a.activos,'Empleados activos'],
+      ['Rotacion estimada',a.rotacion.toFixed(1)+'%','Inactivos sobre total visible'],
+      ['Ausentismo',a.ausentismo.toFixed(1)+'%','Ausencias sobre registros de asistencia'],
+      ['Costo nomina',formatoNumero(a.costoNomina),'Neto procesado o salario vigente'],
+      ['Productividad',a.productividad.toFixed(1),'Promedio de evaluaciones'],
+      ['Horas extras',a.horasExtra,'Horas registradas'],
+      ['Solicitudes pendientes',a.vacPend,'Vacaciones, licencias o permisos']
+    ].forEach(row=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(row[0])}</td><td>${safeText(row[1])}</td><td>${safeText(row[2])}</td></tr>`));
+  }else if(tipo==='entradas'){
     thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Monto Aumento</th><th>% Aumento</th><th>Fecha Aumento</th><th>Fecha de Entrada</th><th>Tipo de Entrada</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Fondo</th><th>Programa</th><th>SubProg</th><th>Actividad</th><th>Recomendacion</th><th>Nota</th></tr>';
     empleadosReporte.forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${emp.tipoIngreso==='Aumento'?formatoNumero(emp.montoAumento||calcularImpactoPresupuesto(emp)):''}</td><td>${emp.tipoIngreso==='Aumento'?safeText(emp.porcentajeAumento||''):''}</td><td>${safeText(formatoFechaISO(emp.fechaAumento))}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(emp.tipoIngreso)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`));
   }else if(tipo==='salidas'){
@@ -7205,6 +7307,7 @@ function exportarBackupLocal(){
   renderIAAutomatizacion();
   renderAutoservicioEmpleado();
   renderConfiguracionSeguridad();
+  renderAnaliticaReportes();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
