@@ -110,6 +110,7 @@
     <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
     <a id="menu-beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
     <a id="menu-disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
+    <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -189,6 +190,7 @@
           <button class="btn btn-secondary" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i> Capacitacion</button>
           <button class="btn btn-secondary" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i> Beneficios</button>
           <button class="btn btn-secondary" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i> Disciplinario</button>
+          <button class="btn btn-secondary" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i> Comunicacion</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1369,6 +1371,108 @@
       </div>
     </section>
 
+    <section id="comunicacion" class="hidden">
+      <h1>Panel de Comunicacion Interna</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Publicaciones activas</h3><p id="comPublicacionesActivas">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Encuestas abiertas</h3><p id="comEncuestasAbiertas">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Mensajes internos</h3><p id="comMensajesTotal">0</p></div>
+        <div class="card presupuesto-total"><h3>Reconocimientos</h3><p id="comReconocimientosTotal">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Noticias internas, anuncios y notificaciones push</h2>
+        <form id="formPublicacionInterna" novalidate>
+          <input type="hidden" id="comPublicacionId">
+          <select id="comPublicacionTipo">
+            <option>Noticia interna</option>
+            <option>Anuncio</option>
+            <option>Correo masivo</option>
+            <option>Notificacion push</option>
+          </select>
+          <input id="comPublicacionTitulo" placeholder="Titulo" required>
+          <select id="comPublicacionAudiencia">
+            <option>Todos</option>
+            <option>Direccion</option>
+            <option>Departamento</option>
+            <option>Solo RRHH</option>
+          </select>
+          <input id="comPublicacionFecha" type="date">
+          <select id="comPublicacionEstado">
+            <option>Publicado</option>
+            <option>Borrador</option>
+            <option>Programado</option>
+            <option>Archivado</option>
+          </select>
+          <textarea id="comPublicacionContenido" placeholder="Contenido del comunicado"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar publicacion</button>
+            <button class="btn" type="button" onclick="limpiarPublicacionInterna()">Nueva</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Tipo</th><th>Titulo</th><th>Audiencia</th><th>Estado</th><th>Contenido</th><th>Accion</th></tr></thead>
+            <tbody id="tablaPublicacionesInternas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Chat interno, foros y encuestas</h2>
+        <form id="formMensajeInterno" novalidate>
+          <input type="hidden" id="comMensajeId">
+          <select id="comMensajeEmpleado" required></select>
+          <select id="comMensajeTipo">
+            <option>Chat interno</option>
+            <option>Foro</option>
+            <option>Encuesta</option>
+          </select>
+          <input id="comMensajeCanal" placeholder="Canal / foro / tema">
+          <input id="comMensajeFecha" type="date">
+          <select id="comMensajeEstado">
+            <option>Abierto</option>
+            <option>Respondido</option>
+            <option>Cerrado</option>
+          </select>
+          <textarea id="comMensajeContenido" placeholder="Mensaje, pregunta de encuesta o comentario"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar mensaje</button>
+            <button class="btn" type="button" onclick="limpiarMensajeInterno()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Empleado</th><th>Tipo</th><th>Canal</th><th>Estado</th><th>Contenido</th><th>Accion</th></tr></thead>
+            <tbody id="tablaMensajesInternos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Reconocimientos</h2>
+        <form id="formReconocimientoInterno" novalidate>
+          <input type="hidden" id="comReconocimientoId">
+          <select id="comReconocimientoEmpleado" required></select>
+          <input id="comReconocimientoTitulo" placeholder="Titulo del reconocimiento" required>
+          <input id="comReconocimientoOtorgadoPor" placeholder="Otorgado por">
+          <input id="comReconocimientoFecha" type="date">
+          <textarea id="comReconocimientoMotivo" placeholder="Motivo del reconocimiento"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar reconocimiento</button>
+            <button class="btn" type="button" onclick="limpiarReconocimientoInterno()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Empleado</th><th>Reconocimiento</th><th>Otorgado por</th><th>Motivo</th><th>Accion</th></tr></thead>
+            <tbody id="tablaReconocimientosInternos"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1386,6 +1490,7 @@
           <option value="capacitacion">Capacitacion y Desarrollo</option>
           <option value="beneficios">Beneficios y Compensaciones</option>
           <option value="disciplinario">Disciplinario y Legal</option>
+          <option value="comunicacion">Comunicacion Interna</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1519,6 +1624,9 @@ let planesCompensacion=JSON.parse(localStorage.getItem('planesCompensacion')||'[
 let casosDisciplinarios=JSON.parse(localStorage.getItem('casosDisciplinarios')||'[]');
 let politicasDisciplinarias=JSON.parse(localStorage.getItem('politicasDisciplinarias')||'[]');
 let firmasReglamentos=JSON.parse(localStorage.getItem('firmasReglamentos')||'[]');
+let publicacionesInternas=JSON.parse(localStorage.getItem('publicacionesInternas')||'[]');
+let mensajesInternos=JSON.parse(localStorage.getItem('mensajesInternos')||'[]');
+let reconocimientosInternos=JSON.parse(localStorage.getItem('reconocimientosInternos')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1640,6 +1748,7 @@ function showSection(id){
   if(id==='capacitacion')renderCapacitacion();
   if(id==='beneficios')renderBeneficiosCompensaciones();
   if(id==='disciplinario')renderDisciplinarioLegal();
+  if(id==='comunicacion')renderComunicacionInterna();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1679,6 +1788,9 @@ function guardarStorage(){
   localStorage.setItem('casosDisciplinarios',JSON.stringify(casosDisciplinarios));
   localStorage.setItem('politicasDisciplinarias',JSON.stringify(politicasDisciplinarias));
   localStorage.setItem('firmasReglamentos',JSON.stringify(firmasReglamentos));
+  localStorage.setItem('publicacionesInternas',JSON.stringify(publicacionesInternas));
+  localStorage.setItem('mensajesInternos',JSON.stringify(mensajesInternos));
+  localStorage.setItem('reconocimientosInternos',JSON.stringify(reconocimientosInternos));
 }
 
 function guardarPresupuesto(){
@@ -3948,6 +4060,11 @@ function generarReporte(){
     casosDisciplinariosVisibles().forEach(item=>{
       tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.gravedad)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.reportadoPor)}</td><td>${safeText(item.descripcion)}</td><td>${safeText(item.accionTomada)}</td></tr>`);
     });
+  }else if(tipo==='comunicacion'){
+    thead.innerHTML='<tr><th>Fecha</th><th>Tipo</th><th>Titulo/Canal</th><th>Empleado/Audiencia</th><th>Estado</th><th>Contenido</th></tr>';
+    publicacionesInternas.forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.titulo)}</td><td>${safeText(item.audiencia)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.contenido)}</td></tr>`));
+    mensajesInternosVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.canal)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.contenido)}</td></tr>`));
+    reconocimientosVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>Reconocimiento</td><td>${safeText(item.titulo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.otorgadoPor)}</td><td>${safeText(item.motivo)}</td></tr>`));
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -5806,6 +5923,222 @@ function eliminarFirmaReglamento(id){
   renderDisciplinarioLegal();
 }
 
+function crearIdComunicacion(prefix='COM'){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function mensajesInternosVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return mensajesInternos.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function reconocimientosVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return reconocimientosInternos.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function renderSelectsComunicacion(){
+  ['comMensajeEmpleado','comReconocimientoEmpleado'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const actual=sel.value;
+    sel.innerHTML='<option value="">Empleado</option>';
+    empleadosPermitidos()
+      .filter(emp=>emp.estado!=='Inactivo')
+      .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+      .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+    if(actual&&Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+  });
+}
+
+function renderComunicacionInterna(){
+  renderSelectsComunicacion();
+  renderPublicacionesInternas();
+  renderMensajesInternos();
+  renderReconocimientosInternos();
+  document.getElementById('comPublicacionesActivas').textContent=publicacionesInternas.filter(item=>['Publicado','Programado'].includes(item.estado)).length;
+  document.getElementById('comEncuestasAbiertas').textContent=mensajesInternosVisibles().filter(item=>item.tipo==='Encuesta'&&item.estado==='Abierto').length;
+  document.getElementById('comMensajesTotal').textContent=mensajesInternosVisibles().length;
+  document.getElementById('comReconocimientosTotal').textContent=reconocimientosVisibles().length;
+  if(!document.getElementById('comPublicacionFecha').value)document.getElementById('comPublicacionFecha').value=fechaHoyISO();
+  if(!document.getElementById('comMensajeFecha').value)document.getElementById('comMensajeFecha').value=fechaHoyISO();
+  if(!document.getElementById('comReconocimientoFecha').value)document.getElementById('comReconocimientoFecha').value=fechaHoyISO();
+}
+
+function limpiarPublicacionInterna(){
+  document.getElementById('formPublicacionInterna').reset();
+  document.getElementById('comPublicacionId').value='';
+  document.getElementById('comPublicacionFecha').value=fechaHoyISO();
+  document.getElementById('comPublicacionEstado').value='Publicado';
+}
+
+document.getElementById('formPublicacionInterna').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('comPublicacionId').value||crearIdComunicacion('PUB');
+  const titulo=document.getElementById('comPublicacionTitulo').value.trim();
+  if(!titulo){alert('Indique el titulo.');return;}
+  const item={
+    id,
+    tipo:document.getElementById('comPublicacionTipo').value,
+    titulo,
+    audiencia:document.getElementById('comPublicacionAudiencia').value,
+    fecha:document.getElementById('comPublicacionFecha').value||fechaHoyISO(),
+    estado:document.getElementById('comPublicacionEstado').value,
+    contenido:document.getElementById('comPublicacionContenido').value
+  };
+  const idx=publicacionesInternas.findIndex(row=>row.id===id);
+  if(idx>=0)publicacionesInternas[idx]=item;else publicacionesInternas.push(item);
+  guardarStorage();
+  limpiarPublicacionInterna();
+  renderComunicacionInterna();
+});
+
+function renderPublicacionesInternas(){
+  const tbody=document.getElementById('tablaPublicacionesInternas');
+  if(!tbody)return;
+  tbody.innerHTML=publicacionesInternas
+    .slice()
+    .sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.titulo)}</td><td>${safeText(item.audiencia)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.contenido)}</td><td><button class="btn btn-warning" onclick="cargarPublicacionInterna('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarPublicacionInterna('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarPublicacionInterna(id){
+  const item=publicacionesInternas.find(row=>row.id===id);
+  if(!item)return;
+  document.getElementById('comPublicacionId').value=item.id;
+  document.getElementById('comPublicacionTipo').value=item.tipo||'Noticia interna';
+  document.getElementById('comPublicacionTitulo').value=item.titulo||'';
+  document.getElementById('comPublicacionAudiencia').value=item.audiencia||'Todos';
+  document.getElementById('comPublicacionFecha').value=item.fecha||'';
+  document.getElementById('comPublicacionEstado').value=item.estado||'Publicado';
+  document.getElementById('comPublicacionContenido').value=item.contenido||'';
+}
+
+function eliminarPublicacionInterna(id){
+  if(!confirm('Desea eliminar esta publicacion?'))return;
+  publicacionesInternas=publicacionesInternas.filter(item=>item.id!==id);
+  guardarStorage();
+  renderComunicacionInterna();
+}
+
+function limpiarMensajeInterno(){
+  document.getElementById('formMensajeInterno').reset();
+  document.getElementById('comMensajeId').value='';
+  document.getElementById('comMensajeFecha').value=fechaHoyISO();
+  document.getElementById('comMensajeEstado').value='Abierto';
+  renderSelectsComunicacion();
+}
+
+document.getElementById('formMensajeInterno').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('comMensajeId').value||crearIdComunicacion('MSG');
+  const empleadoCodigo=document.getElementById('comMensajeEmpleado').value;
+  if(!empleadoCodigo){alert('Seleccione el empleado.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    tipo:document.getElementById('comMensajeTipo').value,
+    canal:document.getElementById('comMensajeCanal').value.trim(),
+    fecha:document.getElementById('comMensajeFecha').value||fechaHoyISO(),
+    estado:document.getElementById('comMensajeEstado').value,
+    contenido:document.getElementById('comMensajeContenido').value
+  };
+  const idx=mensajesInternos.findIndex(row=>row.id===id);
+  if(idx>=0)mensajesInternos[idx]=item;else mensajesInternos.push(item);
+  guardarStorage();
+  limpiarMensajeInterno();
+  renderComunicacionInterna();
+});
+
+function renderMensajesInternos(){
+  const tbody=document.getElementById('tablaMensajesInternos');
+  if(!tbody)return;
+  tbody.innerHTML=mensajesInternosVisibles()
+    .slice()
+    .sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.canal)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.contenido)}</td><td><button class="btn btn-warning" onclick="cargarMensajeInterno('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarMensajeInterno('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarMensajeInterno(id){
+  const item=mensajesInternos.find(row=>row.id===id);
+  if(!item)return;
+  renderSelectsComunicacion();
+  document.getElementById('comMensajeId').value=item.id;
+  document.getElementById('comMensajeEmpleado').value=item.empleadoCodigo;
+  document.getElementById('comMensajeTipo').value=item.tipo||'Chat interno';
+  document.getElementById('comMensajeCanal').value=item.canal||'';
+  document.getElementById('comMensajeFecha').value=item.fecha||'';
+  document.getElementById('comMensajeEstado').value=item.estado||'Abierto';
+  document.getElementById('comMensajeContenido').value=item.contenido||'';
+}
+
+function eliminarMensajeInterno(id){
+  if(!confirm('Desea eliminar este mensaje?'))return;
+  mensajesInternos=mensajesInternos.filter(item=>item.id!==id);
+  guardarStorage();
+  renderComunicacionInterna();
+}
+
+function limpiarReconocimientoInterno(){
+  document.getElementById('formReconocimientoInterno').reset();
+  document.getElementById('comReconocimientoId').value='';
+  document.getElementById('comReconocimientoFecha').value=fechaHoyISO();
+  renderSelectsComunicacion();
+}
+
+document.getElementById('formReconocimientoInterno').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('comReconocimientoId').value||crearIdComunicacion('REC');
+  const empleadoCodigo=document.getElementById('comReconocimientoEmpleado').value;
+  const titulo=document.getElementById('comReconocimientoTitulo').value.trim();
+  if(!empleadoCodigo||!titulo){alert('Seleccione empleado e indique el reconocimiento.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    titulo,
+    otorgadoPor:document.getElementById('comReconocimientoOtorgadoPor').value.trim(),
+    fecha:document.getElementById('comReconocimientoFecha').value||fechaHoyISO(),
+    motivo:document.getElementById('comReconocimientoMotivo').value
+  };
+  const idx=reconocimientosInternos.findIndex(row=>row.id===id);
+  if(idx>=0)reconocimientosInternos[idx]=item;else reconocimientosInternos.push(item);
+  guardarStorage();
+  limpiarReconocimientoInterno();
+  renderComunicacionInterna();
+});
+
+function renderReconocimientosInternos(){
+  const tbody=document.getElementById('tablaReconocimientosInternos');
+  if(!tbody)return;
+  tbody.innerHTML=reconocimientosVisibles()
+    .slice()
+    .sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.titulo)}</td><td>${safeText(item.otorgadoPor)}</td><td>${safeText(item.motivo)}</td><td><button class="btn btn-warning" onclick="cargarReconocimientoInterno('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarReconocimientoInterno('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarReconocimientoInterno(id){
+  const item=reconocimientosInternos.find(row=>row.id===id);
+  if(!item)return;
+  renderSelectsComunicacion();
+  document.getElementById('comReconocimientoId').value=item.id;
+  document.getElementById('comReconocimientoEmpleado').value=item.empleadoCodigo;
+  document.getElementById('comReconocimientoTitulo').value=item.titulo||'';
+  document.getElementById('comReconocimientoOtorgadoPor').value=item.otorgadoPor||'';
+  document.getElementById('comReconocimientoFecha').value=item.fecha||'';
+  document.getElementById('comReconocimientoMotivo').value=item.motivo||'';
+}
+
+function eliminarReconocimientoInterno(id){
+  if(!confirm('Desea eliminar este reconocimiento?'))return;
+  reconocimientosInternos=reconocimientosInternos.filter(item=>item.id!==id);
+  guardarStorage();
+  renderComunicacionInterna();
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -5837,6 +6170,7 @@ function eliminarFirmaReglamento(id){
   renderCapacitacion();
   renderBeneficiosCompensaciones();
   renderDisciplinarioLegal();
+  renderComunicacionInterna();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
