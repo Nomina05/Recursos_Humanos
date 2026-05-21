@@ -102,6 +102,7 @@
     <a id="menu-dashboard" class="active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
     <a id="menu-registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
     <a id="menu-empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Empleados</a>
+    <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -173,6 +174,7 @@
         <div class="quick-actions">
           <button class="btn btn-primary" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i> Registrar empleado</button>
           <button class="btn btn-secondary" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i> Ver empleados</button>
+          <button class="btn btn-secondary" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i> Reclutamiento</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -564,6 +566,86 @@
       </div>
     </section>
 
+    <section id="reclutamiento" class="hidden">
+      <h1>Panel de Reclutamiento y Seleccion</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Vacantes abiertas</h3><p id="recVacantesAbiertas">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Candidatos activos</h3><p id="recCandidatosActivos">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Entrevistas pendientes</h3><p id="recEntrevistasPendientes">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Publicacion de vacantes</h2>
+        <form id="formVacante" novalidate>
+          <input type="hidden" id="vacanteId">
+          <input id="vacanteTitulo" placeholder="Titulo de la vacante" required>
+          <select id="vacanteEstado"><option>Abierta</option><option>Pausada</option><option>Cerrada</option></select>
+          <select id="vacanteCargo"></select>
+          <select id="vacanteUnidad"></select>
+          <input id="vacanteFechaPublicacion" type="date">
+          <input id="vacanteFechaCierre" type="date">
+          <textarea id="vacanteDescripcion" placeholder="Descripcion / requisitos"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar vacante</button>
+            <button class="btn" type="button" onclick="limpiarVacante()">Nueva</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table><thead><tr><th>Vacante</th><th>Cargo</th><th>Unidad</th><th>Estado</th><th>Publicacion</th><th>Cierre</th><th>Accion</th></tr></thead><tbody id="tablaVacantes"></tbody></table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Portal de empleo y banco de candidatos</h2>
+        <form id="formCandidato" novalidate>
+          <input type="hidden" id="candidatoId">
+          <input id="candidatoNombre" placeholder="Nombre completo" required>
+          <input id="candidatoDocumento" placeholder="Cedula / pasaporte">
+          <input id="candidatoCorreo" type="email" placeholder="Correo">
+          <input id="candidatoTelefono" placeholder="Telefono">
+          <select id="candidatoVacante"></select>
+          <select id="candidatoEtapa">
+            <option>CV recibido</option><option>Preseleccion</option><option>Entrevista</option><option>Evaluacion tecnica</option><option>Prueba psicometrica</option><option>Oferta</option><option>Contratado</option><option>Descartado</option><option>Onboarding</option>
+          </select>
+          <input id="candidatoCv" placeholder="CV / enlace o referencia">
+          <textarea id="candidatoNotas" placeholder="Notas del candidato"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar candidato</button>
+            <button class="btn" type="button" onclick="limpiarCandidato()">Nuevo</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table><thead><tr><th>Candidato</th><th>Documento</th><th>Contacto</th><th>Vacante</th><th>Etapa</th><th>CV</th><th>Accion</th></tr></thead><tbody id="tablaCandidatos"></tbody></table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Entrevistas, evaluaciones y contratacion</h2>
+        <form id="formEvaluacionCandidato" novalidate>
+          <select id="evalCandidato"></select>
+          <input id="evalFechaEntrevista" type="date">
+          <input id="evalEntrevistador" placeholder="Entrevistador">
+          <input id="evalTecnica" type="number" min="0" max="100" placeholder="Evaluacion tecnica">
+          <input id="evalPsicometrica" type="number" min="0" max="100" placeholder="Prueba psicometrica">
+          <input id="evalEntrevista" type="number" min="0" max="100" placeholder="Evaluacion entrevista">
+          <select id="evalDecision"><option>Pendiente</option><option>Recomendado</option><option>No recomendado</option><option>Contratar</option></select>
+          <input id="evalOferta" placeholder="Carta de oferta / referencia">
+          <textarea id="evalOnboarding" placeholder="Onboarding / tareas iniciales"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar evaluacion</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Pipeline de candidatos</h2>
+        <div class="table-wrap">
+          <table><thead><tr><th>Etapa</th><th>Candidatos</th></tr></thead><tbody id="tablaPipeline"></tbody></table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -685,6 +767,8 @@ let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||'';
 let empleadoPanelCodigo='';
 let reporteCache={headers:[],rows:[]};
 let novedadesCorreccion=JSON.parse(localStorage.getItem('novedadesCorreccion')||'[]');
+let vacantes=JSON.parse(localStorage.getItem('vacantesReclutamiento')||'[]');
+let candidatos=JSON.parse(localStorage.getItem('candidatosReclutamiento')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -798,6 +882,7 @@ function showSection(id){
   if(id==='dashboard')actualizarDashboard();
   if(id==='registro')actualizarSelectsEmpleado();
   if(id==='empleados')renderEmpleados();
+  if(id==='reclutamiento')renderReclutamiento();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -815,6 +900,8 @@ function guardarStorage(){
   localStorage.setItem('gruposOcupacionalesCatalogo',JSON.stringify(gruposOcupacionales));
   localStorage.setItem('centrosServicioCatalogo',JSON.stringify(centrosServicio));
   localStorage.setItem('novedadesCorreccion',JSON.stringify(novedadesCorreccion));
+  localStorage.setItem('vacantesReclutamiento',JSON.stringify(vacantes));
+  localStorage.setItem('candidatosReclutamiento',JSON.stringify(candidatos));
 }
 
 function guardarPresupuesto(){
@@ -3098,6 +3185,182 @@ function limpiarFormulario(){
   cerrarPanelEmpleado();
 }
 
+function crearIdReclutamiento(prefix){
+  return prefix+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function opcionesCargosPlano(){
+  return gruposOcupacionales.flatMap(grupo=>grupo.cargos).sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function renderSelectsReclutamiento(){
+  setSelectValores('vacanteCargo',opcionesCargosPlano(),'Cargo');
+  const unidadSel=document.getElementById('vacanteUnidad');
+  const actualUnidad=unidadSel.value;
+  unidadSel.innerHTML='<option value="">Unidad solicitante</option>';
+  estructuraOrganizacional.slice().sort((a,b)=>rutaUnidad(a).localeCompare(b,'es')).forEach(unidad=>{
+    unidadSel.insertAdjacentHTML('beforeend',`<option value="${safeText(unidad.id)}">${safeText(rutaUnidad(unidad))}</option>`);
+  });
+  if(estructuraOrganizacional.some(unidad=>unidad.id===actualUnidad))unidadSel.value=actualUnidad;
+  const vacanteOpts=vacantes.filter(v=>v.estado!=='Cerrada');
+  setSelectOptions('candidatoVacante',vacanteOpts,'Vacante',item=>item.id,item=>item.titulo);
+  setSelectOptions('evalCandidato',candidatos,'Candidato',item=>item.id,item=>`${item.nombre} - ${item.etapa}`);
+}
+
+function renderReclutamiento(){
+  renderSelectsReclutamiento();
+  renderVacantes();
+  renderCandidatos();
+  renderPipeline();
+  document.getElementById('recVacantesAbiertas').textContent=vacantes.filter(v=>v.estado==='Abierta').length;
+  document.getElementById('recCandidatosActivos').textContent=candidatos.filter(c=>!['Contratado','Descartado'].includes(c.etapa)).length;
+  document.getElementById('recEntrevistasPendientes').textContent=candidatos.filter(c=>c.etapa==='Entrevista'&&!c.fechaEntrevista).length;
+}
+
+function limpiarVacante(){
+  document.getElementById('formVacante').reset();
+  document.getElementById('vacanteId').value='';
+  document.getElementById('vacanteFechaPublicacion').value=new Date().toISOString().slice(0,10);
+}
+
+document.getElementById('formVacante').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('vacanteId').value||crearIdReclutamiento('VAC');
+  const vacante={
+    id,
+    titulo:document.getElementById('vacanteTitulo').value.trim(),
+    estado:document.getElementById('vacanteEstado').value,
+    cargo:document.getElementById('vacanteCargo').value,
+    unidadId:document.getElementById('vacanteUnidad').value,
+    fechaPublicacion:document.getElementById('vacanteFechaPublicacion').value,
+    fechaCierre:document.getElementById('vacanteFechaCierre').value,
+    descripcion:document.getElementById('vacanteDescripcion').value
+  };
+  if(!vacante.titulo){alert('Indique el titulo de la vacante.');return;}
+  const idx=vacantes.findIndex(item=>item.id===id);
+  if(idx>=0)vacantes[idx]=vacante;else vacantes.push(vacante);
+  guardarStorage();
+  limpiarVacante();
+  renderReclutamiento();
+});
+
+function renderVacantes(){
+  const tbody=document.getElementById('tablaVacantes');
+  if(!tbody)return;
+  tbody.innerHTML=vacantes.map(v=>{
+    const unidad=buscarUnidad(v.unidadId);
+    return `<tr><td>${safeText(v.titulo)}</td><td>${safeText(v.cargo)}</td><td>${safeText(rutaUnidad(unidad))}</td><td>${safeText(v.estado)}</td><td>${safeText(formatoFechaISO(v.fechaPublicacion))}</td><td>${safeText(formatoFechaISO(v.fechaCierre))}</td><td><button class="btn btn-warning" onclick="cargarVacante('${safeText(v.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarVacante('${safeText(v.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+  }).join('');
+}
+
+function cargarVacante(id){
+  const v=vacantes.find(item=>item.id===id);
+  if(!v)return;
+  document.getElementById('vacanteId').value=v.id;
+  document.getElementById('vacanteTitulo').value=v.titulo||'';
+  document.getElementById('vacanteEstado').value=v.estado||'Abierta';
+  document.getElementById('vacanteCargo').value=v.cargo||'';
+  document.getElementById('vacanteUnidad').value=v.unidadId||'';
+  document.getElementById('vacanteFechaPublicacion').value=v.fechaPublicacion||'';
+  document.getElementById('vacanteFechaCierre').value=v.fechaCierre||'';
+  document.getElementById('vacanteDescripcion').value=v.descripcion||'';
+}
+
+function eliminarVacante(id){
+  if(candidatos.some(c=>c.vacanteId===id)){alert('No puede eliminar una vacante con candidatos asociados.');return;}
+  if(!confirm('Desea eliminar esta vacante?'))return;
+  vacantes=vacantes.filter(v=>v.id!==id);
+  guardarStorage();
+  renderReclutamiento();
+}
+
+function limpiarCandidato(){
+  document.getElementById('formCandidato').reset();
+  document.getElementById('candidatoId').value='';
+}
+
+document.getElementById('formCandidato').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('candidatoId').value||crearIdReclutamiento('CAN');
+  const candidato={
+    id,
+    nombre:document.getElementById('candidatoNombre').value.trim(),
+    documento:document.getElementById('candidatoDocumento').value.trim(),
+    correo:document.getElementById('candidatoCorreo').value.trim(),
+    telefono:document.getElementById('candidatoTelefono').value.trim(),
+    vacanteId:document.getElementById('candidatoVacante').value,
+    etapa:document.getElementById('candidatoEtapa').value,
+    cv:document.getElementById('candidatoCv').value.trim(),
+    notas:document.getElementById('candidatoNotas').value
+  };
+  if(!candidato.nombre){alert('Indique el nombre del candidato.');return;}
+  const idx=candidatos.findIndex(item=>item.id===id);
+  if(idx>=0)candidatos[idx]={...candidatos[idx],...candidato};else candidatos.push(candidato);
+  guardarStorage();
+  limpiarCandidato();
+  renderReclutamiento();
+});
+
+function renderCandidatos(){
+  const tbody=document.getElementById('tablaCandidatos');
+  if(!tbody)return;
+  tbody.innerHTML=candidatos.map(c=>{
+    const vacante=vacantes.find(v=>v.id===c.vacanteId);
+    return `<tr><td>${safeText(c.nombre)}</td><td>${safeText(c.documento)}</td><td>${safeText([c.correo,c.telefono].filter(Boolean).join(' / '))}</td><td>${safeText(vacante?.titulo||'Banco de candidatos')}</td><td>${safeText(c.etapa)}</td><td>${safeText(c.cv)}</td><td><button class="btn btn-warning" onclick="cargarCandidato('${safeText(c.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarCandidato('${safeText(c.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+  }).join('');
+}
+
+function cargarCandidato(id){
+  const c=candidatos.find(item=>item.id===id);
+  if(!c)return;
+  document.getElementById('candidatoId').value=c.id;
+  document.getElementById('candidatoNombre').value=c.nombre||'';
+  document.getElementById('candidatoDocumento').value=c.documento||'';
+  document.getElementById('candidatoCorreo').value=c.correo||'';
+  document.getElementById('candidatoTelefono').value=c.telefono||'';
+  document.getElementById('candidatoVacante').value=c.vacanteId||'';
+  document.getElementById('candidatoEtapa').value=c.etapa||'CV recibido';
+  document.getElementById('candidatoCv').value=c.cv||'';
+  document.getElementById('candidatoNotas').value=c.notas||'';
+  document.getElementById('evalCandidato').value=c.id;
+}
+
+function eliminarCandidato(id){
+  if(!confirm('Desea eliminar este candidato?'))return;
+  candidatos=candidatos.filter(c=>c.id!==id);
+  guardarStorage();
+  renderReclutamiento();
+}
+
+document.getElementById('formEvaluacionCandidato').addEventListener('submit',event=>{
+  event.preventDefault();
+  const candidato=candidatos.find(c=>c.id===document.getElementById('evalCandidato').value);
+  if(!candidato){alert('Seleccione un candidato.');return;}
+  candidato.fechaEntrevista=document.getElementById('evalFechaEntrevista').value;
+  candidato.entrevistador=document.getElementById('evalEntrevistador').value;
+  candidato.evaluacionTecnica=Number(document.getElementById('evalTecnica').value)||'';
+  candidato.pruebaPsicometrica=Number(document.getElementById('evalPsicometrica').value)||'';
+  candidato.evaluacionEntrevista=Number(document.getElementById('evalEntrevista').value)||'';
+  candidato.decision=document.getElementById('evalDecision').value;
+  candidato.cartaOferta=document.getElementById('evalOferta').value;
+  candidato.onboarding=document.getElementById('evalOnboarding').value;
+  if(candidato.decision==='Contratar')candidato.etapa='Contratado';
+  if(candidato.decision==='Recomendado')candidato.etapa='Oferta';
+  guardarStorage();
+  document.getElementById('formEvaluacionCandidato').reset();
+  renderReclutamiento();
+});
+
+function renderPipeline(){
+  const tbody=document.getElementById('tablaPipeline');
+  if(!tbody)return;
+  const etapas=['CV recibido','Preseleccion','Entrevista','Evaluacion tecnica','Prueba psicometrica','Oferta','Contratado','Descartado','Onboarding'];
+  tbody.innerHTML=etapas.map(etapa=>{
+    const lista=candidatos.filter(c=>c.etapa===etapa).map(c=>c.nombre).join(', ');
+    return `<tr><td>${safeText(etapa)}</td><td>${safeText(lista||'Sin candidatos')}</td></tr>`;
+  }).join('');
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -3121,6 +3384,7 @@ function limpiarFormulario(){
   renderEmpleados();
   renderNovedades();
   renderNotificacionesCorreccion();
+  renderReclutamiento();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
