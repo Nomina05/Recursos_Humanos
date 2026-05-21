@@ -117,6 +117,7 @@
     <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
     <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
     <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
+    <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
     <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
     <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
     <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
@@ -776,6 +777,13 @@
       <h1>Solicitudes de Compras</h1>
       <div class="dashboard-section">
         <iframe class="module-frame" src="solicitudes_compras.html?embedded=1" title="Solicitudes de Compras"></iframe>
+      </div>
+    </section>
+
+    <section id="almacen" class="hidden">
+      <h1>Solicitudes a Almacen</h1>
+      <div class="dashboard-section">
+        <iframe class="module-frame" src="solicitudes_almacen.html?embedded=1" title="Solicitudes a Almacen"></iframe>
       </div>
     </section>
 
@@ -2076,7 +2084,8 @@ const MODULOS_USUARIO=[
     {id:'reportes',nombre:'Reportes y analitica'}
   ]},
   {grupo:'Otras areas',modulos:[
-    {id:'compras',nombre:'Solicitudes de Compras'}
+    {id:'compras',nombre:'Solicitudes de Compras'},
+    {id:'almacen',nombre:'Solicitudes a Almacen'}
   ]},
   {grupo:'Colaboracion',modulos:[
     {id:'comunicacion',nombre:'Comunicacion interna'},
