@@ -62,6 +62,7 @@
   .module-check input{margin:0;padding:0}
   .module-check span{line-height:1.25}
   .module-check.disabled{color:#94a3b8}
+  .module-frame{width:100%;height:min(860px,calc(100vh - 150px));min-height:680px;border:1px solid #dbe4f0;border-radius:8px;background:#fff}
   .org-path{grid-column:1/-1;padding:8px 10px;border-radius:6px;background:#eef2ff;color:#1d3557;font-size:13px}
   .employee-profile{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-top:16px}
   .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -115,6 +116,7 @@
     <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
     <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
     <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
+    <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
     <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
     <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
     <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
@@ -767,6 +769,13 @@
             <tbody id="tablaCalendarioAsistencia"></tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <section id="compras" class="hidden">
+      <h1>Solicitudes de Compras</h1>
+      <div class="dashboard-section">
+        <iframe class="module-frame" src="solicitudes_compras.html?embedded=1" title="Solicitudes de Compras"></iframe>
       </div>
     </section>
 
@@ -2062,6 +2071,7 @@ const MODULOS_USUARIO=[
   ]},
   {grupo:'Nomina y soporte',modulos:[
     {id:'nomina',nombre:'Nomina'},
+    {id:'compras',nombre:'Solicitudes de Compras'},
     {id:'beneficios',nombre:'Beneficios'},
     {id:'disciplinario',nombre:'Disciplinario y legal'},
     {id:'reportes',nombre:'Reportes y analitica'}
