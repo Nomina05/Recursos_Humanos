@@ -1088,7 +1088,15 @@ function listaUnica(items,valueSelector=item=>item){
 
 function claveUnidadUnica(tipo,nombre){
   let key=normalizarCatalogo(nombre);
-  if(tipo==='Direccion')key=key.replace(/^DIRECCION /,'');
+  if(tipo==='Direccion'){
+    key=key
+      .replace(/^DIRECCION /,'')
+      .replace(/^DIRECTOR /,'')
+      .replace(/\bADMINISTRATIVA\b/g,'ADMINISTRATIVO')
+      .replace(/\bFINANCIERA\b/g,'FINANCIERO')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
   if(tipo==='Departamento')key=key.replace(/^DEPARTAMENTO /,'');
   if(tipo==='Division')key=key.replace(/^DIVISION /,'');
   if(tipo==='Seccion')key=key.replace(/^SECCION /,'');
@@ -1103,7 +1111,9 @@ function listaUnicaUnidades(unidades,tipo){
     const existente=mapa.get(key);
     const nombreActual=normalizarCatalogo(unidad.nombre);
     const nombreExistente=existente?normalizarCatalogo(existente.nombre):'';
-    const actualMasCompleto=nombreActual.startsWith(normalizarCatalogo(tipo))&&!nombreExistente.startsWith(normalizarCatalogo(tipo));
+    const actualMasCompleto=
+      (nombreActual.startsWith(normalizarCatalogo(tipo))&&!nombreExistente.startsWith(normalizarCatalogo(tipo)))||
+      (nombreActual.length>nombreExistente.length&&nombreActual.includes(nombreExistente));
     if(!existente||actualMasCompleto)mapa.set(key,unidad);
   });
   return Array.from(mapa.values());
@@ -2461,7 +2471,7 @@ function setSelectOptions(selectId,items,placeholder,valueSelector=item=>item,la
   const sel=document.getElementById(selectId);
   const actual=sel.value;
   sel.innerHTML=`<option value="">${placeholder}</option>`;
-  listaUnica(items,valueSelector).forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valueSelector(item))}">${safeText(labelSelector(item))}</option>`));
+  listaUnica(items,labelSelector).forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valueSelector(item))}">${safeText(labelSelector(item))}</option>`));
   if(Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
 }
 
