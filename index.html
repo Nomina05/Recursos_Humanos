@@ -15,11 +15,19 @@
 <style>
   :root{--bg:#f1f5f9;--accent:#1d3557;--card1:#4f46e5;--card2:#059669;--card3:#ef4444}
   body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);display:flex;min-height:100vh}
-  .sidebar{width:240px;background:var(--accent);color:#fff;height:100vh;position:fixed;padding-top:20px;display:flex;flex-direction:column}
+  .sidebar{width:260px;background:var(--accent);color:#fff;height:100vh;position:fixed;padding-top:20px;display:flex;flex-direction:column}
   .sidebar h2{text-align:center;margin:0 0 16px;font-weight:600}
-  .sidebar a{display:flex;align-items:center;gap:10px;color:#fff;padding:12px 18px;text-decoration:none;border-left:4px solid transparent;cursor:pointer}
+  .sidebar-nav{flex:1;min-height:0;overflow:auto;padding:0 8px 12px}
+  .sidebar a{display:flex;align-items:center;gap:10px;color:#fff;padding:11px 12px;text-decoration:none;border-left:4px solid transparent;cursor:pointer;border-radius:6px}
   .sidebar a.active,.sidebar a:hover{background:#457b9d;border-left-color:#f1faee}
-  .content{margin-left:240px;padding:20px;flex:1;min-width:0}
+  .sidebar-group{border:1px solid rgba(255,255,255,.12);border-radius:8px;margin-top:8px;background:rgba(8,27,49,.18);overflow:hidden}
+  .sidebar-group summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;cursor:pointer;color:#dbeafe;font-size:12px;font-weight:600;list-style:none}
+  .sidebar-group summary::-webkit-details-marker{display:none}
+  .sidebar-group summary::after{content:"+";font-size:16px;line-height:1;color:#bfdbfe}
+  .sidebar-group[open] summary::after{content:"-"}
+  .sidebar-group-links{padding:0 5px 5px}
+  .sidebar-group-links a{font-size:13px;padding:9px 9px}
+  .content{margin-left:260px;padding:20px;flex:1;min-width:0}
   h1{color:var(--accent);margin:0 0 16px}
   .dashboard-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:12px}
   .card{padding:18px;border-radius:12px;color:#fff}
@@ -110,29 +118,56 @@
 
   <div class="sidebar" id="mainSidebar">
     <h2>Sistema RRHH</h2>
-    <a id="menu-dashboard" class="active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
-    <a id="menu-registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
-    <a id="menu-empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Empleados</a>
-    <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
-    <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
-    <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
-    <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
-    <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
-    <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
-    <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
-    <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
-    <a id="menu-beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
-    <a id="menu-disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
-    <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
-    <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
-    <a id="menu-ia" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i>IA</a>
-    <a id="menu-ess" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i>Autoservicio</a>
-    <a id="menu-configuracion" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i>Configuracion</a>
-    <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
-    <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
-    <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
-    <a id="menu-novedades" onclick="showSection('novedades')"><i class="fa-solid fa-bell"></i>Novedades</a>
-    <a id="menu-notificaciones" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i>Notificaciones</a>
+    <nav class="sidebar-nav">
+      <a id="menu-dashboard" class="active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
+      <details class="sidebar-group" data-sidebar-group="empleados" open>
+        <summary>Empleados</summary>
+        <div class="sidebar-group-links">
+          <a id="menu-registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
+          <a id="menu-empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Empleados</a>
+          <a id="menu-novedades" onclick="showSection('novedades')"><i class="fa-solid fa-bell"></i>Novedades</a>
+          <a id="menu-notificaciones" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i>Notificaciones</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="gestion">
+        <summary>Gestion RRHH</summary>
+        <div class="sidebar-group-links">
+          <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
+          <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
+          <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
+          <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
+          <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
+          <a id="menu-beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
+          <a id="menu-disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="nomina">
+        <summary>Nomina y otras areas</summary>
+        <div class="sidebar-group-links">
+          <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
+          <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
+          <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
+          <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="colaboracion">
+        <summary>Colaboracion</summary>
+        <div class="sidebar-group-links">
+          <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
+          <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
+          <a id="menu-ia" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i>IA</a>
+          <a id="menu-ess" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i>Autoservicio</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="admin">
+        <summary>Administracion</summary>
+        <div class="sidebar-group-links">
+          <a id="menu-configuracion" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i>Configuracion</a>
+          <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
+          <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
+        </div>
+      </details>
+    </nav>
     <div class="session-box">
       <strong id="usuarioSesionNombre">Sin sesion</strong>
       <span id="usuarioSesionRol"></span>
@@ -2227,7 +2262,9 @@ function showSection(id){
   document.querySelectorAll('.content section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
-  document.getElementById('menu-'+id)?.classList.add('active');
+  const menuActivo=document.getElementById('menu-'+id);
+  menuActivo?.classList.add('active');
+  actualizarGruposSidebar(menuActivo);
   if(id==='dashboard')actualizarDashboard();
   if(id==='registro')actualizarSelectsEmpleado();
   if(id==='empleados')renderEmpleados();
@@ -2437,6 +2474,17 @@ function aplicarPermisosMenu(usuario){
     const menu=document.getElementById('menu-'+modulo.id);
     if(menu)menu.classList.toggle('hidden',!usuarioPuedeVerModulo(usuario,modulo.id));
   });
+  actualizarGruposSidebar(document.querySelector('.sidebar a.active'));
+}
+
+function actualizarGruposSidebar(menuActivo){
+  document.querySelectorAll('.sidebar-group').forEach(grupo=>{
+    const tieneModulosVisibles=Array.from(grupo.querySelectorAll('.sidebar-group-links a'))
+      .some(menu=>!menu.classList.contains('hidden'));
+    grupo.classList.toggle('hidden',!tieneModulosVisibles);
+  });
+  const grupoActivo=menuActivo?.closest('.sidebar-group');
+  if(grupoActivo&&!grupoActivo.classList.contains('hidden'))grupoActivo.open=true;
 }
 
 function cerrarSesion(){
