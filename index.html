@@ -52,6 +52,16 @@
   .subtotal-row td{background:#f8fafc;font-weight:700}
   .form-block{grid-column:1/-1;border:1px solid #e5e7eb;border-radius:8px;padding:10px;background:#f8fafc}
   .form-block h3{margin:0 0 10px;color:#1d3557;font-size:15px}
+  .module-permissions{grid-column:1/-1;border:1px solid #dbe4f0;border-radius:8px;padding:12px;background:#f8fafc}
+  .module-permissions-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .module-permissions-head h3{margin:0;color:#1d3557;font-size:15px}
+  .module-permission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+  .module-permission-card{border:1px solid #dbe4f0;border-radius:8px;background:#fff;padding:10px}
+  .module-permission-card h4{margin:0 0 8px;color:#1d3557;font-size:13px}
+  .module-check{display:flex;align-items:center;gap:8px;padding:5px 0;color:#1f2937;font-size:13px}
+  .module-check input{margin:0;padding:0}
+  .module-check span{line-height:1.25}
+  .module-check.disabled{color:#94a3b8}
   .org-path{grid-column:1/-1;padding:8px 10px;border-radius:6px;background:#eef2ff;color:#1d3557;font-size:13px}
   .employee-profile{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-top:16px}
   .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -213,16 +223,6 @@
         <div class="card presupuesto-total"><h3>Tope Fondo 10</h3><p id="presupuestoFondo10">RD$ 0</p></div>
         <div class="card presupuesto-disponible"><h3>Presupuesto Disponible (inactivos)</h3><p id="presupuestoDisponible">RD$ 0</p></div>
         <div class="card presupuesto-consumido"><h3>Total Consumido</h3><p id="presupuestoConsumido">RD$ 0</p></div>
-      </div>
-      </div>
-
-      <div class="dashboard-section">
-        <h2>Presupuesto programado 2026</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Fondo</th><th>Programa</th><th>Actividad / Renglon</th><th>Monto Programado</th></tr></thead>
-          <tbody id="tablaPresupuestoNomina"></tbody>
-        </table>
       </div>
       </div>
 
@@ -545,7 +545,7 @@
         <input id="usuarioNombre" placeholder="Nombre completo" required>
         <input id="usuarioLogin" placeholder="Usuario" required>
         <input id="usuarioCorreo" type="email" placeholder="Correo institucional">
-        <select id="usuarioRol" required>
+        <select id="usuarioRol" onchange="renderUsuarioModulos()" required>
           <option value="">Rol</option>
           <option>Administrador</option>
           <option>Recursos Humanos</option>
@@ -564,6 +564,16 @@
         </select>
         <input id="usuarioPassword" type="password" placeholder="Clave de acceso">
         <input id="usuarioClaveTemporal" placeholder="Nota de acceso">
+        <div class="module-permissions">
+          <div class="module-permissions-head">
+            <h3>Modulos visibles para el usuario</h3>
+            <div class="quick-actions">
+              <button type="button" class="btn btn-secondary" onclick="aplicarPlantillaModulosRol()"><i class="fa-solid fa-layer-group"></i> Plantilla del rol</button>
+              <button type="button" class="btn" onclick="marcarModulosUsuario(false)">Limpiar</button>
+            </div>
+          </div>
+          <div id="usuarioModulos"></div>
+        </div>
         <div style="grid-column:1/-1;display:flex;gap:8px">
           <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Usuario</button>
           <button type="button" class="btn" onclick="limpiarUsuarioFormulario()">Nuevo</button>
@@ -583,7 +593,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Nota</th><th>Accion</th></tr>
+            <tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Modulos</th><th>Nota</th><th>Accion</th></tr>
           </thead>
           <tbody id="tablaUsuarios"></tbody>
         </table>
@@ -1762,6 +1772,16 @@
       </div>
 
       <div class="dashboard-section">
+        <h2>Presupuesto programado 2026</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fondo</th><th>Programa</th><th>Actividad / Renglon</th><th>Monto Programado</th></tr></thead>
+            <tbody id="tablaPresupuestoNomina"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
         <h2>Sucursales, monedas e idiomas</h2>
         <form id="formSucursalConfig" novalidate>
           <input type="hidden" id="cfgSucursalId">
@@ -2025,6 +2045,40 @@ const ADMIN_PASSWORD='Coraamoca2025*';
 const ADMIN_SEED_VERSION='admin-coraamoca-2025-v1';
 const NOMINA_VALIDADA_ARCHIVO='NOMINA ABRIL 2026 VALIDADA.xlsx';
 const NOMINA_VALIDADA_VERSION='nomina-abril-2026-validada-v1';
+const MODULOS_USUARIO=[
+  {grupo:'Control RRHH',modulos:[
+    {id:'dashboard',nombre:'Dashboard'},
+    {id:'registro',nombre:'Registro de empleados'},
+    {id:'empleados',nombre:'Lista de empleados'},
+    {id:'novedades',nombre:'Novedades'},
+    {id:'notificaciones',nombre:'Notificaciones'}
+  ]},
+  {grupo:'Ciclo del colaborador',modulos:[
+    {id:'reclutamiento',nombre:'Reclutamiento'},
+    {id:'asistencia',nombre:'Asistencia y tiempo'},
+    {id:'vacaciones',nombre:'Vacaciones y licencias'},
+    {id:'desempeno',nombre:'Desempeno'},
+    {id:'capacitacion',nombre:'Capacitacion'}
+  ]},
+  {grupo:'Nomina y soporte',modulos:[
+    {id:'nomina',nombre:'Nomina'},
+    {id:'beneficios',nombre:'Beneficios'},
+    {id:'disciplinario',nombre:'Disciplinario y legal'},
+    {id:'reportes',nombre:'Reportes y analitica'}
+  ]},
+  {grupo:'Colaboracion',modulos:[
+    {id:'comunicacion',nombre:'Comunicacion interna'},
+    {id:'supervisor',nombre:'Supervisor / Manager'},
+    {id:'ia',nombre:'IA y automatizacion'},
+    {id:'ess',nombre:'Autoservicio'}
+  ]},
+  {grupo:'Administracion',modulos:[
+    {id:'estructura',nombre:'Estructura'},
+    {id:'usuarios',nombre:'Usuarios'},
+    {id:'configuracion',nombre:'Configuracion y seguridad'}
+  ]}
+];
+const MODULOS_ADMIN=new Set(['estructura','usuarios','configuracion']);
 const presupuestoNomina2026=[
   {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 1',monto:857250.00},
   {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 2',monto:4336105.00},
@@ -2042,6 +2096,36 @@ const presupuestoNomina2026=[
   {fondo:'Fondo 10',programa:'Programa 13',actividad:'Act. 1 - P3',monto:3378618.60}
 ];
 const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
+
+function modulosDisponibles(){
+  return MODULOS_USUARIO.flatMap(grupo=>grupo.modulos);
+}
+
+function modulosPlantillaRol(rol=''){
+  const todos=modulosDisponibles().map(modulo=>modulo.id);
+  if(rol==='Administrador')return todos;
+  if(rol==='Recursos Humanos')return ['dashboard','registro','empleados','reclutamiento','asistencia','vacaciones','desempeno','capacitacion','beneficios','disciplinario','comunicacion','supervisor','ess','reportes','novedades','notificaciones'];
+  if(rol==='Nomina')return ['dashboard','empleados','nomina','beneficios','reportes','novedades','notificaciones'];
+  if(rol==='Consulta')return ['dashboard','empleados','reportes','ess'];
+  return ['dashboard'];
+}
+
+function normalizarModulosUsuario(usuario={}){
+  const permitidos=new Set(modulosDisponibles().map(modulo=>modulo.id));
+  const base=Array.isArray(usuario.modulos)?usuario.modulos:modulosPlantillaRol(usuario.rol);
+  const administrativos=usuario.rol==='Administrador'?[...MODULOS_ADMIN]:[];
+  const modulos=[...new Set(['dashboard',...base,...administrativos])]
+    .filter(id=>permitidos.has(id))
+    .filter(id=>usuario.rol==='Administrador'||!MODULOS_ADMIN.has(id));
+  return modulos;
+}
+
+function usuarioPuedeVerModulo(usuario,id){
+  if(!usuario||!id)return false;
+  if(id==='dashboard')return true;
+  if(MODULOS_ADMIN.has(id)&&usuario.rol!=='Administrador')return false;
+  return normalizarModulosUsuario(usuario).includes(id);
+}
 
 const gruposOcupacionales=[
   {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
@@ -2115,7 +2199,7 @@ function cargarCatalogosPersonalizados(){
 
 function showSection(id){
   const sesion=usuarioSesionActual();
-  if((id==='usuarios'||id==='estructura'||id==='configuracion')&&sesion?.rol!=='Administrador'){
+  if(sesion&&!usuarioPuedeVerModulo(sesion,id)){
     alert('No tiene permiso para acceder a este modulo.');
     id='dashboard';
   }
@@ -2252,7 +2336,7 @@ async function validarUsuarioEnSupabase({id,login,correo}){
   return true;
 }
 
-async function crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado,unidadId,alcance,claveTemporal}){
+async function crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado,unidadId,alcance,claveTemporal,modulos}){
   if(!supabaseClient)return null;
   if(!correo){
     alert('Para crear usuarios en Supabase Auth debe indicar un correo.');
@@ -2272,6 +2356,7 @@ async function crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado
         // when that unit has not been inserted in public.organization_units yet.
         organization_unit_local_id:unidadId||'',
         scope:alcance,
+        modules:modulos||[],
         access_note:claveTemporal||''
       }
     }
@@ -2327,10 +2412,10 @@ function aplicarEstadoSesion(){
 }
 
 function aplicarPermisosMenu(usuario){
-  const esAdmin=usuario.rol==='Administrador';
-  document.getElementById('menu-usuarios').classList.toggle('hidden',!esAdmin);
-  document.getElementById('menu-estructura').classList.toggle('hidden',!esAdmin);
-  document.getElementById('menu-configuracion').classList.toggle('hidden',!esAdmin);
+  modulosDisponibles().forEach(modulo=>{
+    const menu=document.getElementById('menu-'+modulo.id);
+    if(menu)menu.classList.toggle('hidden',!usuarioPuedeVerModulo(usuario,modulo.id));
+  });
 }
 
 function cerrarSesion(){
@@ -2381,6 +2466,7 @@ async function asegurarUsuarioAdminBase(){
     admin.rol='Administrador';
     admin.estado='Activo';
     admin.alcance='todo';
+    admin.modulos=modulosPlantillaRol('Administrador');
     if(admin.adminSeedVersion!==ADMIN_SEED_VERSION){
       admin.passwordHash=await hashClave(ADMIN_PASSWORD);
       admin.claveTemporal='Clave inicial actualizada. Puede editarse desde Usuarios.';
@@ -2398,6 +2484,7 @@ async function asegurarUsuarioAdminBase(){
     estado:'Activo',
     unidadId:'',
     alcance:'todo',
+    modulos:modulosPlantillaRol('Administrador'),
     passwordHash:await hashClave(ADMIN_PASSWORD),
     claveTemporal:'Clave inicial. Puede editarse desde Usuarios.',
     adminSeedVersion:ADMIN_SEED_VERSION,
@@ -2417,6 +2504,7 @@ formUsuario.addEventListener('submit',async event=>{
   const estado=document.getElementById('usuarioEstado').value;
   const unidadId=document.getElementById('usuarioUnidad').value;
   const alcance=document.getElementById('usuarioAlcance').value;
+  const modulos=modulosSeleccionadosUsuario();
   const password=document.getElementById('usuarioPassword').value;
   const claveTemporal=document.getElementById('usuarioClaveTemporal').value.trim();
   if(!nombre||!login||!rol){alert('Complete nombre, usuario y rol.');return;}
@@ -2434,14 +2522,15 @@ formUsuario.addEventListener('submit',async event=>{
   if(!id&&!password){alert('Indique una clave para el nuevo usuario.');return;}
   let authUser=null;
   if(!id){
-    authUser=await crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado,unidadId,alcance,claveTemporal});
+    authUser=await crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado,unidadId,alcance,claveTemporal,modulos});
     if(!authUser)return;
   }
   const passwordHash=password?await hashClave(password):actual?.passwordHash;
-  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',nombre,login,correo,rol,estado,unidadId,alcance,passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
+  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',nombre,login,correo,rol,estado,unidadId,alcance,modulos:normalizarModulosUsuario({rol,modulos}),passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
   const idx=usuarios.findIndex(item=>item.id===usuario.id);
   if(idx>=0)usuarios[idx]={...usuarios[idx],...usuario};else usuarios.push({...usuario,creadoEn:new Date().toISOString()});
   guardarStorage();
+  if(usuario.id===sesionActualId)aplicarPermisosMenu(usuario);
   limpiarUsuarioFormulario();
   renderUsuarios();
 });
@@ -2454,6 +2543,7 @@ function limpiarUsuarioFormulario(){
   document.getElementById('usuarioUnidad').value='';
   document.getElementById('usuarioPassword').value='';
   renderUsuariosPermisos();
+  renderUsuarioModulos(modulosPlantillaRol(''));
 }
 
 function cargarUsuarioParaEditar(id){
@@ -2470,6 +2560,7 @@ function cargarUsuarioParaEditar(id){
   document.getElementById('usuarioAlcance').value=usuario.alcance||'todo';
   document.getElementById('usuarioPassword').value='';
   document.getElementById('usuarioClaveTemporal').value=usuario.claveTemporal||'';
+  renderUsuarioModulos(normalizarModulosUsuario(usuario));
   showSection('usuarios');
 }
 
@@ -2504,7 +2595,7 @@ function renderUsuarios(){
   const tbody=document.getElementById('tablaUsuarios');
   const q=(document.getElementById('busquedaUsuario')?.value||'').toLowerCase().trim();
   const filtrados=usuarios.filter(usuario=>[usuario.nombre,usuario.login,usuario.correo,usuario.rol,usuario.estado].join(' ').toLowerCase().includes(q));
-  tbody.innerHTML=filtrados.map(usuario=>`<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+  tbody.innerHTML=filtrados.map(usuario=>`<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(resumenModulosUsuario(usuario))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
   document.getElementById('totalUsuarios').innerText=usuarios.length;
   document.getElementById('usuariosActivos').innerText=usuarios.filter(usuario=>usuario.estado==='Activo').length;
   document.getElementById('usuariosAdmin').innerText=usuarios.filter(usuario=>usuario.rol==='Administrador').length;
@@ -2525,7 +2616,61 @@ function renderUsuariosPermisos(){
     .sort((a,b)=>rutaUnidad(a).localeCompare(rutaUnidad(b),'es'))
     .forEach(unidad=>unidadSel.insertAdjacentHTML('beforeend',`<option value="${safeText(unidad.id)}">${safeText(rutaUnidad(unidad))}</option>`));
   unidadSel.value=actual;
+  renderUsuarioModulos();
   renderUsuarioVista();
+}
+
+function modulosSeleccionadosUsuario(){
+  const seleccionados=Array.from(document.querySelectorAll('#usuarioModulos input[data-modulo]:checked'))
+    .map(input=>input.dataset.modulo);
+  return normalizarModulosUsuario({rol:document.getElementById('usuarioRol').value,modulos:seleccionados});
+}
+
+function marcarModulosUsuario(marcar){
+  document.querySelectorAll('#usuarioModulos input[data-modulo]').forEach(input=>{
+    if(input.disabled)return;
+    input.checked=Boolean(marcar);
+  });
+  const dashboard=document.querySelector('#usuarioModulos input[data-modulo="dashboard"]');
+  if(dashboard)dashboard.checked=true;
+}
+
+function aplicarPlantillaModulosRol(){
+  renderUsuarioModulos(modulosPlantillaRol(document.getElementById('usuarioRol').value));
+}
+
+function renderUsuarioModulos(seleccion){
+  const contenedor=document.getElementById('usuarioModulos');
+  if(!contenedor)return;
+  const rol=document.getElementById('usuarioRol').value;
+  const actual=Array.isArray(seleccion)
+    ?seleccion
+    :contenedor.children.length
+      ?modulosSeleccionadosUsuario()
+      :modulosPlantillaRol(rol);
+  const seleccionados=new Set(normalizarModulosUsuario({rol,modulos:actual}));
+  contenedor.innerHTML=`<div class="module-permission-grid">${MODULOS_USUARIO.map(grupo=>`
+    <div class="module-permission-card">
+      <h4>${safeText(grupo.grupo)}</h4>
+      ${grupo.modulos.map(modulo=>{
+        const soloAdmin=MODULOS_ADMIN.has(modulo.id)&&rol!=='Administrador';
+        const adminObligatorio=MODULOS_ADMIN.has(modulo.id)&&rol==='Administrador';
+        const bloqueado=modulo.id==='dashboard'||soloAdmin||adminObligatorio;
+        const checked=seleccionados.has(modulo.id)||modulo.id==='dashboard';
+        return `<label class="module-check${soloAdmin?' disabled':''}">
+          <input type="checkbox" data-modulo="${safeText(modulo.id)}"${checked?' checked':''}${bloqueado?' disabled':''}>
+          <span>${safeText(modulo.nombre)}${soloAdmin?' - solo administrador':adminObligatorio?' - requerido':''}</span>
+        </label>`;
+      }).join('')}
+    </div>
+  `).join('')}</div>`;
+}
+
+function resumenModulosUsuario(usuario){
+  const modulos=normalizarModulosUsuario(usuario);
+  if(usuario.rol==='Administrador')return 'Todos';
+  if(modulos.length<=4)return modulos.map(id=>modulosDisponibles().find(modulo=>modulo.id===id)?.nombre||id).join(', ');
+  return `${modulos.length} modulos`;
 }
 
 function renderUsuarioVista(){
@@ -4325,7 +4470,6 @@ function actualizarDashboard(){
   }
   document.getElementById('inputPresupuestoTotal').value=presupuestoTotal||'';
   renderUsuarioVista();
-  renderPresupuestoNomina();
   const empleadosVista=empleadosPermitidos();
   const totalEmpleados=empleadosVista.length;
   const activos=empleadosVista.filter(emp=>emp.estado!=='Inactivo').length;
@@ -7097,6 +7241,7 @@ function registrarLogSistema(accion,modulo,detalle=''){
 
 function renderConfiguracionSeguridad(){
   asegurarConfiguracionSistema();
+  renderPresupuestoNomina();
   renderCfgRoles();
   renderConfiguracionEmpresa();
   renderCfgSucursales();
