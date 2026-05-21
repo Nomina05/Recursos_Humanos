@@ -105,6 +105,7 @@
     <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
     <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
     <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
+    <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -179,6 +180,7 @@
           <button class="btn btn-secondary" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i> Reclutamiento</button>
           <button class="btn btn-secondary" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i> Asistencia</button>
           <button class="btn btn-secondary" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i> Nomina</button>
+          <button class="btn btn-secondary" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i> Vacaciones</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -825,6 +827,91 @@
       </div>
     </section>
 
+    <section id="vacaciones" class="hidden">
+      <h1>Panel de Vacaciones y Licencias</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Solicitudes pendientes</h3><p id="vacPendientesTotal">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Aprobadas</h3><p id="vacAprobadasTotal">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Licencias activas</h3><p id="vacLicenciasActivas">0</p></div>
+        <div class="card presupuesto-total"><h3>Dias disponibles</h3><p id="vacBalanceTotal">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Solicitud de vacaciones, licencias y permisos</h2>
+        <form id="formVacacionesLicencias" novalidate>
+          <input type="hidden" id="vacacionId">
+          <select id="vacacionEmpleado" required></select>
+          <select id="vacacionTipo">
+            <option>Vacaciones</option>
+            <option>Licencia medica</option>
+            <option>Licencia maternidad</option>
+            <option>Licencia paternidad</option>
+            <option>Permiso especial</option>
+            <option>Ausencia justificada</option>
+          </select>
+          <input id="vacacionFechaSolicitud" type="date">
+          <input id="vacacionFechaInicio" type="date" required>
+          <input id="vacacionFechaFin" type="date" required>
+          <input id="vacacionDias" type="number" min="0" step="0.5" placeholder="Dias solicitados">
+          <select id="vacacionEstado">
+            <option>Pendiente</option>
+            <option>Aprobado</option>
+            <option>Rechazado</option>
+          </select>
+          <input id="vacacionAprobador" placeholder="Aprobador">
+          <textarea id="vacacionMotivo" placeholder="Motivo / diagnostico / observacion"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar solicitud</button>
+            <button class="btn" type="button" onclick="limpiarVacacionLicencia()">Nueva</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Aprobaciones</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Tipo</th><th>Solicitud</th><th>Desde</th><th>Hasta</th><th>Dias</th><th>Estado</th><th>Aprobador</th><th>Motivo</th><th>Accion</th></tr></thead>
+            <tbody id="tablaVacacionesLicencias"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Balance disponible</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Codigo</th><th>Empleado</th><th>Fecha ingreso</th><th>Dias anuales</th><th>Dias usados</th><th>Balance disponible</th></tr></thead>
+            <tbody id="tablaBalanceVacaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Calendario de vacaciones y licencias</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha inicio</th><th>Fecha fin</th><th>Empleado</th><th>Tipo</th><th>Estado</th><th>Dias</th></tr></thead>
+            <tbody id="tablaCalendarioVacaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Politicas de vacaciones</h2>
+        <form id="formPoliticaVacaciones" novalidate>
+          <input id="politicaDiasAnuales" type="number" min="0" step="0.5" placeholder="Dias anuales por defecto">
+          <input id="politicaMesesMinimos" type="number" min="0" placeholder="Meses minimos para vacaciones">
+          <input id="politicaMaxContinuos" type="number" min="0" step="0.5" placeholder="Maximo dias continuos">
+          <textarea id="politicaTexto" placeholder="Politicas, reglas de aprobacion y observaciones"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar politicas</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -837,6 +924,7 @@
           <option value="estructura">Empleados por Estructura</option>
           <option value="asistencia">Asistencia y Tiempo</option>
           <option value="nomina_procesada">Nomina Procesada</option>
+          <option value="vacaciones">Vacaciones y Licencias</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -956,6 +1044,8 @@ let nominaProcesada=JSON.parse(localStorage.getItem('nominaProcesada')||'[]');
 let historialPagosNomina=JSON.parse(localStorage.getItem('historialPagosNomina')||'[]');
 let liquidacionesNomina=JSON.parse(localStorage.getItem('liquidacionesNomina')||'[]');
 let transferenciasNomina=JSON.parse(localStorage.getItem('transferenciasNomina')||'[]');
+let vacacionesLicencias=JSON.parse(localStorage.getItem('vacacionesLicencias')||'[]');
+let politicasVacaciones=JSON.parse(localStorage.getItem('politicasVacaciones')||'{"diasAnuales":14,"mesesMinimos":12,"maxContinuos":15,"texto":"Las vacaciones deben solicitarse y aprobarse antes de su disfrute."}');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1072,6 +1162,7 @@ function showSection(id){
   if(id==='reclutamiento')renderReclutamiento();
   if(id==='asistencia')renderAsistenciaTiempo();
   if(id==='nomina')renderNominaPanel();
+  if(id==='vacaciones')renderVacacionesLicencias();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1097,6 +1188,8 @@ function guardarStorage(){
   localStorage.setItem('historialPagosNomina',JSON.stringify(historialPagosNomina));
   localStorage.setItem('liquidacionesNomina',JSON.stringify(liquidacionesNomina));
   localStorage.setItem('transferenciasNomina',JSON.stringify(transferenciasNomina));
+  localStorage.setItem('vacacionesLicencias',JSON.stringify(vacacionesLicencias));
+  localStorage.setItem('politicasVacaciones',JSON.stringify(politicasVacaciones));
 }
 
 function guardarPresupuesto(){
@@ -3226,8 +3319,9 @@ function actualizarDashboard(){
   const nuevosIngresos=empleadosVista.filter(emp=>esFechaDentroDias(emp.fechaIngreso,30)).length;
   const correcciones=empleadosConCorreccionPendiente().length;
   const notificaciones=correcciones+novedadesCorreccion.length;
-  const licenciasMedicas=empleadosVista.filter(emp=>(emp.tipoIngreso||'').toLowerCase().includes('licencia')||(emp.nota||'').toLowerCase().includes('licencia medica')).length;
-  const vacacionesPendientes=empleadosVista.filter(emp=>(emp.nota||'').toLowerCase().includes('vacacion')).length;
+  const codigosVista=new Set(empleadosVista.map(emp=>emp.codigo));
+  const licenciasMedicas=vacacionesLicencias.filter(item=>codigosVista.has(item.empleadoCodigo)&&item.estado==='Aprobado'&&item.tipo==='Licencia medica'&&rangoIncluyeHoy(item.fechaInicio,item.fechaFin)).length;
+  const vacacionesPendientes=vacacionesLicencias.filter(item=>codigosVista.has(item.empleadoCodigo)&&item.estado==='Pendiente'&&item.tipo==='Vacaciones').length;
   const cumpleanos=empleadosVista.filter(emp=>esMismoMes(emp.fechaNacimiento)).length;
   const asistenciaHoy=resumenAsistenciaFecha(fechaHoyISO());
   document.getElementById('kpiTotalEmpleados').innerText=totalEmpleados;
@@ -3338,6 +3432,11 @@ function generarReporte(){
     thead.innerHTML='<tr><th>Periodo</th><th>Codigo</th><th>Empleado</th><th>Cargo</th><th>Salario</th><th>Horas extras</th><th>Bonificaciones</th><th>Incentivos</th><th>Comisiones</th><th>AFP</th><th>ARS</th><th>Impuestos</th><th>Seguridad social</th><th>Otras deducciones</th><th>Total deducciones</th><th>Neto</th><th>Fondo</th><th>Programa</th></tr>';
     nominaProcesada.forEach(item=>{
       tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.periodo)}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(item.empleado)}</td><td>${safeText(item.cargo)}</td><td>${formatoNumero(item.salario)}</td><td>${formatoNumero(item.montoHorasExtra)}</td><td>${formatoNumero(item.bonificaciones)}</td><td>${formatoNumero(item.incentivos)}</td><td>${formatoNumero(item.comisiones)}</td><td>${formatoNumero(item.afp)}</td><td>${formatoNumero(item.ars)}</td><td>${formatoNumero(item.impuestos)}</td><td>${formatoNumero(item.seguridadSocial)}</td><td>${formatoNumero(item.otrasDeducciones)}</td><td>${formatoNumero(item.totalDeducciones)}</td><td>${formatoNumero(item.neto)}</td><td>${safeText(item.fondo)}</td><td>${safeText(item.programa)}</td></tr>`);
+    });
+  }else if(tipo==='vacaciones'){
+    thead.innerHTML='<tr><th>Codigo</th><th>Empleado</th><th>Tipo</th><th>Fecha solicitud</th><th>Desde</th><th>Hasta</th><th>Dias</th><th>Estado</th><th>Aprobador</th><th>Motivo</th></tr>';
+    vacacionesVisibles().forEach(item=>{
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(formatoFechaISO(item.fechaSolicitud))}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.dias)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.aprobador)}</td><td>${safeText(item.motivo)}</td></tr>`);
     });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
@@ -4059,6 +4158,201 @@ function imprimirReciboNomina(codigo){
   win.print();
 }
 
+function crearIdVacacion(prefix='VAC'){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function diasEntreFechas(inicio,fin){
+  if(!inicio||!fin)return 0;
+  const a=new Date(inicio+'T00:00:00');
+  const b=new Date(fin+'T00:00:00');
+  if(isNaN(a)||isNaN(b)||b<a)return 0;
+  return Math.floor((b-a)/86400000)+1;
+}
+
+function rangoIncluyeHoy(inicio,fin){
+  if(!inicio||!fin)return false;
+  const hoy=fechaHoyISO();
+  return inicio<=hoy&&fin>=hoy;
+}
+
+function vacacionesVisibles(){
+  const permitidos=empleadosPermitidosCodigos();
+  return vacacionesLicencias.filter(item=>permitidos.has(item.empleadoCodigo));
+}
+
+function diasVacacionesUsados(codigo,year=new Date().getFullYear()){
+  return vacacionesLicencias
+    .filter(item=>item.empleadoCodigo===codigo&&item.tipo==='Vacaciones'&&item.estado==='Aprobado'&&(item.fechaInicio||'').startsWith(String(year)))
+    .reduce((sum,item)=>sum+Number(item.dias||0),0);
+}
+
+function balanceVacacionesEmpleado(emp){
+  const anual=Number(politicasVacaciones.diasAnuales||14);
+  const usados=diasVacacionesUsados(emp.codigo);
+  return {anual,usados,disponible:Math.max(0,anual-usados)};
+}
+
+function renderSelectVacacionesEmpleados(actual=''){
+  const selects=['vacacionEmpleado','liquidacionEmpleado'];
+  selects.forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const current=actual||sel.value;
+    const label=id==='vacacionEmpleado'?'Empleado':'Empleado para liquidacion';
+    sel.innerHTML=`<option value="">${label}</option>`;
+    empleadosPermitidos()
+      .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+      .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+    if(current&&Array.from(sel.options).some(option=>option.value===current))sel.value=current;
+  });
+}
+
+function renderVacacionesLicencias(){
+  renderSelectVacacionesEmpleados();
+  renderPoliticasVacaciones();
+  renderTablaVacacionesLicencias();
+  renderBalanceVacaciones();
+  renderCalendarioVacaciones();
+  const visibles=vacacionesVisibles();
+  document.getElementById('vacPendientesTotal').textContent=visibles.filter(item=>item.estado==='Pendiente').length;
+  document.getElementById('vacAprobadasTotal').textContent=visibles.filter(item=>item.estado==='Aprobado').length;
+  document.getElementById('vacLicenciasActivas').textContent=visibles.filter(item=>item.estado==='Aprobado'&&item.tipo.includes('Licencia')&&rangoIncluyeHoy(item.fechaInicio,item.fechaFin)).length;
+  document.getElementById('vacBalanceTotal').textContent=empleadosPermitidos().reduce((sum,emp)=>sum+balanceVacacionesEmpleado(emp).disponible,0);
+  if(!document.getElementById('vacacionFechaSolicitud').value)document.getElementById('vacacionFechaSolicitud').value=fechaHoyISO();
+}
+
+function limpiarVacacionLicencia(){
+  document.getElementById('formVacacionesLicencias').reset();
+  document.getElementById('vacacionId').value='';
+  document.getElementById('vacacionFechaSolicitud').value=fechaHoyISO();
+  document.getElementById('vacacionEstado').value='Pendiente';
+  renderSelectVacacionesEmpleados();
+}
+
+document.getElementById('formVacacionesLicencias').addEventListener('submit',event=>{
+  event.preventDefault();
+  const id=document.getElementById('vacacionId').value||crearIdVacacion();
+  const empleadoCodigo=document.getElementById('vacacionEmpleado').value;
+  const fechaInicio=document.getElementById('vacacionFechaInicio').value;
+  const fechaFin=document.getElementById('vacacionFechaFin').value;
+  if(!empleadoCodigo||!fechaInicio||!fechaFin){alert('Seleccione empleado, fecha inicio y fecha fin.');return;}
+  const diasCalculados=diasEntreFechas(fechaInicio,fechaFin);
+  if(!diasCalculados){alert('Revise el rango de fechas.');return;}
+  const item={
+    id,
+    empleadoCodigo,
+    tipo:document.getElementById('vacacionTipo').value,
+    fechaSolicitud:document.getElementById('vacacionFechaSolicitud').value||fechaHoyISO(),
+    fechaInicio,
+    fechaFin,
+    dias:Number(document.getElementById('vacacionDias').value)||diasCalculados,
+    estado:document.getElementById('vacacionEstado').value,
+    aprobador:document.getElementById('vacacionAprobador').value.trim(),
+    motivo:document.getElementById('vacacionMotivo').value
+  };
+  if(item.tipo==='Vacaciones'&&item.estado==='Aprobado'){
+    const emp=empleados.find(e=>e.codigo===empleadoCodigo);
+    const balance=emp?balanceVacacionesEmpleado(emp):{disponible:0};
+    const actual=vacacionesLicencias.find(v=>v.id===id);
+    const diasPrevios=actual?.estado==='Aprobado'&&actual?.tipo==='Vacaciones'?Number(actual.dias||0):0;
+    if(item.dias>balance.disponible+diasPrevios&&!confirm('La solicitud supera el balance disponible. Desea aprobarla de todos modos?'))return;
+  }
+  const idx=vacacionesLicencias.findIndex(v=>v.id===id);
+  if(idx>=0)vacacionesLicencias[idx]=item;else vacacionesLicencias.push(item);
+  guardarStorage();
+  limpiarVacacionLicencia();
+  renderVacacionesLicencias();
+  actualizarDashboard();
+});
+
+function renderTablaVacacionesLicencias(){
+  const tbody=document.getElementById('tablaVacacionesLicencias');
+  if(!tbody)return;
+  tbody.innerHTML=vacacionesVisibles()
+    .slice()
+    .sort((a,b)=>(b.fechaSolicitud||'').localeCompare(a.fechaSolicitud||''))
+    .map(item=>`<tr><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(formatoFechaISO(item.fechaSolicitud))}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.dias)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.aprobador)}</td><td>${safeText(item.motivo)}</td><td><button class="btn btn-secondary" onclick="cambiarEstadoVacacion('${safeText(item.id)}','Aprobado')"><i class="fa-solid fa-check"></i></button> <button class="btn btn-warning" onclick="cambiarEstadoVacacion('${safeText(item.id)}','Rechazado')"><i class="fa-solid fa-xmark"></i></button> <button class="btn btn-warning" onclick="cargarVacacionLicencia('${safeText(item.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarVacacionLicencia('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`)
+    .join('');
+}
+
+function cargarVacacionLicencia(id){
+  const item=vacacionesLicencias.find(v=>v.id===id);
+  if(!item)return;
+  renderSelectVacacionesEmpleados(item.empleadoCodigo);
+  document.getElementById('vacacionId').value=item.id;
+  document.getElementById('vacacionTipo').value=item.tipo||'Vacaciones';
+  document.getElementById('vacacionFechaSolicitud').value=item.fechaSolicitud||'';
+  document.getElementById('vacacionFechaInicio').value=item.fechaInicio||'';
+  document.getElementById('vacacionFechaFin').value=item.fechaFin||'';
+  document.getElementById('vacacionDias').value=item.dias||'';
+  document.getElementById('vacacionEstado').value=item.estado||'Pendiente';
+  document.getElementById('vacacionAprobador').value=item.aprobador||'';
+  document.getElementById('vacacionMotivo').value=item.motivo||'';
+}
+
+function cambiarEstadoVacacion(id,estado){
+  const item=vacacionesLicencias.find(v=>v.id===id);
+  if(!item)return;
+  item.estado=estado;
+  item.aprobador=item.aprobador||usuarioSesionActual()?.nombre||'';
+  guardarStorage();
+  renderVacacionesLicencias();
+  actualizarDashboard();
+}
+
+function eliminarVacacionLicencia(id){
+  if(!confirm('Desea eliminar esta solicitud?'))return;
+  vacacionesLicencias=vacacionesLicencias.filter(item=>item.id!==id);
+  guardarStorage();
+  renderVacacionesLicencias();
+  actualizarDashboard();
+}
+
+function renderBalanceVacaciones(){
+  const tbody=document.getElementById('tablaBalanceVacaciones');
+  if(!tbody)return;
+  tbody.innerHTML=empleadosPermitidos()
+    .filter(emp=>emp.estado!=='Inactivo')
+    .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+    .map(emp=>{
+      const balance=balanceVacacionesEmpleado(emp);
+      return `<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(balance.anual)}</td><td>${safeText(balance.usados)}</td><td>${safeText(balance.disponible)}</td></tr>`;
+    }).join('');
+}
+
+function renderCalendarioVacaciones(){
+  const tbody=document.getElementById('tablaCalendarioVacaciones');
+  if(!tbody)return;
+  tbody.innerHTML=vacacionesVisibles()
+    .slice()
+    .sort((a,b)=>(a.fechaInicio||'').localeCompare(b.fechaInicio||''))
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.dias)}</td></tr>`)
+    .join('');
+}
+
+function renderPoliticasVacaciones(){
+  if(!document.getElementById('politicaDiasAnuales'))return;
+  document.getElementById('politicaDiasAnuales').value=politicasVacaciones.diasAnuales??14;
+  document.getElementById('politicaMesesMinimos').value=politicasVacaciones.mesesMinimos??12;
+  document.getElementById('politicaMaxContinuos').value=politicasVacaciones.maxContinuos??15;
+  document.getElementById('politicaTexto').value=politicasVacaciones.texto||'';
+}
+
+document.getElementById('formPoliticaVacaciones').addEventListener('submit',event=>{
+  event.preventDefault();
+  politicasVacaciones={
+    diasAnuales:Number(document.getElementById('politicaDiasAnuales').value)||14,
+    mesesMinimos:Number(document.getElementById('politicaMesesMinimos').value)||0,
+    maxContinuos:Number(document.getElementById('politicaMaxContinuos').value)||0,
+    texto:document.getElementById('politicaTexto').value
+  };
+  guardarStorage();
+  renderVacacionesLicencias();
+  mostrarToast('Politicas guardadas');
+});
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -4085,6 +4379,7 @@ function imprimirReciboNomina(codigo){
   renderReclutamiento();
   renderAsistenciaTiempo();
   renderNominaPanel();
+  renderVacacionesLicencias();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
