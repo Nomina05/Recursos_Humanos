@@ -93,6 +93,7 @@
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
     <a id="menu-novedades" onclick="showSection('novedades')"><i class="fa-solid fa-bell"></i>Novedades</a>
+    <a id="menu-notificaciones" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i>Notificaciones</a>
     <div class="session-box">
       <strong id="usuarioSesionNombre">Sin sesion</strong>
       <span id="usuarioSesionRol"></span>
@@ -445,6 +446,25 @@
         </table>
       </div>
     </section>
+
+    <section id="notificaciones" class="hidden">
+      <h1>Notificaciones de Correccion</h1>
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Empleados con revision</h3><p id="notificacionTotal">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Campos pendientes</h3><p id="notificacionCampos">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Nomina cargada</h3><p id="notificacionCarga">Pendiente</p></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-primary" onclick="cargarNominaValidadaInicial(true)"><i class="fa-solid fa-file-import"></i> Recargar nomina validada</button>
+        <button class="btn btn-secondary" onclick="renderNotificacionesCorreccion()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Codigo</th><th>Empleado</th><th>Cedula</th><th>Campos a corregir</th><th>Cargo</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro Servicio</th><th>Accion</th></tr></thead>
+          <tbody id="tablaNotificacionesCorreccion"></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
 <script>
@@ -489,6 +509,8 @@ const supabaseClient=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)
 const ADMIN_EMAIL='registroycontroldenomina@coraamoca.gob.do';
 const ADMIN_PASSWORD='Coraamoca2025*';
 const ADMIN_SEED_VERSION='admin-coraamoca-2025-v1';
+const NOMINA_VALIDADA_ARCHIVO='NOMINA ABRIL 2026 VALIDADA.xlsx';
+const NOMINA_VALIDADA_VERSION='nomina-abril-2026-validada-v1';
 
 const gruposOcupacionales=[
   {id:'I',nombre:'Grupo Ocupacional I - Servicios Generales',cargos:[
@@ -543,6 +565,7 @@ function showSection(id){
   if(id==='estructura'){renderEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
+  if(id==='notificaciones')renderNotificacionesCorreccion();
 }
 
 function guardarStorage(){
@@ -901,8 +924,43 @@ function grupoPorCargo(cargo){
   return gruposOcupacionales.find(grupo=>grupo.cargos.some(item=>item.toLowerCase()===(cargo||'').toLowerCase()));
 }
 
+function normalizarCatalogo(value){
+  return String(value||'')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase()
+    .replace(/\(A\)/g,' ')
+    .replace(/[^A-Z0-9]+/g,' ')
+    .replace(/\b(DE|DEL|LA|LAS|LOS|Y)\b/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function grupoPorCargoFlexible(cargo){
+  const key=normalizarCatalogo(cargo);
+  return gruposOcupacionales.find(grupo=>grupo.cargos.some(item=>normalizarCatalogo(item)===key));
+}
+
+function asegurarCargoCatalogo(cargo,grupoNombre){
+  cargo=String(cargo||'').trim();
+  if(!cargo)return;
+  if(grupoPorCargoFlexible(cargo))return;
+  let grupo=gruposOcupacionales.find(item=>item.nombre===grupoNombre);
+  if(!grupo){
+    grupo=gruposOcupacionales.find(item=>item.id==='REV');
+    if(!grupo){
+      grupo={id:'REV',nombre:'Revisar - Cargos pendientes',cargos:[]};
+      gruposOcupacionales.push(grupo);
+    }
+  }
+  if(!grupo.cargos.some(item=>normalizarCatalogo(item)===normalizarCatalogo(cargo))){
+    grupo.cargos.push(cargo);
+    grupo.cargos.sort((a,b)=>a.localeCompare(b,'es'));
+  }
+}
+
 function seleccionarCargoEmpleado(emp){
-  const grupo=gruposOcupacionales.find(item=>item.nombre===emp.grupoOcupacional)||grupoPorCargo(emp.cargo);
+  const grupo=gruposOcupacionales.find(item=>item.nombre===emp.grupoOcupacional)||grupoPorCargoFlexible(emp.cargo)||grupoPorCargo(emp.cargo);
   document.getElementById('grupoOcupacionalSelect').value=grupo?.id||'';
   actualizarCargosEmpleado();
   document.getElementById('cargoSelect').value=emp.cargo||'';
@@ -924,6 +982,8 @@ function seleccionarCentroServicio(valor){
   sel.value=valor||'';
   document.getElementById('centroServicio').value=valor||'';
   if(valor&&!centrosServicio.includes(valor)){
+    centrosServicio.push(valor);
+    centrosServicio.sort((a,b)=>a.localeCompare(b,'es'));
     sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valor)}">${safeText(valor)}</option>`);
     sel.value=valor;
   }
@@ -933,7 +993,7 @@ function completarGruposOcupacionalesEmpleados(){
   let cambio=false;
   empleados.forEach(emp=>{
     if(emp.grupoOcupacional)return;
-    const grupo=grupoPorCargo(emp.cargo);
+    const grupo=grupoPorCargoFlexible(emp.cargo)||grupoPorCargo(emp.cargo);
     if(grupo){
       emp.grupoOcupacional=grupo.nombre;
       cambio=true;
@@ -1529,7 +1589,9 @@ form.addEventListener('submit',e=>{
     nota:document.getElementById('nota').value||'',
     estado:document.getElementById('estado').value||'Activo',
     fechaSalida:document.getElementById('fechaSalida').value||'',
-    tipoSalida:document.getElementById('tipoSalida').value||''
+    tipoSalida:document.getElementById('tipoSalida').value||'',
+    validacionesCorreccion:{cargo:false,direccion:false,departamento:false,division:false,seccion:false,centroServicio:false},
+    correccionPendiente:false
   };
 
   const idx=empleados.findIndex(x=>x.codigo===codigo);
@@ -1538,6 +1600,7 @@ form.addEventListener('submit',e=>{
   limpiarFormulario();
   renderEmpleados();
   renderNovedades();
+  renderNotificacionesCorreccion();
   actualizarDashboard();
   alert('Empleado guardado correctamente.');
 });
@@ -1749,6 +1812,7 @@ function eliminarEmpleado(codigo){
   guardarStorage();
   renderEmpleados();
   renderNovedades();
+  renderNotificacionesCorreccion();
   actualizarDashboard();
 }
 
@@ -1768,6 +1832,189 @@ function excelDateToISO(value){
   return isNaN(date)?String(value):date.toISOString().slice(0,10);
 }
 
+function rowValue(row,...keys){
+  for(const key of keys){
+    if(row[key]!==undefined&&row[key]!==null&&String(row[key]).trim()!=='')return row[key];
+  }
+  return '';
+}
+
+function validarDatoImportado(valor,estadoValidacion){
+  if(estadoValidacion)return estadoValidacion==='Revisar';
+  return false;
+}
+
+function nombreCanonicoUnidad(tipo,nombre){
+  const key=normalizarCatalogo(nombre);
+  const mapa={
+    'Direccion|GENERAL':'Direccion General',
+    'Direccion|COMUNICACIONES':'Direccion de Comunicaciones',
+    'Direccion|RECURSOS HUMANOS':'Direccion de Recursos Humanos',
+    'Direccion|ADMINISTRATIVO FINANCIERO':'Direccion Administrativo y Financiero',
+    'Direccion|TECNICA':'Direccion Tecnica',
+    'Direccion|COMERCIAL':'Direccion Comercial',
+    'Direccion|PLANIFICACION DESARROLLO':'Direccion de Planificacion y Desarrollo',
+    'Departamento|ADMINISTRATIVO':'Departamento Administrativo',
+    'Departamento|FINANCIERO':'Departamento Financiero',
+    'Departamento|TECNOLOGIA INFORMACION COMUNICACION TIC':'Departamento De Tecnologia de la Informacion y Comunicacion (TIC)',
+    'Departamento|TECNOLOGIAS INFORMACION COMUNICACION TIC':'Departamento De Tecnologia de la Informacion y Comunicacion (TIC)',
+    'Seccion|SERVICIO CLIENTE':'Atencion al Cliente',
+    'Seccion|ATENCION CLIENTE':'Atencion al Cliente'
+  };
+  return mapa[`${tipo}|${key}`]||String(nombre||'').trim();
+}
+
+function formatoDocumentoImportado(value){
+  const raw=String(value||'').trim();
+  const digits=raw.replace(/\D/g,'');
+  if(digits.length===11)return `${digits.slice(0,3)}-${digits.slice(3,10)}-${digits.slice(10)}`;
+  return raw;
+}
+
+function asegurarUnidadDesdeImportacion(tipo,nombre,padreId=''){
+  nombre=nombreCanonicoUnidad(tipo,nombre);
+  if(!nombre)return null;
+  let unidad=estructuraOrganizacional.find(item=>
+    item.tipo===tipo&&
+    item.padreId===(padreId||'')&&
+    normalizarCatalogo(item.nombre)===normalizarCatalogo(nombre)
+  );
+  if(unidad)return unidad;
+  unidad={id:crearIdUnidad(),tipo,nombre,padreId:padreId||''};
+  estructuraOrganizacional.push(unidad);
+  return unidad;
+}
+
+function asegurarCatalogosDesdeEmpleadoImportado(emp){
+  const dir=asegurarUnidadDesdeImportacion('Direccion',emp.direccion);
+  const dep=asegurarUnidadDesdeImportacion('Departamento',emp.departamento,dir?.id||'');
+  const div=asegurarUnidadDesdeImportacion('Division',emp.division,dep?.id||dir?.id||'');
+  asegurarUnidadDesdeImportacion('Seccion',emp.seccion,div?.id||dep?.id||dir?.id||'');
+  if(emp.centroServicio&&!centrosServicio.some(item=>normalizarCatalogo(item)===normalizarCatalogo(emp.centroServicio))){
+    centrosServicio.push(emp.centroServicio);
+    centrosServicio.sort((a,b)=>a.localeCompare(b,'es'));
+  }
+  asegurarCargoCatalogo(emp.cargo,emp.grupoOcupacional);
+}
+
+function sincronizarCatalogosDesdeEmpleadosImportados(){
+  empleados.forEach(emp=>{
+    if(emp.origenImportacion===NOMINA_VALIDADA_VERSION||emp.correccionPendiente){
+      asegurarCatalogosDesdeEmpleadoImportado(emp);
+    }
+  });
+}
+
+function empleadoDesdeFilaNomina(row){
+  const cargo=String(rowValue(row,'Cargo','cargo')).trim();
+  const grupoValidado=String(rowValue(row,'Grupo Validado','Grupo','grupo','GrupoOcupacional','grupoOcupacional')).trim();
+  const grupoCatalogo=grupoPorCargoFlexible(cargo);
+  const grupoOcupacional=grupoValidado&&grupoValidado!=='Revisar'?grupoValidado:(grupoCatalogo?.nombre||'Revisar');
+  const validaciones={
+    cargo:validarDatoImportado(cargo,rowValue(row,'Estado Cargo')),
+    direccion:validarDatoImportado(rowValue(row,'Direccion'),rowValue(row,'Direccion Validacion')),
+    departamento:validarDatoImportado(rowValue(row,'Departamento'),rowValue(row,'Departamento Validacion')),
+    division:validarDatoImportado(rowValue(row,'Division'),rowValue(row,'Division Validacion')),
+    seccion:validarDatoImportado(rowValue(row,'Seccion'),rowValue(row,'Seccion Validacion')),
+    centroServicio:validarDatoImportado(rowValue(row,'Centro de Servicio','CentroServicio','centroServicio'),rowValue(row,'Centro Servicio Validacion'))
+  };
+  const camposPendientes=Object.keys(validaciones).filter(key=>validaciones[key]);
+  const cedula=formatoDocumentoImportado(rowValue(row,'Cedula','Cédula','CÃ©dula','cedula'));
+  const salario=Number(rowValue(row,'Total de Salario','Sueldo Bruto','salario','Salario'))||0;
+  const estadoNomina=String(rowValue(row,'Estatus','Estado','estado')).trim();
+  return {
+    codigo:rowValue(row,'codigo','Codigo')||('EMP'+(contadorCodigo++)),
+    nombre:String(rowValue(row,'Empleado','nombre','Nombre')).trim(),
+    apellido:String(rowValue(row,'Apellido','apellido')).trim(),
+    tipoDocumento:cedula?'Cedula':'Pasaporte',
+    cedula,
+    cargo,
+    grupoOcupacional,
+    salario,
+    salarioInterinato:Number(rowValue(row,'Interinato','salarioInterinato','SalarioInterinato'))||0,
+    salarioBase:Number(rowValue(row,'Sueldo Bruto','salarioBase','SalarioBase'))||salario,
+    montoAumento:0,
+    porcentajeAumento:0,
+    fechaAumento:'',
+    fechaIngreso:excelDateToISO(rowValue(row,'Fecha Entrada','fechaIngreso','FechaIngreso')),
+    tipoIngreso:'Creacion',
+    sustituyeA:'',
+    direccion:String(rowValue(row,'Direccion','direccion')).trim(),
+    departamento:String(rowValue(row,'Departamento','departamento')).trim(),
+    division:String(rowValue(row,'Division','division')).trim(),
+    seccion:String(rowValue(row,'Seccion','seccion')).trim(),
+    centroServicio:String(rowValue(row,'Centro de Servicio','CentroServicio','centroServicio')).trim(),
+    direccionResidencia:'',
+    sector:'',
+    cuentaBanco:String(rowValue(row,'Cuenta Banco','cuentaBanco','CuentaBanco')).trim(),
+    edad:Number(rowValue(row,'Edad','edad'))||'',
+    nivelEscolaridad:String(rowValue(row,'Nivel Academico','Nivel Académico','Nivel AcadÃ©mico','nivelEscolaridad','NivelEscolaridad')).trim(),
+    estadoCivil:'',
+    hijos:0,
+    tipoSangre:'',
+    licenciaConducir:'',
+    otrosDatos:String(rowValue(row,'Depend. Adicionales','Telefono','Teléfono','TelÃ©fono')).trim(),
+    recomendado:'',
+    nota:camposPendientes.length?'Requiere accion de correccion: '+camposPendientes.join(', '):'',
+    estado:estadoNomina&&estadoNomina.toLowerCase().includes('inactivo')?'Inactivo':'Activo',
+    fechaSalida:excelDateToISO(rowValue(row,'Fecha Salida','fechaSalida','FechaSalida')),
+    tipoSalida:String(rowValue(row,'Tipo de Salida','tipoSalida','TipoSalida')).trim(),
+    validacionesCorreccion:validaciones,
+    correccionPendiente:camposPendientes.length>0,
+    origenImportacion:NOMINA_VALIDADA_VERSION
+  };
+}
+
+function importarFilasEmpleados(json,{actualizarExistentes=true}={}){
+  let nuevos=0;
+  let actualizados=0;
+  json.forEach(row=>{
+    const emp=empleadoDesdeFilaNomina(row);
+    if(!emp.nombre&&!emp.apellido&&!emp.cedula)return;
+    asegurarCatalogosDesdeEmpleadoImportado(emp);
+    const idx=empleados.findIndex(item=>
+      (emp.cedula&&item.cedula===emp.cedula)||
+      (emp.codigo&&item.codigo===emp.codigo)
+    );
+    if(idx>=0&&actualizarExistentes){
+      empleados[idx]={...empleados[idx],...emp,codigo:empleados[idx].codigo||emp.codigo};
+      actualizados++;
+    }else if(idx<0){
+      empleados.push(emp);
+      nuevos++;
+    }
+  });
+  guardarStorage();
+  renderGruposOcupacionales();
+  renderCentrosServicio();
+  renderEmpleados();
+  renderNovedades();
+  renderNotificacionesCorreccion();
+  actualizarDashboard();
+  return {nuevos,actualizados};
+}
+
+async function cargarNominaValidadaInicial(forzar=false){
+  if(!forzar&&localStorage.getItem('nominaValidadaVersion')===NOMINA_VALIDADA_VERSION)return;
+  if(!window.XLSX){
+    if(forzar)alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
+    return;
+  }
+  try{
+    const response=await fetch(NOMINA_VALIDADA_ARCHIVO);
+    if(!response.ok)throw new Error('No se encontro '+NOMINA_VALIDADA_ARCHIVO);
+    const wb=XLSX.read(await response.arrayBuffer(),{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const json=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+    const resumen=importarFilasEmpleados(json,{actualizarExistentes:true});
+    localStorage.setItem('nominaValidadaVersion',NOMINA_VALIDADA_VERSION);
+    localStorage.setItem('nominaValidadaFechaCarga',new Date().toISOString());
+    if(forzar)alert(`Nomina validada cargada. Nuevos: ${resumen.nuevos}. Actualizados: ${resumen.actualizados}.`);
+  }catch(error){
+    if(forzar)alert('No se pudo cargar la nomina validada: '+error.message);
+  }
+}
+
 function importarEmpleados(){
   const file=document.getElementById('archivoImportar').files[0];
   if(!file)return alert('Seleccione un archivo Excel.');
@@ -1778,52 +2025,9 @@ function importarEmpleados(){
     const wb=XLSX.read(data,{type:'array'});
     const ws=wb.Sheets[wb.SheetNames[0]];
     const json=XLSX.utils.sheet_to_json(ws,{defval:''});
-    json.forEach(row=>{
-      empleados.push({
-        codigo:row.codigo||row.Codigo||('EMP'+(contadorCodigo++)),
-        nombre:row.nombre||row.Nombre||'',
-        apellido:row.apellido||row.Apellido||'',
-        tipoDocumento:row.tipoDocumento||row.TipoDocumento||'Cedula',
-        cedula:row.cedula||row.Cedula||'',
-        cargo:row.cargo||row.Cargo||'',
-        grupoOcupacional:row.grupoOcupacional||row.GrupoOcupacional||row.grupo||row.Grupo||grupoPorCargo(row.cargo||row.Cargo||'')?.nombre||'',
-        salario:Number(row.salario||row.Salario||0),
-        salarioInterinato:Number(row.salarioInterinato||row.SalarioInterinato||0),
-        salarioBase:Number(row.salarioBase||row.SalarioBase||row.salario||row.Salario||0),
-        montoAumento:Number(row.montoAumento||row.MontoAumento||0),
-        porcentajeAumento:Number(row.porcentajeAumento||row.PorcentajeAumento||0),
-        fechaAumento:excelDateToISO(row.fechaAumento||row.FechaAumento),
-        fechaIngreso:excelDateToISO(row.fechaIngreso||row.FechaIngreso),
-        tipoIngreso:row.tipoIngreso||row.TipoIngreso||'',
-        sustituyeA:row.sustituyeA||row.SustituyeA||'',
-        direccion:row.direccion||row.Direccion||'',
-        departamento:row.departamento||row.Departamento||'',
-        division:row.division||row.Division||'',
-        seccion:row.seccion||row.Seccion||'',
-        centroServicio:row.centroServicio||row.CentroServicio||'',
-        direccionResidencia:row.direccionResidencia||row.DireccionResidencia||'',
-        sector:row.sector||row.Sector||'',
-        cuentaBanco:row.cuentaBanco||row.CuentaBanco||'',
-        edad:Number(row.edad||row.Edad||0)||'',
-        nivelEscolaridad:row.nivelEscolaridad||row.NivelEscolaridad||'',
-        estadoCivil:row.estadoCivil||row.EstadoCivil||'',
-        hijos:Number(row.hijos||row.Hijos||0)||0,
-        tipoSangre:row.tipoSangre||row.TipoSangre||'',
-        licenciaConducir:row.licenciaConducir||row.LicenciaConducir||'',
-        otrosDatos:row.otrosDatos||row.OtrosDatos||'',
-        recomendado:row.recomendado||row.Recomendado||'',
-        nota:row.nota||row.Nota||'',
-        estado:row.estado||row.Estado||'Activo',
-        fechaSalida:excelDateToISO(row.fechaSalida||row.FechaSalida),
-        tipoSalida:row.tipoSalida||row.TipoSalida||''
-      });
-    });
-    guardarStorage();
+    const resumen=importarFilasEmpleados(json,{actualizarExistentes:true});
     migrarEstructuraDesdeEmpleados();
-    renderEmpleados();
-    renderNovedades();
-    actualizarDashboard();
-    alert('Importacion completada.');
+    alert(`Importacion completada. Nuevos: ${resumen.nuevos}. Actualizados: ${resumen.actualizados}.`);
   };
   reader.readAsArrayBuffer(file);
 }
@@ -1913,6 +2117,40 @@ function renderNovedades(){
     else if(emp.tipoIngreso==='Creacion')detalle='Ingreso por Creacion';
     else if(emp.tipoIngreso==='Aumento')detalle='Aumento salarial';
     return `<tr><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(detalle)}</td><td>${safeText(emp.nota||'')}</td><td><button class="btn btn-danger" onclick="eliminarEmpleado('${safeText(emp.codigo)}')">Eliminar</button></td></tr>`;
+  }).join('');
+}
+
+function camposCorreccionEmpleado(emp){
+  const validaciones=emp.validacionesCorreccion||{};
+  return Object.keys(validaciones).filter(key=>validaciones[key]);
+}
+
+function textoCampoCorreccion(campo){
+  return ({
+    cargo:'Cargo',
+    direccion:'Direccion',
+    departamento:'Departamento',
+    division:'Division',
+    seccion:'Seccion',
+    centroServicio:'Centro de Servicio'
+  })[campo]||campo;
+}
+
+function empleadosConCorreccionPendiente(){
+  return empleadosPermitidos().filter(emp=>emp.correccionPendiente||camposCorreccionEmpleado(emp).length);
+}
+
+function renderNotificacionesCorreccion(){
+  const tbody=document.getElementById('tablaNotificacionesCorreccion');
+  if(!tbody)return;
+  const pendientes=empleadosConCorreccionPendiente();
+  const totalCampos=pendientes.reduce((sum,emp)=>sum+camposCorreccionEmpleado(emp).length,0);
+  document.getElementById('notificacionTotal').textContent=pendientes.length;
+  document.getElementById('notificacionCampos').textContent=totalCampos;
+  document.getElementById('notificacionCarga').textContent=localStorage.getItem('nominaValidadaVersion')===NOMINA_VALIDADA_VERSION?'Cargada':'Pendiente';
+  tbody.innerHTML=pendientes.map(emp=>{
+    const campos=camposCorreccionEmpleado(emp).map(textoCampoCorreccion).join(', ');
+    return `<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(campos)}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td><button class="btn btn-warning" onclick="cargarParaEditar('${safeText(emp.codigo)}')"><i class="fa-solid fa-pen"></i> Corregir</button></td></tr>`;
   }).join('');
 }
 
@@ -2129,6 +2367,8 @@ function limpiarFormulario(){
   asegurarEstructuraPorDirecciones();
   asegurarUnidadesDesdeCargosGrupoV();
   migrarEstructuraDesdeEmpleados();
+  await cargarNominaValidadaInicial(false);
+  sincronizarCatalogosDesdeEmpleadosImportados();
   archivePayrollIfNeeded();
   renderPayrollHistorySelect();
   renderEstructura();
@@ -2137,6 +2377,7 @@ function limpiarFormulario(){
   renderUsuarioVista();
   renderEmpleados();
   renderNovedades();
+  renderNotificacionesCorreccion();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
