@@ -104,6 +104,7 @@
     <a id="menu-empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Empleados</a>
     <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
     <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
+    <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -177,6 +178,7 @@
           <button class="btn btn-secondary" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i> Ver empleados</button>
           <button class="btn btn-secondary" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i> Reclutamiento</button>
           <button class="btn btn-secondary" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i> Asistencia</button>
+          <button class="btn btn-secondary" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i> Nomina</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -738,6 +740,91 @@
       </div>
     </section>
 
+    <section id="nomina" class="hidden">
+      <h1>Panel de Nomina</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Nomina bruta</h3><p id="nominaBrutaTotal">RD$ 0</p></div>
+        <div class="card presupuesto-consumido"><h3>Deducciones</h3><p id="nominaDeduccionesTotal">RD$ 0</p></div>
+        <div class="card presupuesto-disponible"><h3>Neto a pagar</h3><p id="nominaNetoTotal">RD$ 0</p></div>
+        <div class="card presupuesto-total"><h3>Empleados procesados</h3><p id="nominaEmpleadosTotal">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Procesamiento de nomina</h2>
+        <form id="formNomina" novalidate>
+          <input id="nominaPeriodo" type="month" required>
+          <input id="nominaHorasExtraValor" type="number" min="0" step="0.01" placeholder="Valor hora extra">
+          <input id="nominaAfpPct" type="number" min="0" step="0.01" placeholder="AFP %">
+          <input id="nominaArsPct" type="number" min="0" step="0.01" placeholder="ARS %">
+          <input id="nominaIsrPct" type="number" min="0" step="0.01" placeholder="Impuestos / ISR %">
+          <input id="nominaSeguridadPct" type="number" min="0" step="0.01" placeholder="Seguridad social adicional %">
+          <input id="nominaBonificacionGeneral" type="number" min="0" step="0.01" placeholder="Bonificacion general">
+          <input id="nominaIncentivoGeneral" type="number" min="0" step="0.01" placeholder="Incentivo general">
+          <input id="nominaComisionGeneral" type="number" min="0" step="0.01" placeholder="Comision general">
+          <input id="nominaOtrasDeducciones" type="number" min="0" step="0.01" placeholder="Otras deducciones">
+          <textarea id="nominaNota" placeholder="Nota del procesamiento"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-calculator"></i> Procesar nomina</button>
+            <button class="btn btn-secondary" type="button" onclick="guardarPagoNomina()"><i class="fa-solid fa-floppy-disk"></i> Guardar historial de pago</button>
+            <button class="btn btn-warning" type="button" onclick="generarTransferenciasBancarias()"><i class="fa-solid fa-building-columns"></i> Transferencias bancarias</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Calculo automatico de salarios</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Codigo</th><th>Empleado</th><th>Cargo</th><th>Salario</th><th>Horas extras</th><th>Bonificaciones</th><th>Incentivos</th><th>Comisiones</th><th>AFP</th><th>ARS</th><th>Impuestos</th><th>Seg. social</th><th>Otras ded.</th><th>Neto</th><th>Accion</th></tr></thead>
+            <tbody id="tablaNominaProcesada"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Prestaciones, liquidaciones y recibos</h2>
+        <form id="formLiquidacion" novalidate>
+          <select id="liquidacionEmpleado"></select>
+          <input id="liquidacionFechaSalida" type="date">
+          <input id="liquidacionCesantia" type="number" min="0" step="0.01" placeholder="Cesantia">
+          <input id="liquidacionPreaviso" type="number" min="0" step="0.01" placeholder="Preaviso">
+          <input id="liquidacionVacaciones" type="number" min="0" step="0.01" placeholder="Vacaciones">
+          <input id="liquidacionRegalia" type="number" min="0" step="0.01" placeholder="Regalia proporcional">
+          <textarea id="liquidacionNota" placeholder="Observacion de liquidacion"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar liquidacion</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Empleado</th><th>Cesantia</th><th>Preaviso</th><th>Vacaciones</th><th>Regalia</th><th>Total</th><th>Nota</th><th>Accion</th></tr></thead>
+            <tbody id="tablaLiquidaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Transferencias bancarias</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Empleado</th><th>Cuenta banco</th><th>Neto a transferir</th></tr></thead>
+            <tbody id="tablaTransferenciasNomina"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Historial de pagos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Fecha</th><th>Empleados</th><th>Bruto</th><th>Deducciones</th><th>Neto</th><th>Nota</th><th>Accion</th></tr></thead>
+            <tbody id="tablaHistorialPagos"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -749,6 +836,7 @@
           <option value="vacantes">Vacantes</option>
           <option value="estructura">Empleados por Estructura</option>
           <option value="asistencia">Asistencia y Tiempo</option>
+          <option value="nomina_procesada">Nomina Procesada</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -864,6 +952,10 @@ let vacantes=JSON.parse(localStorage.getItem('vacantesReclutamiento')||'[]');
 let candidatos=JSON.parse(localStorage.getItem('candidatosReclutamiento')||'[]');
 let asistenciasTiempo=JSON.parse(localStorage.getItem('asistenciasTiempo')||'[]');
 let horariosLaborales=JSON.parse(localStorage.getItem('horariosLaborales')||'[]');
+let nominaProcesada=JSON.parse(localStorage.getItem('nominaProcesada')||'[]');
+let historialPagosNomina=JSON.parse(localStorage.getItem('historialPagosNomina')||'[]');
+let liquidacionesNomina=JSON.parse(localStorage.getItem('liquidacionesNomina')||'[]');
+let transferenciasNomina=JSON.parse(localStorage.getItem('transferenciasNomina')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -979,6 +1071,7 @@ function showSection(id){
   if(id==='empleados')renderEmpleados();
   if(id==='reclutamiento')renderReclutamiento();
   if(id==='asistencia')renderAsistenciaTiempo();
+  if(id==='nomina')renderNominaPanel();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1000,6 +1093,10 @@ function guardarStorage(){
   localStorage.setItem('candidatosReclutamiento',JSON.stringify(candidatos));
   localStorage.setItem('asistenciasTiempo',JSON.stringify(asistenciasTiempo));
   localStorage.setItem('horariosLaborales',JSON.stringify(horariosLaborales));
+  localStorage.setItem('nominaProcesada',JSON.stringify(nominaProcesada));
+  localStorage.setItem('historialPagosNomina',JSON.stringify(historialPagosNomina));
+  localStorage.setItem('liquidacionesNomina',JSON.stringify(liquidacionesNomina));
+  localStorage.setItem('transferenciasNomina',JSON.stringify(transferenciasNomina));
 }
 
 function guardarPresupuesto(){
@@ -3237,6 +3334,11 @@ function generarReporte(){
         const emp=empleados.find(e=>e.codigo===item.empleadoCodigo)||{};
         tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(emp.direccion||'')}</td><td>${safeText(emp.departamento||'')}</td><td>${safeText(emp.division||'')}</td><td>${safeText(emp.seccion||'')}</td><td>${safeText(item.estado)}</td><td>${safeText(item.entrada)}</td><td>${safeText(item.salida)}</td><td>${safeText(horarioNombrePorId(item.horarioId))}</td><td>${safeText(item.horasExtra||0)}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.ubicacion)}</td><td>${safeText(item.reloj)}</td><td>${safeText(item.nota)}</td></tr>`);
       });
+  }else if(tipo==='nomina_procesada'){
+    thead.innerHTML='<tr><th>Periodo</th><th>Codigo</th><th>Empleado</th><th>Cargo</th><th>Salario</th><th>Horas extras</th><th>Bonificaciones</th><th>Incentivos</th><th>Comisiones</th><th>AFP</th><th>ARS</th><th>Impuestos</th><th>Seguridad social</th><th>Otras deducciones</th><th>Total deducciones</th><th>Neto</th><th>Fondo</th><th>Programa</th></tr>';
+    nominaProcesada.forEach(item=>{
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.periodo)}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(item.empleado)}</td><td>${safeText(item.cargo)}</td><td>${formatoNumero(item.salario)}</td><td>${formatoNumero(item.montoHorasExtra)}</td><td>${formatoNumero(item.bonificaciones)}</td><td>${formatoNumero(item.incentivos)}</td><td>${formatoNumero(item.comisiones)}</td><td>${formatoNumero(item.afp)}</td><td>${formatoNumero(item.ars)}</td><td>${formatoNumero(item.impuestos)}</td><td>${formatoNumero(item.seguridadSocial)}</td><td>${formatoNumero(item.otrasDeducciones)}</td><td>${formatoNumero(item.totalDeducciones)}</td><td>${formatoNumero(item.neto)}</td><td>${safeText(item.fondo)}</td><td>${safeText(item.programa)}</td></tr>`);
+    });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -3712,6 +3814,251 @@ function renderCalendarioAsistencia(){
   }).join('');
 }
 
+function crearIdNomina(prefix){
+  if(window.crypto?.randomUUID)return prefix+'-'+window.crypto.randomUUID();
+  return prefix+'-'+Date.now()+Math.random().toString(16).slice(2);
+}
+
+function periodoActualYYYYMM(){
+  return ahoraYYYYMM();
+}
+
+function asistenciaPeriodoEmpleado(codigo,periodo){
+  return asistenciasTiempo.filter(item=>item.empleadoCodigo===codigo&&(item.fecha||'').startsWith(periodo));
+}
+
+function horasExtraPeriodoEmpleado(codigo,periodo){
+  return asistenciaPeriodoEmpleado(codigo,periodo).reduce((sum,item)=>sum+Number(item.horasExtra||0),0);
+}
+
+function calcularRegistroNomina(emp,config){
+  const salario=calcularNominaEmpleado(emp);
+  const horasExtra=horasExtraPeriodoEmpleado(emp.codigo,config.periodo);
+  const montoHorasExtra=horasExtra*Number(config.valorHoraExtra||0);
+  const bonificaciones=Number(config.bonificacionGeneral||0);
+  const incentivos=Number(config.incentivoGeneral||0);
+  const comisiones=Number(config.comisionGeneral||0);
+  const bruto=salario+montoHorasExtra+bonificaciones+incentivos+comisiones;
+  const afp=bruto*(Number(config.afpPct||0)/100);
+  const ars=bruto*(Number(config.arsPct||0)/100);
+  const impuestos=bruto*(Number(config.isrPct||0)/100);
+  const seguridadSocial=bruto*(Number(config.seguridadPct||0)/100);
+  const otrasDeducciones=Number(config.otrasDeducciones||0);
+  const totalDeducciones=afp+ars+impuestos+seguridadSocial+otrasDeducciones;
+  const neto=Math.max(0,bruto-totalDeducciones);
+  return {
+    id:crearIdNomina('NOMDET'),
+    periodo:config.periodo,
+    empleadoCodigo:emp.codigo,
+    empleado:`${emp.nombre} ${emp.apellido}`,
+    cargo:emp.cargo||'',
+    salario,
+    horasExtra,
+    montoHorasExtra,
+    bonificaciones,
+    incentivos,
+    comisiones,
+    afp,
+    ars,
+    impuestos,
+    seguridadSocial,
+    otrasDeducciones,
+    totalDeducciones,
+    bruto,
+    neto,
+    cuentaBanco:emp.cuentaBanco||emp.cuentaBancaria||'',
+    fondo:emp.fondo||'',
+    programa:emp.programa||'',
+    fechaProcesado:new Date().toISOString()
+  };
+}
+
+function configNominaDesdeFormulario(){
+  return {
+    periodo:document.getElementById('nominaPeriodo').value||periodoActualYYYYMM(),
+    valorHoraExtra:Number(document.getElementById('nominaHorasExtraValor').value)||0,
+    afpPct:Number(document.getElementById('nominaAfpPct').value)||0,
+    arsPct:Number(document.getElementById('nominaArsPct').value)||0,
+    isrPct:Number(document.getElementById('nominaIsrPct').value)||0,
+    seguridadPct:Number(document.getElementById('nominaSeguridadPct').value)||0,
+    bonificacionGeneral:Number(document.getElementById('nominaBonificacionGeneral').value)||0,
+    incentivoGeneral:Number(document.getElementById('nominaIncentivoGeneral').value)||0,
+    comisionGeneral:Number(document.getElementById('nominaComisionGeneral').value)||0,
+    otrasDeducciones:Number(document.getElementById('nominaOtrasDeducciones').value)||0,
+    nota:document.getElementById('nominaNota').value
+  };
+}
+
+function asegurarValoresNomina(){
+  const periodo=document.getElementById('nominaPeriodo');
+  if(periodo&&!periodo.value)periodo.value=periodoActualYYYYMM();
+  if(!document.getElementById('nominaAfpPct').value)document.getElementById('nominaAfpPct').value='2.87';
+  if(!document.getElementById('nominaArsPct').value)document.getElementById('nominaArsPct').value='3.04';
+}
+
+function resumenNominaProcesada(){
+  return {
+    empleados:nominaProcesada.length,
+    bruto:nominaProcesada.reduce((sum,item)=>sum+Number(item.bruto||0),0),
+    deducciones:nominaProcesada.reduce((sum,item)=>sum+Number(item.totalDeducciones||0),0),
+    neto:nominaProcesada.reduce((sum,item)=>sum+Number(item.neto||0),0)
+  };
+}
+
+function renderNominaPanel(){
+  asegurarValoresNomina();
+  renderLiquidacionEmpleados();
+  renderNominaProcesada();
+  renderTransferenciasNomina();
+  renderHistorialPagosNomina();
+  renderLiquidacionesNomina();
+}
+
+document.getElementById('formNomina').addEventListener('submit',event=>{
+  event.preventDefault();
+  const config=configNominaDesdeFormulario();
+  if(!config.periodo){alert('Seleccione el periodo de nomina.');return;}
+  nominaProcesada=empleadosPermitidos()
+    .filter(emp=>emp.estado!=='Inactivo')
+    .map(emp=>calcularRegistroNomina(emp,config));
+  guardarStorage();
+  renderNominaPanel();
+  actualizarDashboard();
+});
+
+function renderNominaProcesada(){
+  const tbody=document.getElementById('tablaNominaProcesada');
+  if(!tbody)return;
+  const resumen=resumenNominaProcesada();
+  document.getElementById('nominaBrutaTotal').textContent=formatoNumero(resumen.bruto);
+  document.getElementById('nominaDeduccionesTotal').textContent=formatoNumero(resumen.deducciones);
+  document.getElementById('nominaNetoTotal').textContent=formatoNumero(resumen.neto);
+  document.getElementById('nominaEmpleadosTotal').textContent=resumen.empleados;
+  tbody.innerHTML=nominaProcesada.map(item=>
+    `<tr><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(item.empleado)}</td><td>${safeText(item.cargo)}</td><td>${formatoNumero(item.salario)}</td><td>${safeText(item.horasExtra)} / ${formatoNumero(item.montoHorasExtra)}</td><td>${formatoNumero(item.bonificaciones)}</td><td>${formatoNumero(item.incentivos)}</td><td>${formatoNumero(item.comisiones)}</td><td>${formatoNumero(item.afp)}</td><td>${formatoNumero(item.ars)}</td><td>${formatoNumero(item.impuestos)}</td><td>${formatoNumero(item.seguridadSocial)}</td><td>${formatoNumero(item.otrasDeducciones)}</td><td>${formatoNumero(item.neto)}</td><td><button class="btn btn-secondary" onclick="imprimirReciboNomina('${safeText(item.empleadoCodigo)}')"><i class="fa-solid fa-print"></i> Recibo</button></td></tr>`
+  ).join('');
+}
+
+function guardarPagoNomina(){
+  if(!nominaProcesada.length){alert('Procese la nomina antes de guardarla.');return;}
+  const config=configNominaDesdeFormulario();
+  const resumen=resumenNominaProcesada();
+  historialPagosNomina.unshift({
+    id:crearIdNomina('PAGO'),
+    periodo:nominaProcesada[0]?.periodo||config.periodo,
+    fecha:new Date().toISOString(),
+    empleados:resumen.empleados,
+    bruto:resumen.bruto,
+    deducciones:resumen.deducciones,
+    neto:resumen.neto,
+    nota:config.nota
+  });
+  guardarStorage();
+  renderHistorialPagosNomina();
+  mostrarToast('Historial de pago guardado');
+}
+
+function renderHistorialPagosNomina(){
+  const tbody=document.getElementById('tablaHistorialPagos');
+  if(!tbody)return;
+  tbody.innerHTML=historialPagosNomina.map(item=>
+    `<tr><td>${safeText(item.periodo)}</td><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.empleados)}</td><td>${formatoNumero(item.bruto)}</td><td>${formatoNumero(item.deducciones)}</td><td>${formatoNumero(item.neto)}</td><td>${safeText(item.nota)}</td><td><button class="btn btn-danger" onclick="eliminarPagoNomina('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function eliminarPagoNomina(id){
+  if(!confirm('Desea eliminar este historial de pago?'))return;
+  historialPagosNomina=historialPagosNomina.filter(item=>item.id!==id);
+  guardarStorage();
+  renderHistorialPagosNomina();
+}
+
+function generarTransferenciasBancarias(){
+  if(!nominaProcesada.length){alert('Procese la nomina antes de generar transferencias.');return;}
+  transferenciasNomina=nominaProcesada.map(item=>({
+    id:crearIdNomina('TRF'),
+    periodo:item.periodo,
+    empleadoCodigo:item.empleadoCodigo,
+    empleado:item.empleado,
+    cuentaBanco:item.cuentaBanco||'Sin cuenta registrada',
+    neto:item.neto
+  }));
+  guardarStorage();
+  renderTransferenciasNomina();
+  mostrarToast('Transferencias generadas');
+}
+
+function renderTransferenciasNomina(){
+  const tbody=document.getElementById('tablaTransferenciasNomina');
+  if(!tbody)return;
+  tbody.innerHTML=transferenciasNomina.map(item=>
+    `<tr><td>${safeText(item.periodo)}</td><td>${safeText(item.empleado)}</td><td>${safeText(item.cuentaBanco)}</td><td>${formatoNumero(item.neto)}</td></tr>`
+  ).join('');
+}
+
+function renderLiquidacionEmpleados(){
+  const sel=document.getElementById('liquidacionEmpleado');
+  if(!sel)return;
+  const actual=sel.value;
+  sel.innerHTML='<option value="">Empleado para liquidacion</option>';
+  empleadosPermitidos()
+    .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+    .forEach(emp=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo+' - '+emp.nombre+' '+emp.apellido)}</option>`));
+  if(actual&&Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+}
+
+document.getElementById('formLiquidacion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const codigo=document.getElementById('liquidacionEmpleado').value;
+  const emp=empleados.find(item=>item.codigo===codigo);
+  if(!emp){alert('Seleccione el empleado.');return;}
+  const liquidacion={
+    id:crearIdNomina('LIQ'),
+    fecha:new Date().toISOString(),
+    empleadoCodigo:codigo,
+    empleado:`${emp.nombre} ${emp.apellido}`,
+    fechaSalida:document.getElementById('liquidacionFechaSalida').value||emp.fechaSalida||'',
+    cesantia:Number(document.getElementById('liquidacionCesantia').value)||0,
+    preaviso:Number(document.getElementById('liquidacionPreaviso').value)||0,
+    vacaciones:Number(document.getElementById('liquidacionVacaciones').value)||0,
+    regalia:Number(document.getElementById('liquidacionRegalia').value)||0,
+    nota:document.getElementById('liquidacionNota').value
+  };
+  liquidacion.total=liquidacion.cesantia+liquidacion.preaviso+liquidacion.vacaciones+liquidacion.regalia;
+  liquidacionesNomina.unshift(liquidacion);
+  guardarStorage();
+  document.getElementById('formLiquidacion').reset();
+  renderNominaPanel();
+  mostrarToast('Liquidacion guardada');
+});
+
+function renderLiquidacionesNomina(){
+  const tbody=document.getElementById('tablaLiquidaciones');
+  if(!tbody)return;
+  tbody.innerHTML=liquidacionesNomina.map(item=>
+    `<tr><td>${safeText(formatoFechaISO(item.fechaSalida||item.fecha))}</td><td>${safeText(item.empleado)}</td><td>${formatoNumero(item.cesantia)}</td><td>${formatoNumero(item.preaviso)}</td><td>${formatoNumero(item.vacaciones)}</td><td>${formatoNumero(item.regalia)}</td><td>${formatoNumero(item.total)}</td><td>${safeText(item.nota)}</td><td><button class="btn btn-danger" onclick="eliminarLiquidacionNomina('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function eliminarLiquidacionNomina(id){
+  if(!confirm('Desea eliminar esta liquidacion?'))return;
+  liquidacionesNomina=liquidacionesNomina.filter(item=>item.id!==id);
+  guardarStorage();
+  renderLiquidacionesNomina();
+}
+
+function imprimirReciboNomina(codigo){
+  const item=nominaProcesada.find(row=>row.empleadoCodigo===codigo);
+  if(!item)return;
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Recibo de Nomina</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{color:#1d3557}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{border:1px solid #ddd;padding:8px;text-align:left}.total{font-weight:bold;background:#f1f5f9}</style></head><body><h1>Recibo de Nomina</h1><p><strong>Periodo:</strong> ${safeText(item.periodo)}</p><p><strong>Empleado:</strong> ${safeText(item.empleado)} (${safeText(item.empleadoCodigo)})</p><p><strong>Cargo:</strong> ${safeText(item.cargo)}</p><table><tr><th>Concepto</th><th>Monto</th></tr><tr><td>Salario</td><td>${formatoNumero(item.salario)}</td></tr><tr><td>Horas extras</td><td>${formatoNumero(item.montoHorasExtra)}</td></tr><tr><td>Bonificaciones</td><td>${formatoNumero(item.bonificaciones)}</td></tr><tr><td>Incentivos</td><td>${formatoNumero(item.incentivos)}</td></tr><tr><td>Comisiones</td><td>${formatoNumero(item.comisiones)}</td></tr><tr class="total"><td>Bruto</td><td>${formatoNumero(item.bruto)}</td></tr><tr><td>AFP</td><td>${formatoNumero(item.afp)}</td></tr><tr><td>ARS</td><td>${formatoNumero(item.ars)}</td></tr><tr><td>Impuestos</td><td>${formatoNumero(item.impuestos)}</td></tr><tr><td>Seguridad social</td><td>${formatoNumero(item.seguridadSocial)}</td></tr><tr><td>Otras deducciones</td><td>${formatoNumero(item.otrasDeducciones)}</td></tr><tr class="total"><td>Neto a pagar</td><td>${formatoNumero(item.neto)}</td></tr></table></body></html>`;
+  const win=window.open('','_blank');
+  if(!win){alert('El navegador bloqueo la ventana de impresion.');return;}
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -3737,6 +4084,7 @@ function renderCalendarioAsistencia(){
   renderNotificacionesCorreccion();
   renderReclutamiento();
   renderAsistenciaTiempo();
+  renderNominaPanel();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
