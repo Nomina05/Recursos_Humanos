@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
   :root{--bg:#f1f5f9;--accent:#1d3557;--card1:#4f46e5;--card2:#059669;--card3:#ef4444}
   body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);display:flex;min-height:100vh}
@@ -322,7 +323,7 @@
             <input id="accionMotivo" placeholder="Motivo" oninput="validarAccionPersonal()">
             <textarea id="accionObservaciones" placeholder="Observaciones" oninput="validarAccionPersonal()"></textarea>
             <div class="org-path" id="accionEstado">Complete tipo, fecha y motivo para imprimir.</div>
-            <button class="btn btn-primary hidden" type="button" id="btnImprimirAccion" onclick="imprimirAccionPersonal()"><i class="fa-solid fa-print"></i> Imprimir accion</button>
+            <button class="btn btn-primary hidden" type="button" id="btnImprimirAccion" onclick="imprimirAccionPersonal()"><i class="fa-solid fa-file-word"></i> Imprimir accion</button>
           </div>
         </div>
       </section>
@@ -1628,60 +1629,102 @@ function accionValor(id){
   return document.getElementById(id).value||'';
 }
 
-function imprimirAccionPersonal(){
+function escapeXml(value){
+  return String(value??'').replace(/[<>&"']/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+}
+
+function nombreArchivoSeguro(value){
+  return String(value||'accion').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'')||'accion';
+}
+
+function descargarBlob(blob,nombre){
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download=nombre;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1200);
+}
+
+function crearCajaWord(texto,left,top,width,height=14,size=8,bold=true){
+  if(!texto)return'';
+  const z=26000000+Math.round(left+top+width+height);
+  return `<w:r><w:pict><v:shape type="#_x0000_t202" style="position:absolute;margin-left:${left}pt;margin-top:${top}pt;width:${width}pt;height:${height}pt;mso-position-horizontal-relative:page;mso-position-vertical-relative:page;z-index:${z}" filled="false" stroked="false"><v:textbox inset="0,0,0,0"><w:txbxContent><w:p><w:pPr><w:spacing w:line="120" w:lineRule="exact"/><w:jc w:val="left"/></w:pPr><w:r><w:rPr>${bold?'<w:b/>':''}<w:rFonts w:ascii="Arial"/><w:sz w:val="${size*2}"/></w:rPr><w:t xml:space="preserve">${escapeXml(texto)}</w:t></w:r></w:p></w:txbxContent></v:textbox><w10:wrap type="none"/></v:shape></w:pict></w:r>`;
+}
+
+function crearCapaAccionWord(emp){
+  const nombreCompleto=`${emp.nombre||''} ${emp.apellido||''}`.trim();
+  const ruta=[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' / ');
+  const fecha=formatoFechaISO(accionValor('accionFecha'));
+  const salarioAnterior=accionValor('accionSalarioAnterior')?formatoNumero(accionValor('accionSalarioAnterior')):'';
+  const salarioNuevo=accionValor('accionSalarioNuevo')?formatoNumero(accionValor('accionSalarioNuevo')):'';
+  const campos=[
+    crearCajaWord(emp.codigo,50,128,70),
+    crearCajaWord(fecha,416,128,90),
+    crearCajaWord(accionValor('accionTipo'),50,174,126),
+    crearCajaWord(nombreCompleto,190,174,190),
+    crearCajaWord(emp.cedula,416,174,120),
+    crearCajaWord(emp.cargo,50,230,185),
+    crearCajaWord(accionValor('accionPuestoAnterior'),275,230,170),
+    crearCajaWord(accionValor('accionPuestoNuevo'),50,285,190),
+    crearCajaWord(salarioAnterior,275,285,115),
+    crearCajaWord(salarioNuevo,416,285,115),
+    crearCajaWord(emp.direccion,50,348,165),
+    crearCajaWord(emp.departamento,250,348,165),
+    crearCajaWord([emp.division,emp.seccion].filter(Boolean).join(' / '),50,405,260),
+    crearCajaWord(emp.centroServicio,330,405,170),
+    crearCajaWord(formatoFechaISO(emp.fechaIngreso),50,460,90),
+    crearCajaWord(emp.estado,170,460,90),
+    crearCajaWord(accionValor('accionMotivo'),50,523,360,22,8,false),
+    crearCajaWord(accionValor('accionObservaciones'),50,585,430,34,8,false),
+    crearCajaWord(ruta,50,630,430,20,7,false)
+  ].join('');
+  return campos;
+}
+
+function reemplazarMuestrasAccion(xml,emp){
+  const nombreCompleto=escapeXml(`${emp.nombre||''} ${emp.apellido||''}`.trim());
+  const fecha=escapeXml(formatoFechaISO(accionValor('accionFecha')));
+  const firmante=escapeXml(usuarioSesionActual()?.nombre||'');
+  let doc=xml;
+  doc=doc.replace(/<w:t>COMARKY REYES <\/w:t><\/w:r><w:r><w:rPr><w:spacing[^>]*\/><\/w:rPr><w:t>HUEL<\/w:t>/g,`<w:t>${nombreCompleto}</w:t></w:r><w:r><w:rPr/><w:t></w:t>`);
+  doc=doc.replace(/<w:t>LIC\. REYNALDO <\/w:t><\/w:r><w:r><w:rPr><w:spacing[^>]*\/><\/w:rPr><w:t>MENDEZ<\/w:t>/g,`<w:t>${firmante}</w:t></w:r><w:r><w:rPr/><w:t></w:t>`);
+  doc=doc.replace(/<w:t>29\/9\/2025<\/w:t>/g,`<w:t>${fecha}</w:t>`);
+  return doc;
+}
+
+async function imprimirAccionPersonal(){
   const emp=empleados.find(item=>item.codigo===empleadoPanelCodigo);
   if(!emp)return;
-  const ruta=[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' > ');
-  const campo=(label,value,left,top,width=180,size=10)=>`<div class="field" style="left:${left}%;top:${top}%;width:${width}px;font-size:${size}px"><span>${safeText(label)}</span>${safeText(value||'')}</div>`;
-  const html=`<!doctype html>
-  <html lang="es">
-  <head>
-    <meta charset="utf-8">
-    <title>Accion de Personal - ${safeText(emp.codigo)}</title>
-    <style>
-      @page{size:letter;margin:0}
-      html,body{width:8.5in;height:11in;margin:0;background:#777;font-family:Arial,sans-serif;color:#111}
-      .page{position:relative;width:8.5in;height:11in;margin:0 auto;background:#fff;overflow:hidden}
-      .template{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1}
-      .overlay{position:absolute;inset:0;z-index:2;pointer-events:none}
-      .field{position:absolute;min-height:14px;font-weight:700;line-height:1.15;background:rgba(255,255,255,.78);padding:1px 3px;box-sizing:border-box}
-      .field span{display:block;font-size:7px;font-weight:400;text-transform:uppercase;color:#333}
-      .hint{position:fixed;right:12px;top:12px;z-index:3;background:#fff;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:12px}
-      @media print{html,body{background:#fff}.hint{display:none}.page{margin:0}.field{background:transparent}}
-    </style>
-  </head>
-  <body>
-    <div class="hint">Si los datos no caen exactamente sobre el formulario, ajusta escala/margenes de impresion a 100%.</div>
-    <div class="page">
-      <iframe class="template" src="accion_personal.pdf#toolbar=0&navpanes=0&scrollbar=0"></iframe>
-      <div class="overlay">
-        ${campo('Codigo',emp.codigo,8,16,90)}
-        ${campo('Fecha accion',formatoFechaISO(accionValor('accionFecha')),68,16,150)}
-        ${campo('Tipo accion',accionValor('accionTipo'),8,22,180)}
-        ${campo('Empleado',`${emp.nombre} ${emp.apellido}`,31,22,260)}
-        ${campo(emp.tipoDocumento||'Cedula',emp.cedula,68,22,160)}
-        ${campo('Cargo actual',emp.cargo,8,29,250)}
-        ${campo('Cargo anterior',accionValor('accionPuestoAnterior'),45,29,230)}
-        ${campo('Cargo nuevo',accionValor('accionPuestoNuevo'),8,36,250)}
-        ${campo('Salario anterior',formatoNumero(accionValor('accionSalarioAnterior')),45,36,160)}
-        ${campo('Salario nuevo',formatoNumero(accionValor('accionSalarioNuevo')),68,36,160)}
-        ${campo('Direccion',emp.direccion,8,44,220)}
-        ${campo('Departamento',emp.departamento,38,44,220)}
-        ${campo('Division / Seccion',[emp.division,emp.seccion].filter(Boolean).join(' / '),8,51,320)}
-        ${campo('Centro servicio',emp.centroServicio,52,51,220)}
-        ${campo('Fecha ingreso',formatoFechaISO(emp.fechaIngreso),8,58,140)}
-        ${campo('Estado',emp.estado,28,58,120)}
-        ${campo('Motivo',accionValor('accionMotivo'),8,66,520,9)}
-        ${campo('Observaciones',accionValor('accionObservaciones'),8,74,560,9)}
-      </div>
-    </div>
-    <script>window.onload=function(){setTimeout(function(){window.print();},900);};<\/script>
-  </body>
-  </html>`;
-  const printWindow=window.open('','_blank');
-  printWindow.document.open();
-  printWindow.document.write(html);
-  printWindow.document.close();
+  if(!window.JSZip){
+    alert('No se pudo cargar JSZip. Verifique la conexion a internet o el archivo CDN para generar el Word.');
+    return;
+  }
+  try{
+    const response=await fetch('accion_personal.docx');
+    if(!response.ok)throw new Error('No se encontro accion_personal.docx junto al sistema.');
+    const zip=await JSZip.loadAsync(await response.arrayBuffer());
+    const documentFile=zip.file('word/document.xml');
+    if(!documentFile)throw new Error('La plantilla Word no contiene word/document.xml.');
+    let documentXml=await documentFile.async('string');
+    documentXml=reemplazarMuestrasAccion(documentXml,emp);
+    const capa=crearCapaAccionWord(emp);
+    const insertPoint='</w:p><w:tbl';
+    if(documentXml.includes(insertPoint)){
+      documentXml=documentXml.replace(insertPoint,`${capa}</w:p><w:tbl`);
+    }else{
+      documentXml=documentXml.replace('</w:body>',`<w:p>${capa}</w:p></w:body>`);
+    }
+    zip.file('word/document.xml',documentXml);
+    const blob=await zip.generateAsync({type:'blob'});
+    const nombre=nombreArchivoSeguro(`Accion_${emp.codigo}_${emp.nombre}_${emp.apellido}`)+'.docx';
+    descargarBlob(blob,nombre);
+    document.getElementById('accionEstado').textContent='Accion generada en Word. Abra el archivo y use Imprimir.';
+  }catch(error){
+    alert('No se pudo generar la accion en Word: '+error.message);
+  }
 }
 
 function cargarParaEditar(codigo){
