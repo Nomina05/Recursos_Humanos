@@ -33,6 +33,10 @@
   .circle-center p{margin:0;font-weight:700;font-size:20px;color:#111}
   .charts{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
   .chart-box{background:#fff;padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);width:420px;max-width:100%}
+  .dashboard-section{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-bottom:16px}
+  .dashboard-section h2{margin:0 0 12px;color:#1d3557;font-size:18px}
+  .quick-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .quick-actions .btn{display:inline-flex;align-items:center;gap:6px}
   form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;background:#fff;padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
   form input,form select,form textarea{padding:8px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit}
   .btn{padding:8px 12px;border-radius:6px;border:none;cursor:pointer}
@@ -107,7 +111,7 @@
 
   <div class="content" id="mainContent">
     <section id="dashboard">
-      <h1>Resumen de Presupuesto & Nomina</h1>
+      <h1>Panel Administrativo</h1>
 
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
         <div style="min-width:260px">
@@ -134,6 +138,44 @@
         </div>
       </div>
 
+      <div class="dashboard-section">
+        <h2>Resumen general de empleados</h2>
+        <div class="dashboard-cards">
+          <div class="card presupuesto-total"><h3>Total empleados</h3><p id="kpiTotalEmpleados">0</p></div>
+          <div class="card presupuesto-disponible"><h3>Activos</h3><p id="kpiEmpleadosActivos">0</p></div>
+          <div class="card presupuesto-consumido"><h3>Inactivos</h3><p id="kpiEmpleadosInactivos">0</p></div>
+          <div class="card presupuesto-total"><h3>Nuevos ingresos</h3><p id="kpiNuevosIngresos">0</p></div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Indicadores KPI de RRHH</h2>
+        <div class="dashboard-cards">
+          <div class="card presupuesto-total"><h3>Asistencia del dia</h3><p id="kpiAsistenciaDia">0</p></div>
+          <div class="card presupuesto-disponible"><h3>Vacaciones pendientes</h3><p id="kpiVacacionesPendientes">0</p></div>
+          <div class="card presupuesto-consumido"><h3>Licencias medicas</h3><p id="kpiLicenciasMedicas">0</p></div>
+          <div class="card presupuesto-total"><h3>Cumpleanos del mes</h3><p id="kpiCumpleanos">0</p></div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Alertas y accesos rapidos</h2>
+        <div class="dashboard-cards">
+          <div class="card presupuesto-consumido"><h3>Correcciones pendientes</h3><p id="kpiCorreccionesPendientes">0</p></div>
+          <div class="card presupuesto-disponible"><h3>Notificaciones RRHH</h3><p id="kpiNotificacionesRRHH">0</p></div>
+          <div class="card presupuesto-total"><h3>Reportes ejecutivos</h3><p id="kpiReportesEjecutivos">5</p></div>
+        </div>
+        <div class="quick-actions">
+          <button class="btn btn-primary" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i> Registrar empleado</button>
+          <button class="btn btn-secondary" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i> Ver empleados</button>
+          <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
+          <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
+          <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Estadisticas de nomina</h2>
       <div class="dashboard-cards">
         <div class="card presupuesto-total"><h3>Presupuesto Total</h3><p id="presupuestoTotal">RD$ 0</p></div>
         <div class="card presupuesto-total"><h3>Tope Fondo 30</h3><p id="presupuestoFondo30">RD$ 0</p></div>
@@ -141,19 +183,28 @@
         <div class="card presupuesto-disponible"><h3>Presupuesto Disponible (inactivos)</h3><p id="presupuestoDisponible">RD$ 0</p></div>
         <div class="card presupuesto-consumido"><h3>Total Consumido</h3><p id="presupuestoConsumido">RD$ 0</p></div>
       </div>
+      </div>
 
-      <div class="table-wrap" style="margin-bottom:16px">
+      <div class="dashboard-section">
+        <h2>Presupuesto programado 2026</h2>
+      <div class="table-wrap">
         <table>
           <thead><tr><th>Fondo</th><th>Programa</th><th>Actividad / Renglon</th><th>Monto Programado</th></tr></thead>
           <tbody id="tablaPresupuestoNomina"></tbody>
         </table>
       </div>
+      </div>
 
+      <div class="dashboard-section">
+        <h2>Indicador de consumo presupuestario</h2>
       <div class="circular-indicator">
         <canvas id="circleChart" width="200" height="200"></canvas>
         <div class="circle-center"><p id="circlePercentage">0%</p><small class="small">Consumido</small></div>
       </div>
+      </div>
 
+      <div class="dashboard-section">
+        <h2>Reportes ejecutivos</h2>
       <div class="charts">
         <div class="chart-box">
           <h4 style="margin:0 0 8px">Distribucion por Tipo (cantidad empleados)</h4>
@@ -163,6 +214,7 @@
           <h4 style="margin:0 0 8px">Comparativo por Tipo (monto DOP)</h4>
           <canvas id="graficoBarras"></canvas>
         </div>
+      </div>
       </div>
     </section>
 
@@ -250,6 +302,7 @@
             <input id="sector" placeholder="Sector">
             <input id="cuentaBanco" placeholder="Cuenta de banco">
             <input id="edad" type="number" min="0" placeholder="Edad">
+            <input id="fechaNacimiento" type="date" title="Fecha de nacimiento">
             <select id="nivelEscolaridad">
               <option value="">Nivel de escolaridad</option>
               <option>Basica</option>
@@ -1994,6 +2047,7 @@ form.addEventListener('submit',e=>{
     sector:document.getElementById('sector').value||'',
     cuentaBanco:document.getElementById('cuentaBanco').value||'',
     edad:Number(document.getElementById('edad').value)||'',
+    fechaNacimiento:document.getElementById('fechaNacimiento').value||'',
     nivelEscolaridad:document.getElementById('nivelEscolaridad').value||'',
     estadoCivil:document.getElementById('estadoCivil').value||'',
     hijos:Number(document.getElementById('hijos').value)||0,
@@ -2061,6 +2115,7 @@ function mostrarPanelEmpleado(codigo){
     ['SubProg',emp.subProg],
     ['Actividad',emp.actividad],
     ['Edad',emp.edad],
+    ['Fecha de nacimiento',formatoFechaISO(emp.fechaNacimiento)],
     ['Nivel de escolaridad',emp.nivelEscolaridad],
     ['Estado civil',emp.estadoCivil],
     ['Hijos',emp.hijos],
@@ -2372,6 +2427,7 @@ function empleadoDesdeFilaNomina(row){
     sector:'',
     cuentaBanco:String(rowValue(row,'Cuenta Banco','cuentaBanco','CuentaBanco')).trim(),
     edad:Number(rowValue(row,'Edad','edad'))||'',
+    fechaNacimiento:excelDateToISO(rowValue(row,'Fecha Nacimiento','fechaNacimiento','FechaNacimiento')),
     nivelEscolaridad:String(rowValue(row,'Nivel Academico','Nivel Académico','Nivel AcadÃ©mico','nivelEscolaridad','NivelEscolaridad')).trim(),
     estadoCivil:'',
     hijos:0,
@@ -2459,7 +2515,7 @@ function importarEmpleados(){
 function descargarPlantilla(){
   if(!window.XLSX)return alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
   const wb=XLSX.utils.book_new();
-  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","fondo","programa","subProg","actividad","direccionResidencia","sector","cuentaBanco","edad","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
+  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","fondo","programa","subProg","actividad","direccionResidencia","sector","cuentaBanco","edad","fechaNacimiento","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
   const ws=XLSX.utils.aoa_to_sheet(wsData);
   XLSX.utils.book_append_sheet(wb,ws,'PlantillaEmpleados');
   XLSX.writeFile(wb,'PlantillaEmpleados.xlsx');
@@ -2758,6 +2814,23 @@ function calcularImpactoPresupuesto(emp){
   return Number(emp.salario||0);
 }
 
+function esMismoMes(fecha,base=new Date()){
+  if(!fecha)return false;
+  const d=new Date(fecha);
+  if(isNaN(d))return false;
+  return d.getMonth()===base.getMonth();
+}
+
+function esFechaDentroDias(fecha,dias){
+  if(!fecha)return false;
+  const d=new Date(fecha);
+  if(isNaN(d))return false;
+  const hoy=new Date();
+  const limite=new Date();
+  limite.setDate(hoy.getDate()+dias);
+  return d>=new Date(hoy.getFullYear(),hoy.getMonth(),hoy.getDate())&&d<=limite;
+}
+
 function archivePayrollIfNeeded(){
   const key=ahoraYYYYMM();
   if(!payrollHistory[key]){
@@ -2808,6 +2881,25 @@ function actualizarDashboard(){
   renderUsuarioVista();
   renderPresupuestoNomina();
   const empleadosVista=empleadosPermitidos();
+  const totalEmpleados=empleadosVista.length;
+  const activos=empleadosVista.filter(emp=>emp.estado!=='Inactivo').length;
+  const inactivos=empleadosVista.filter(emp=>emp.estado==='Inactivo').length;
+  const nuevosIngresos=empleadosVista.filter(emp=>esFechaDentroDias(emp.fechaIngreso,30)).length;
+  const correcciones=empleadosConCorreccionPendiente().length;
+  const notificaciones=correcciones+novedadesCorreccion.length;
+  const licenciasMedicas=empleadosVista.filter(emp=>(emp.tipoIngreso||'').toLowerCase().includes('licencia')||(emp.nota||'').toLowerCase().includes('licencia medica')).length;
+  const vacacionesPendientes=empleadosVista.filter(emp=>(emp.nota||'').toLowerCase().includes('vacacion')).length;
+  const cumpleanos=empleadosVista.filter(emp=>esMismoMes(emp.fechaNacimiento)).length;
+  document.getElementById('kpiTotalEmpleados').innerText=totalEmpleados;
+  document.getElementById('kpiEmpleadosActivos').innerText=activos;
+  document.getElementById('kpiEmpleadosInactivos').innerText=inactivos;
+  document.getElementById('kpiNuevosIngresos').innerText=nuevosIngresos;
+  document.getElementById('kpiAsistenciaDia').innerText=activos;
+  document.getElementById('kpiVacacionesPendientes').innerText=vacacionesPendientes;
+  document.getElementById('kpiLicenciasMedicas').innerText=licenciasMedicas;
+  document.getElementById('kpiCumpleanos').innerText=cumpleanos;
+  document.getElementById('kpiCorreccionesPendientes').innerText=correcciones;
+  document.getElementById('kpiNotificacionesRRHH').innerText=notificaciones;
   const disponible=empleadosVista.filter(emp=>emp.estado==='Inactivo').reduce((s,emp)=>s+Number(emp.salarioBase||emp.salario||0),0);
   let consumido=0;
   empleadosVista.filter(emp=>emp.estado!=='Inactivo').forEach(emp=>{
