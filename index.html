@@ -234,6 +234,16 @@
         <select id="centroServicioSelect" onchange="sincronizarCentroServicio()"></select>
 
         <div class="form-block">
+          <h3>Clasificacion presupuestaria</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <select id="fondo" onchange="actualizarProgramasPresupuesto()"></select>
+            <select id="programa" onchange="actualizarActividadesPresupuesto()"></select>
+            <input id="subProg" placeholder="SubProg">
+            <select id="actividad"></select>
+          </div>
+        </div>
+
+        <div class="form-block">
           <h3>Datos personales y bancarios</h3>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
             <input id="direccionResidencia" placeholder="Direccion de residencia">
@@ -1228,6 +1238,36 @@ function seleccionarCentroServicio(valor){
   }
 }
 
+function setSelectValores(selectId,items,placeholder,actual=''){
+  const sel=document.getElementById(selectId);
+  sel.innerHTML=`<option value="">${placeholder}</option>`;
+  listaUnica(items).forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(item)}">${safeText(item)}</option>`));
+  if(actual&&Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+}
+
+function renderClasificacionPresupuestaria(emp={}){
+  const fondos=[...new Set(presupuestoNomina2026.map(item=>item.fondo))];
+  setSelectValores('fondo',fondos,'Fondo',emp.fondo||'');
+  actualizarProgramasPresupuesto(emp.programa||'',emp.actividad||'');
+  document.getElementById('subProg').value=emp.subProg||'';
+}
+
+function actualizarProgramasPresupuesto(programaActual='',actividadActual=''){
+  const fondo=document.getElementById('fondo').value;
+  const programas=presupuestoNomina2026.filter(item=>!fondo||item.fondo===fondo).map(item=>item.programa);
+  setSelectValores('programa',programas,'Programa',programaActual);
+  actualizarActividadesPresupuesto(actividadActual);
+}
+
+function actualizarActividadesPresupuesto(actividadActual=''){
+  const fondo=document.getElementById('fondo').value;
+  const programa=document.getElementById('programa').value;
+  const actividades=presupuestoNomina2026
+    .filter(item=>(!fondo||item.fondo===fondo)&&(!programa||item.programa===programa))
+    .map(item=>item.actividad);
+  setSelectValores('actividad',actividades,'Actividad',actividadActual);
+}
+
 function completarGruposOcupacionalesEmpleados(){
   let cambio=false;
   empleados.forEach(emp=>{
@@ -1946,6 +1986,10 @@ form.addEventListener('submit',e=>{
     division:document.getElementById('division').value||'',
     seccion:document.getElementById('seccion').value||'',
     centroServicio:document.getElementById('centroServicio').value||'',
+    fondo:document.getElementById('fondo').value||'',
+    programa:document.getElementById('programa').value||'',
+    subProg:document.getElementById('subProg').value||'',
+    actividad:document.getElementById('actividad').value||'',
     direccionResidencia:document.getElementById('direccionResidencia').value||'',
     sector:document.getElementById('sector').value||'',
     cuentaBanco:document.getElementById('cuentaBanco').value||'',
@@ -2012,6 +2056,10 @@ function mostrarPanelEmpleado(codigo){
     ['Division',emp.division],
     ['Seccion',emp.seccion],
     ['Centro de Servicio',emp.centroServicio],
+    ['Fondo',emp.fondo],
+    ['Programa',emp.programa],
+    ['SubProg',emp.subProg],
+    ['Actividad',emp.actividad],
     ['Edad',emp.edad],
     ['Nivel de escolaridad',emp.nivelEscolaridad],
     ['Estado civil',emp.estadoCivil],
@@ -2170,6 +2218,7 @@ function cargarParaEditar(codigo){
   document.getElementById('salarioBase').value=emp.salarioBase||emp.salario||0;
   seleccionarCargoEmpleado(emp);
   seleccionarCentroServicio(emp.centroServicio);
+  renderClasificacionPresupuestaria(emp);
   seleccionarEstructuraEmpleado(emp);
   actualizarSustitutos();
   calcularPorcentajeAumento();
@@ -2283,7 +2332,7 @@ function empleadoDesdeFilaNomina(row){
   const grupoOcupacional=grupoValidado&&grupoValidado!=='Revisar'?grupoValidado:(grupoCatalogo?.nombre||'Revisar');
   const validaciones={
     cargo:validarDatoImportado(cargo,rowValue(row,'Estado Cargo')),
-    direccion:validarDatoImportado(rowValue(row,'Direccion'),rowValue(row,'Direccion Validacion')),
+        direccion:validarDatoImportado(rowValue(row,'Direccion'),rowValue(row,'Direccion Validacion')),
     departamento:validarDatoImportado(rowValue(row,'Departamento'),rowValue(row,'Departamento Validacion')),
     division:validarDatoImportado(rowValue(row,'Division'),rowValue(row,'Division Validacion')),
     seccion:validarDatoImportado(rowValue(row,'Seccion'),rowValue(row,'Seccion Validacion')),
@@ -2315,6 +2364,10 @@ function empleadoDesdeFilaNomina(row){
     division:String(rowValue(row,'Division','division')).trim(),
     seccion:String(rowValue(row,'Seccion','seccion')).trim(),
     centroServicio:String(rowValue(row,'Centro de Servicio','CentroServicio','centroServicio')).trim(),
+    fondo:String(rowValue(row,'Fondo','fondo')).trim(),
+    programa:String(rowValue(row,'Programa','programa')).trim(),
+    subProg:String(rowValue(row,'SubProg','Subprograma','subProg','subprograma')).trim(),
+    actividad:String(rowValue(row,'Actividad','actividad')).trim(),
     direccionResidencia:'',
     sector:'',
     cuentaBanco:String(rowValue(row,'Cuenta Banco','cuentaBanco','CuentaBanco')).trim(),
@@ -2406,7 +2459,7 @@ function importarEmpleados(){
 function descargarPlantilla(){
   if(!window.XLSX)return alert('No se pudo cargar la libreria de Excel. Revise la conexion a internet.');
   const wb=XLSX.utils.book_new();
-  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","direccionResidencia","sector","cuentaBanco","edad","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
+  const wsData=[["codigo","nombre","apellido","tipoDocumento","cedula","grupoOcupacional","cargo","salario","salarioInterinato","salarioBase","montoAumento","porcentajeAumento","fechaAumento","fechaIngreso","tipoIngreso","sustituyeA","direccion","departamento","division","seccion","centroServicio","fondo","programa","subProg","actividad","direccionResidencia","sector","cuentaBanco","edad","nivelEscolaridad","estadoCivil","hijos","tipoSangre","licenciaConducir","otrosDatos","recomendado","nota","estado","fechaSalida","tipoSalida"]];
   const ws=XLSX.utils.aoa_to_sheet(wsData);
   XLSX.utils.book_append_sheet(wb,ws,'PlantillaEmpleados');
   XLSX.writeFile(wb,'PlantillaEmpleados.xlsx');
@@ -2803,22 +2856,22 @@ function generarReporte(){
 
   const setCache=()=>{reporteCache={headers:Array.from(thead.querySelectorAll('th')).map(t=>t.innerText),rows:Array.from(tbody.querySelectorAll('tr')).map(tr=>Array.from(tr.children).flatMap(td=>[td.innerText,...Array(Math.max(0,(td.colSpan||1)-1)).fill('')]))};};
   const datosBase=emp=>`<td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre)}</td><td>${safeText(emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.grupoOcupacional||'')}</td><td>${safeText(emp.cargo)}</td>`;
-  const datosOrg=emp=>`<td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td>${safeText(emp.recomendado)}</td>`;
+  const datosOrg=emp=>`<td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td>${safeText(emp.fondo||'')}</td><td>${safeText(emp.programa||'')}</td><td>${safeText(emp.subProg||'')}</td><td>${safeText(emp.actividad||'')}</td><td>${safeText(emp.recomendado)}</td>`;
 
   if(tipo==='entradas'){
-    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Monto Aumento</th><th>% Aumento</th><th>Fecha Aumento</th><th>Fecha de Entrada</th><th>Tipo de Entrada</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Nota</th></tr>';
+    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Monto Aumento</th><th>% Aumento</th><th>Fecha Aumento</th><th>Fecha de Entrada</th><th>Tipo de Entrada</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Fondo</th><th>Programa</th><th>SubProg</th><th>Actividad</th><th>Recomendacion</th><th>Nota</th></tr>';
     empleadosReporte.forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${emp.tipoIngreso==='Aumento'?formatoNumero(emp.montoAumento||calcularImpactoPresupuesto(emp)):''}</td><td>${emp.tipoIngreso==='Aumento'?safeText(emp.porcentajeAumento||''):''}</td><td>${safeText(formatoFechaISO(emp.fechaAumento))}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(emp.tipoIngreso)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`));
   }else if(tipo==='salidas'){
-    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Fecha de Entrada</th><th>Fecha de Salida</th><th>Tipo de Salida</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Nota</th></tr>';
+    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Fecha de Entrada</th><th>Fecha de Salida</th><th>Tipo de Salida</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Fondo</th><th>Programa</th><th>SubProg</th><th>Actividad</th><th>Recomendacion</th><th>Nota</th></tr>';
     empleadosReporte.filter(emp=>emp.estado==='Inactivo').forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(formatoFechaISO(emp.fechaSalida))}</td><td>${safeText(emp.tipoSalida)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`));
   }else if(tipo==='sustituciones'){
-    thead.innerHTML='<tr><th>Nombre + Apellido (Entrante)</th><th>Cedula (Entrante)</th><th>Cargo (Entrante)</th><th>Salario (Entrante)</th><th>Nombre + Apellido (Saliente)</th><th>Cedula (Saliente)</th><th>Diferencia Salarial</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Nota</th></tr>';
+    thead.innerHTML='<tr><th>Nombre + Apellido (Entrante)</th><th>Cedula (Entrante)</th><th>Cargo (Entrante)</th><th>Salario (Entrante)</th><th>Nombre + Apellido (Saliente)</th><th>Cedula (Saliente)</th><th>Diferencia Salarial</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Fondo</th><th>Programa</th><th>SubProg</th><th>Actividad</th><th>Recomendacion</th><th>Nota</th></tr>';
     empleadosReporte.filter(emp=>emp.tipoIngreso==='Sustitucion'||emp.tipoIngreso==='Interinato').forEach(emp=>{const saliente=empleados.find(s=>s.codigo===emp.sustituyeA)||{};const dif=Number(emp.salario||0)-Number(saliente.salario||0);tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.cargo)}</td><td>${formatoNumero(emp.salario)}</td><td>${safeText(saliente.nombre?saliente.nombre+' '+saliente.apellido:'')}</td><td>${safeText(saliente.cedula||'')}</td><td>${formatoNumero(dif)}</td>${datosOrg(emp)}<td>${safeText(emp.nota)}</td></tr>`);});
   }else if(tipo==='vacantes'){
-    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Fecha de Entrada</th><th>Fecha de Salida</th><th>Tipo de Salida</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Recomendacion</th><th>Pendiente por Sustituir</th></tr>';
+    thead.innerHTML='<tr><th>Codigo</th><th>Nombre</th><th>Apellido</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Salario</th><th>Fecha de Entrada</th><th>Fecha de Salida</th><th>Tipo de Salida</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro de Servicio</th><th>Fondo</th><th>Programa</th><th>SubProg</th><th>Actividad</th><th>Recomendacion</th><th>Pendiente por Sustituir</th></tr>';
     empleadosReporte.filter(emp=>emp.estado==='Inactivo'&&!empleados.some(s=>s.sustituyeA===emp.codigo)).forEach(emp=>tbody.insertAdjacentHTML('beforeend',`<tr>${datosBase(emp)}<td>${formatoNumero(emp.salario)}</td><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(formatoFechaISO(emp.fechaSalida))}</td><td>${safeText(emp.tipoSalida)}</td>${datosOrg(emp)}<td>Si</td></tr>`));
   }else if(tipo==='estructura'){
-    thead.innerHTML='<tr><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Codigo</th><th>Empleado</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Estado</th><th>Tipo Ingreso</th><th>Aumento</th><th>Fecha Aumento</th><th>Nomina</th></tr>';
+    thead.innerHTML='<tr><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Fondo</th><th>Programa</th><th>SubProg</th><th>Actividad</th><th>Codigo</th><th>Empleado</th><th>Cedula</th><th>Grupo Ocupacional</th><th>Cargo</th><th>Estado</th><th>Tipo Ingreso</th><th>Aumento</th><th>Fecha Aumento</th><th>Nomina</th></tr>';
     const sinAsignar='Sin asignar';
     const grupos={};
     empleadosReporte.forEach(emp=>{
@@ -2834,11 +2887,11 @@ function generarReporte(){
     });
     Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'es')).forEach(ruta=>{
       const grupo=grupos[ruta];
-      tbody.insertAdjacentHTML('beforeend',`<tr class="group-row"><td colspan="14">${safeText(ruta)} | Empleados: ${grupo.empleados.length} | Activos: ${grupo.activos} | Inactivos: ${grupo.inactivos} | Nomina: ${formatoNumero(grupo.nomina)}</td></tr>`);
+      tbody.insertAdjacentHTML('beforeend',`<tr class="group-row"><td colspan="18">${safeText(ruta)} | Empleados: ${grupo.empleados.length} | Activos: ${grupo.activos} | Inactivos: ${grupo.inactivos} | Nomina: ${formatoNumero(grupo.nomina)}</td></tr>`);
       grupo.empleados.sort((a,b)=>(a.apellido+' '+a.nombre).localeCompare(b.apellido+' '+b.nombre,'es')).forEach(emp=>{
-        tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(grupo.direccion)}</td><td>${safeText(grupo.departamento)}</td><td>${safeText(grupo.division)}</td><td>${safeText(grupo.seccion)}</td><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.grupoOcupacional||'')}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.estado)}</td><td>${safeText(emp.tipoIngreso)}</td><td>${emp.tipoIngreso==='Aumento'?formatoNumero(calcularImpactoPresupuesto(emp)):''}</td><td>${safeText(formatoFechaISO(emp.fechaAumento))}</td><td>${formatoNumero(calcularNominaEmpleado(emp))}</td></tr>`);
+        tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(grupo.direccion)}</td><td>${safeText(grupo.departamento)}</td><td>${safeText(grupo.division)}</td><td>${safeText(grupo.seccion)}</td><td>${safeText(emp.fondo||'')}</td><td>${safeText(emp.programa||'')}</td><td>${safeText(emp.subProg||'')}</td><td>${safeText(emp.actividad||'')}</td><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(emp.grupoOcupacional||'')}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.estado)}</td><td>${safeText(emp.tipoIngreso)}</td><td>${emp.tipoIngreso==='Aumento'?formatoNumero(calcularImpactoPresupuesto(emp)):''}</td><td>${safeText(formatoFechaISO(emp.fechaAumento))}</td><td>${formatoNumero(calcularNominaEmpleado(emp))}</td></tr>`);
       });
-      tbody.insertAdjacentHTML('beforeend',`<tr class="subtotal-row"><td>${safeText(grupo.direccion)}</td><td>${safeText(grupo.departamento)}</td><td>${safeText(grupo.division)}</td><td>${safeText(grupo.seccion)}</td><td colspan="2">Subtotal</td><td>${grupo.empleados.length} empleados</td><td></td><td>${grupo.activos} activos</td><td>${grupo.inactivos} inactivos</td><td></td><td></td><td></td><td>${formatoNumero(grupo.nomina)}</td></tr>`);
+      tbody.insertAdjacentHTML('beforeend',`<tr class="subtotal-row"><td>${safeText(grupo.direccion)}</td><td>${safeText(grupo.departamento)}</td><td>${safeText(grupo.division)}</td><td>${safeText(grupo.seccion)}</td><td colspan="4">Subtotal</td><td colspan="2">${grupo.empleados.length} empleados</td><td></td><td></td><td></td><td>${grupo.activos} activos</td><td>${grupo.inactivos} inactivos</td><td></td><td></td><td>${formatoNumero(grupo.nomina)}</td></tr>`);
     });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
@@ -2887,6 +2940,7 @@ function limpiarFormulario(){
   document.getElementById('grupoOcupacionalSelect').value='';
   actualizarCargosEmpleado();
   seleccionarCentroServicio('');
+  renderClasificacionPresupuestaria();
   document.getElementById('salarioInterinato').classList.add('hidden');
   document.getElementById('sustituyeA').classList.add('hidden');
   document.getElementById('empleadoDireccion').value='';
@@ -2899,6 +2953,7 @@ function limpiarFormulario(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
   renderCentrosServicio();
+  renderClasificacionPresupuestaria();
   await asegurarUsuarioAdminBase();
   completarGruposOcupacionalesEmpleados();
   asegurarDireccionesBase();
