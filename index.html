@@ -89,6 +89,7 @@
     <h2>Sistema RRHH</h2>
     <a id="menu-dashboard" class="active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
     <a id="menu-registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
+    <a id="menu-empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Empleados</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -157,8 +158,6 @@
       <h1>Registro de Empleados</h1>
 
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
-        <input id="busquedaEmpleado" placeholder="Buscar por nombre, cedula o codigo" style="padding:8px;border:1px solid #d1d5db;border-radius:6px">
-        <button class="btn btn-secondary" onclick="buscarEmpleado()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
         <input type="file" id="archivoImportar" accept=".xlsx,.xls" style="margin-left:8px">
         <button class="btn btn-primary" onclick="importarEmpleados()"><i class="fa-solid fa-file-import"></i> Importar Excel</button>
         <button class="btn" onclick="descargarPlantilla()"><i class="fa-solid fa-file-excel"></i> Plantilla</button>
@@ -277,9 +276,19 @@
         <div style="grid-column:1/-1;display:flex;gap:8px">
           <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar</button>
           <button type="button" class="btn" onclick="limpiarFormulario()">Nuevo</button>
+          <button type="button" class="btn btn-secondary" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i> Ver empleados</button>
         </div>
       </form>
+    </section>
 
+    <section id="empleados" class="hidden">
+      <h1>Lista de Empleados</h1>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <input id="busquedaEmpleado" placeholder="Buscar por nombre, cedula o codigo" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;min-width:260px">
+        <button class="btn btn-secondary" onclick="buscarEmpleado()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+        <button class="btn" onclick="document.getElementById('busquedaEmpleado').value='';renderEmpleados();"><i class="fa-solid fa-list"></i> Todos</button>
+        <button class="btn btn-primary" onclick="showSection('registro');limpiarFormulario();"><i class="fa-solid fa-user-plus"></i> Nuevo empleado</button>
+      </div>
       <h2>Lista de Empleados</h2>
       <div class="table-wrap">
         <table id="tablaEmpleados">
@@ -561,7 +570,8 @@ function showSection(id){
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
   document.getElementById('menu-'+id)?.classList.add('active');
   if(id==='dashboard')actualizarDashboard();
-  if(id==='registro'){renderEmpleados();actualizarSelectsEmpleado();}
+  if(id==='registro')actualizarSelectsEmpleado();
+  if(id==='empleados')renderEmpleados();
   if(id==='estructura'){renderEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
