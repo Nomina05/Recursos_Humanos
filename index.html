@@ -62,6 +62,9 @@
   .login-error{min-height:18px;color:#dc2626;font-size:13px;font-weight:600}
   .session-box{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.18);font-size:12px;color:#dbeafe}
   .session-box strong{display:block;color:#fff;font-size:13px;margin-bottom:6px}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;z-index:80}
+  .modal-card{width:min(900px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.28);padding:18px}
+  .toast{position:fixed;right:18px;bottom:18px;background:#16a34a;color:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.22);z-index:90;font-weight:600}
   .hidden{display:none}
   .small{font-size:12px;color:#666}
   label.inline{display:block;font-size:12px;color:#374151;margin-bottom:4px}
@@ -521,6 +524,39 @@
     </section>
   </div>
 
+  <div class="modal-backdrop hidden" id="modalCorreccion">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <h2 id="modalCorreccionTitulo" style="margin:0;color:#1d3557">Corregir datos</h2>
+          <p id="modalCorreccionSubtitulo" class="small" style="margin:4px 0 0"></p>
+        </div>
+        <button class="btn" type="button" onclick="cerrarFichaCorreccion()">Cerrar</button>
+      </div>
+      <input type="hidden" id="correccionCodigo">
+      <div class="profile-grid" id="correccionResumen"></div>
+      <form id="formCorreccion" novalidate style="margin-top:14px">
+        <div class="form-block">
+          <h3>Datos a corregir</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <select id="correccionGrupo" onchange="actualizarCargosCorreccion()"></select>
+            <select id="correccionCargo"></select>
+            <select id="correccionDireccion" onchange="actualizarSelectsCorreccion('direccion')"></select>
+            <select id="correccionDepartamento" onchange="actualizarSelectsCorreccion('departamento')"></select>
+            <select id="correccionDivision" onchange="actualizarSelectsCorreccion('division')"></select>
+            <select id="correccionSeccion"></select>
+            <select id="correccionCentroServicio"></select>
+          </div>
+        </div>
+        <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" type="button" onclick="cerrarFichaCorreccion()">Cancelar</button>
+          <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar correccion</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="toast hidden" id="toastSistema"></div>
+
 <script>
 function formatoNumero(n){return Number(n||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'});}
 function formatoFechaISO(s){if(!s)return'';const d=new Date(s);if(isNaN(d))return s;return d.toLocaleDateString('es-DO');}
@@ -553,6 +589,7 @@ let usuarioVistaId=localStorage.getItem('usuarioVistaId')||'';
 let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||'';
 let empleadoPanelCodigo='';
 let reporteCache={headers:[],rows:[]};
+let novedadesCorreccion=JSON.parse(localStorage.getItem('novedadesCorreccion')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -661,6 +698,7 @@ function guardarStorage(){
   localStorage.setItem('usuarioVistaId',usuarioVistaId);
   localStorage.setItem('gruposOcupacionalesCatalogo',JSON.stringify(gruposOcupacionales));
   localStorage.setItem('centrosServicioCatalogo',JSON.stringify(centrosServicio));
+  localStorage.setItem('novedadesCorreccion',JSON.stringify(novedadesCorreccion));
 }
 
 function guardarPresupuesto(){
@@ -2335,7 +2373,7 @@ function mostrarFechaTipoSalida(){
 
 function renderNovedades(){
   const tbody=document.getElementById('tablaNovedades');
-  tbody.innerHTML=empleados.map(emp=>{
+  const novedadesEmpleados=empleados.map(emp=>{
     let detalle='';
     if(emp.estado==='Inactivo')detalle=emp.tipoSalida||'Salida';
     else if(emp.tipoIngreso==='Sustitucion')detalle='Ingreso por Sustitucion';
@@ -2343,7 +2381,11 @@ function renderNovedades(){
     else if(emp.tipoIngreso==='Creacion')detalle='Ingreso por Creacion';
     else if(emp.tipoIngreso==='Aumento')detalle='Aumento salarial';
     return `<tr><td>${safeText(formatoFechaISO(emp.fechaIngreso))}</td><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(detalle)}</td><td>${safeText(emp.nota||'')}</td><td><button class="btn btn-danger" onclick="eliminarEmpleado('${safeText(emp.codigo)}')">Eliminar</button></td></tr>`;
-  }).join('');
+  });
+  const novedadesCorrecciones=novedadesCorreccion.map(item=>
+    `<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.codigo)}</td><td>${safeText(item.empleado)}</td><td>Datos Corregidos</td><td>${safeText(item.detalle)}</td><td><button class="btn btn-secondary" onclick="showSection('empleados');mostrarPanelEmpleado('${safeText(item.codigo)}')"><i class="fa-solid fa-eye"></i> Ver</button></td></tr>`
+  );
+  tbody.innerHTML=[...novedadesCorrecciones,...novedadesEmpleados].join('');
 }
 
 function camposCorreccionEmpleado(emp){
@@ -2366,6 +2408,153 @@ function empleadosConCorreccionPendiente(){
   return empleadosPermitidos().filter(emp=>emp.correccionPendiente||camposCorreccionEmpleado(emp).length);
 }
 
+function mostrarToast(mensaje){
+  const toast=document.getElementById('toastSistema');
+  toast.textContent=mensaje;
+  toast.classList.remove('hidden');
+  setTimeout(()=>toast.classList.add('hidden'),2600);
+}
+
+function setSelectOptions(selectId,items,placeholder,valueSelector=item=>item,labelSelector=item=>item){
+  const sel=document.getElementById(selectId);
+  const actual=sel.value;
+  sel.innerHTML=`<option value="">${placeholder}</option>`;
+  items.forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valueSelector(item))}">${safeText(labelSelector(item))}</option>`));
+  if(Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
+}
+
+function llenarSelectConValorActual(selectId,items,placeholder,actual,valueSelector=item=>item,labelSelector=item=>item){
+  const sel=document.getElementById(selectId);
+  setSelectOptions(selectId,items,placeholder,valueSelector,labelSelector);
+  if(actual&&!Array.from(sel.options).some(option=>normalizarCatalogo(option.value)===normalizarCatalogo(actual))){
+    sel.insertAdjacentHTML('beforeend',`<option value="${safeText(actual)}">${safeText(actual)} (actual)</option>`);
+  }
+  const match=Array.from(sel.options).find(option=>normalizarCatalogo(option.value)===normalizarCatalogo(actual));
+  sel.value=match?.value||'';
+}
+
+function actualizarCargosCorreccion(){
+  const grupo=gruposOcupacionales.find(item=>item.id===document.getElementById('correccionGrupo').value);
+  const emp=empleados.find(item=>item.codigo===document.getElementById('correccionCodigo').value);
+  llenarSelectConValorActual('correccionCargo',grupo?.cargos||[],'Cargo',emp?.cargo||'');
+}
+
+function actualizarSelectsCorreccion(nivel){
+  const dirSel=document.getElementById('correccionDireccion');
+  const depSel=document.getElementById('correccionDepartamento');
+  const divSel=document.getElementById('correccionDivision');
+  const secSel=document.getElementById('correccionSeccion');
+  if(nivel==='direccion'){depSel.value='';divSel.value='';secSel.value='';}
+  if(nivel==='departamento'){divSel.value='';secSel.value='';}
+  if(nivel==='division')secSel.value='';
+
+  const direcciones=estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion').sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  setSelectOptions('correccionDireccion',direcciones,'Direccion',item=>item.id,item=>item.nombre);
+
+  const departamentos=dirSel.value?unidadesHijas(dirSel.value,'Departamento'):[];
+  setSelectOptions('correccionDepartamento',departamentos,'Departamento',item=>item.id,item=>item.nombre);
+
+  const divisionPadreId=depSel.value||dirSel.value;
+  const divisiones=divisionPadreId?unidadesHijas(divisionPadreId,'Division'):[];
+  setSelectOptions('correccionDivision',divisiones,'Division',item=>item.id,item=>item.nombre);
+
+  const seccionPadreId=divSel.value||depSel.value||dirSel.value;
+  const secciones=seccionPadreId?unidadesHijas(seccionPadreId,'Seccion'):[];
+  setSelectOptions('correccionSeccion',secciones,'Seccion',item=>item.id,item=>item.nombre);
+}
+
+function seleccionarEstructuraCorreccion(emp){
+  const match=(tipo,nombre,padreId='')=>estructuraOrganizacional.find(unidad=>unidad.tipo===tipo&&normalizarCatalogo(unidad.nombre)===normalizarCatalogo(nombre||'')&&(padreId===''||unidad.padreId===padreId));
+  const dir=match('Direccion',emp.direccion||'');
+  document.getElementById('correccionDireccion').value=dir?.id||'';
+  actualizarSelectsCorreccion('direccion');
+  const dep=dir?match('Departamento',emp.departamento||'',dir.id):undefined;
+  document.getElementById('correccionDepartamento').value=dep?.id||'';
+  actualizarSelectsCorreccion('departamento');
+  const divPadre=dep?.id||dir?.id||'';
+  const div=divPadre?match('Division',emp.division||'',divPadre):undefined;
+  document.getElementById('correccionDivision').value=div?.id||'';
+  actualizarSelectsCorreccion('division');
+  const secPadre=div?.id||dep?.id||dir?.id||'';
+  const sec=secPadre?match('Seccion',emp.seccion||'',secPadre):undefined;
+  document.getElementById('correccionSeccion').value=sec?.id||'';
+}
+
+function abrirFichaCorreccion(codigo){
+  const emp=empleados.find(item=>item.codigo===codigo);
+  if(!emp)return;
+  document.getElementById('correccionCodigo').value=emp.codigo;
+  document.getElementById('modalCorreccionTitulo').textContent=`Corregir datos - ${emp.nombre} ${emp.apellido}`;
+  document.getElementById('modalCorreccionSubtitulo').textContent=`${emp.codigo} | ${emp.cedula||'Sin documento'} | ${emp.cargo||'Sin cargo'}`;
+  const campos=camposCorreccionEmpleado(emp).map(textoCampoCorreccion).join(', ');
+  document.getElementById('correccionResumen').innerHTML=[
+    ['Campos pendientes',campos],
+    ['Cargo actual',emp.cargo],
+    ['Direccion actual',emp.direccion],
+    ['Departamento actual',emp.departamento],
+    ['Division actual',emp.division],
+    ['Seccion actual',emp.seccion],
+    ['Centro actual',emp.centroServicio]
+  ].map(([label,value])=>panelItem(label,value)).join('');
+
+  const grupo=gruposOcupacionales.find(item=>item.nombre===emp.grupoOcupacional)||grupoPorCargoFlexible(emp.cargo);
+  setSelectOptions('correccionGrupo',gruposOcupacionales,'Grupo ocupacional',item=>item.id,item=>item.nombre);
+  document.getElementById('correccionGrupo').value=grupo?.id||'';
+  actualizarCargosCorreccion();
+  seleccionarEstructuraCorreccion(emp);
+  llenarSelectConValorActual('correccionCentroServicio',centrosServicio,'Centro de Servicio',emp.centroServicio);
+  document.getElementById('modalCorreccion').classList.remove('hidden');
+}
+
+function cerrarFichaCorreccion(){
+  document.getElementById('modalCorreccion').classList.add('hidden');
+  document.getElementById('formCorreccion').reset();
+  document.getElementById('correccionCodigo').value='';
+}
+
+document.getElementById('formCorreccion').addEventListener('submit',event=>{
+  event.preventDefault();
+  const codigo=document.getElementById('correccionCodigo').value;
+  const emp=empleados.find(item=>item.codigo===codigo);
+  if(!emp)return;
+  const grupo=gruposOcupacionales.find(item=>item.id===document.getElementById('correccionGrupo').value);
+  const dir=buscarUnidad(document.getElementById('correccionDireccion').value);
+  const dep=buscarUnidad(document.getElementById('correccionDepartamento').value);
+  const div=buscarUnidad(document.getElementById('correccionDivision').value);
+  const sec=buscarUnidad(document.getElementById('correccionSeccion').value);
+  const pendientes=emp.validacionesCorreccion||{};
+  if(pendientes.cargo&&(!grupo||!document.getElementById('correccionCargo').value)){alert('Seleccione el grupo y cargo correcto.');return;}
+  if(pendientes.direccion&&!dir){alert('Seleccione la direccion correcta.');return;}
+  if(pendientes.departamento&&!dep){alert('Seleccione el departamento correcto.');return;}
+  if(pendientes.division&&!div){alert('Seleccione la division correcta.');return;}
+  if(pendientes.seccion&&!sec){alert('Seleccione la seccion correcta.');return;}
+  if(pendientes.centroServicio&&!document.getElementById('correccionCentroServicio').value){alert('Seleccione el centro de servicio correcto.');return;}
+  const camposAntes=camposCorreccionEmpleado(emp).map(textoCampoCorreccion).join(', ');
+  emp.grupoOcupacional=grupo?.nombre||emp.grupoOcupacional;
+  emp.cargo=document.getElementById('correccionCargo').value||emp.cargo;
+  emp.direccion=dir?unidadPorTipoEnRuta(dir,'Direccion'):emp.direccion;
+  emp.departamento=(sec||div||dep||dir)?unidadPorTipoEnRuta(sec||div||dep||dir,'Departamento'):emp.departamento;
+  emp.division=(sec||div||dep||dir)?unidadPorTipoEnRuta(sec||div||dep||dir,'Division'):emp.division;
+  emp.seccion=(sec||div||dep||dir)?unidadPorTipoEnRuta(sec||div||dep||dir,'Seccion'):emp.seccion;
+  emp.centroServicio=document.getElementById('correccionCentroServicio').value||emp.centroServicio;
+  emp.validacionesCorreccion={cargo:false,direccion:false,departamento:false,division:false,seccion:false,centroServicio:false};
+  emp.correccionPendiente=false;
+  emp.nota=(emp.nota||'').replace(/Requiere accion de correccion:.*$/,'').trim();
+  novedadesCorreccion.unshift({
+    fecha:new Date().toISOString(),
+    codigo:emp.codigo,
+    empleado:`${emp.nombre} ${emp.apellido}`,
+    detalle:`Correccion aplicada: ${camposAntes||'datos de catalogo'}`
+  });
+  guardarStorage();
+  cerrarFichaCorreccion();
+  renderNotificacionesCorreccion();
+  renderNovedades();
+  renderEmpleados();
+  actualizarDashboard();
+  mostrarToast('Datos Corregidos');
+});
+
 function renderNotificacionesCorreccion(){
   const tbody=document.getElementById('tablaNotificacionesCorreccion');
   if(!tbody)return;
@@ -2376,7 +2565,7 @@ function renderNotificacionesCorreccion(){
   document.getElementById('notificacionCarga').textContent=localStorage.getItem('nominaValidadaVersion')===NOMINA_VALIDADA_VERSION?'Cargada':'Pendiente';
   tbody.innerHTML=pendientes.map(emp=>{
     const campos=camposCorreccionEmpleado(emp).map(textoCampoCorreccion).join(', ');
-    return `<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(campos)}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td><button class="btn btn-warning" onclick="cargarParaEditar('${safeText(emp.codigo)}')"><i class="fa-solid fa-pen"></i> Corregir</button></td></tr>`;
+    return `<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(campos)}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td><button class="btn btn-warning" onclick="abrirFichaCorreccion('${safeText(emp.codigo)}')"><i class="fa-solid fa-pen"></i> Corregir</button></td></tr>`;
   }).join('');
 }
 
