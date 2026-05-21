@@ -664,6 +664,10 @@ function cargarCatalogosPersonalizados(){
       });
       centrosServicio.sort((a,b)=>a.localeCompare(b,'es'));
     }
+    centrosServicio=listaUnica(centrosServicio).sort((a,b)=>a.localeCompare(b,'es'));
+    gruposOcupacionales.forEach(grupo=>{
+      grupo.cargos=listaUnica(grupo.cargos).sort((a,b)=>a.localeCompare(b,'es'));
+    });
   }catch(error){
     console.warn('No se pudieron cargar catalogos personalizados',error);
   }
@@ -1070,6 +1074,18 @@ function normalizarCatalogo(value){
     .trim();
 }
 
+function listaUnica(items,valueSelector=item=>item){
+  const vistos=new Set();
+  const unicos=[];
+  items.forEach(item=>{
+    const key=normalizarCatalogo(valueSelector(item));
+    if(!key||vistos.has(key))return;
+    vistos.add(key);
+    unicos.push(item);
+  });
+  return unicos;
+}
+
 function grupoPorCargoFlexible(cargo){
   const key=normalizarCatalogo(cargo);
   return gruposOcupacionales.find(grupo=>grupo.cargos.some(item=>normalizarCatalogo(item)===key));
@@ -1104,6 +1120,7 @@ function seleccionarCargoEmpleado(emp){
 function renderCentrosServicio(){
   const sel=document.getElementById('centroServicioSelect');
   sel.innerHTML='<option value="">Centro de Servicio</option>';
+  centrosServicio=listaUnica(centrosServicio).sort((a,b)=>a.localeCompare(b,'es'));
   centrosServicio.forEach(centro=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(centro)}">${safeText(centro)}</option>`));
 }
 
@@ -1582,7 +1599,8 @@ function renderCargosCatalogo(){
   if(!tbody)return;
   const rows=[];
   gruposOcupacionales.forEach(grupo=>{
-    grupo.cargos.slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(cargo=>{
+    grupo.cargos=listaUnica(grupo.cargos).sort((a,b)=>a.localeCompare(b,'es'));
+    grupo.cargos.forEach(cargo=>{
       rows.push(`<tr><td>${safeText(grupo.nombre)}</td><td>${safeText(cargo)}</td><td><button class="btn btn-warning" onclick="cargarCargoCatalogo('${safeText(grupo.id)}','${safeText(cargo)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarCargoCatalogo('${safeText(grupo.id)}','${safeText(cargo)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
     });
   });
@@ -1644,7 +1662,8 @@ formCargoCatalogo.addEventListener('submit',event=>{
 function renderCentrosCatalogo(){
   const tbody=document.getElementById('tablaCentrosCatalogo');
   if(!tbody)return;
-  tbody.innerHTML=centrosServicio.slice().sort((a,b)=>a.localeCompare(b,'es')).map(centro=>
+  centrosServicio=listaUnica(centrosServicio).sort((a,b)=>a.localeCompare(b,'es'));
+  tbody.innerHTML=centrosServicio.map(centro=>
     `<tr><td>${safeText(centro)}</td><td><button class="btn btn-warning" onclick="cargarCentroCatalogo('${safeText(centro)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarCentroCatalogo('${safeText(centro)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
   ).join('');
 }
@@ -1711,7 +1730,7 @@ function actualizarSelectsEmpleado(nivel){
   if(nivel==='departamento'){divSel.value='';secSel.value='';}
   if(nivel==='division')secSel.value='';
 
-  const direcciones=estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion').sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  const direcciones=listaUnica(estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion'),item=>item.nombre).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   setOptions('empleadoDireccion',direcciones,'Direccion');
 
   const dirId=dirSel.value;
@@ -2419,14 +2438,15 @@ function setSelectOptions(selectId,items,placeholder,valueSelector=item=>item,la
   const sel=document.getElementById(selectId);
   const actual=sel.value;
   sel.innerHTML=`<option value="">${placeholder}</option>`;
-  items.forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valueSelector(item))}">${safeText(labelSelector(item))}</option>`));
+  listaUnica(items,valueSelector).forEach(item=>sel.insertAdjacentHTML('beforeend',`<option value="${safeText(valueSelector(item))}">${safeText(labelSelector(item))}</option>`));
   if(Array.from(sel.options).some(option=>option.value===actual))sel.value=actual;
 }
 
 function llenarSelectConValorActual(selectId,items,placeholder,actual,valueSelector=item=>item,labelSelector=item=>item){
   const sel=document.getElementById(selectId);
   setSelectOptions(selectId,items,placeholder,valueSelector,labelSelector);
-  if(actual&&!Array.from(sel.options).some(option=>normalizarCatalogo(option.value)===normalizarCatalogo(actual))){
+  const existe=Array.from(sel.options).some(option=>normalizarCatalogo(option.value)===normalizarCatalogo(actual));
+  if(actual&&!existe){
     sel.insertAdjacentHTML('beforeend',`<option value="${safeText(actual)}">${safeText(actual)} (actual)</option>`);
   }
   const match=Array.from(sel.options).find(option=>normalizarCatalogo(option.value)===normalizarCatalogo(actual));
@@ -2444,23 +2464,31 @@ function actualizarSelectsCorreccion(nivel){
   const depSel=document.getElementById('correccionDepartamento');
   const divSel=document.getElementById('correccionDivision');
   const secSel=document.getElementById('correccionSeccion');
+  const dirActual=dirSel.value;
+  const depActual=depSel.value;
+  const divActual=divSel.value;
+  const secActual=secSel.value;
   if(nivel==='direccion'){depSel.value='';divSel.value='';secSel.value='';}
   if(nivel==='departamento'){divSel.value='';secSel.value='';}
   if(nivel==='division')secSel.value='';
 
   const direcciones=estructuraOrganizacional.filter(unidad=>unidad.tipo==='Direccion').sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
   setSelectOptions('correccionDireccion',direcciones,'Direccion',item=>item.id,item=>item.nombre);
+  if(direcciones.some(unidad=>unidad.id===dirActual))dirSel.value=dirActual;
 
-  const departamentos=dirSel.value?unidadesHijas(dirSel.value,'Departamento'):[];
+  const departamentos=dirSel.value?listaUnica(unidadesHijas(dirSel.value,'Departamento'),item=>item.nombre):[];
   setSelectOptions('correccionDepartamento',departamentos,'Departamento',item=>item.id,item=>item.nombre);
+  if(nivel!=='direccion'&&departamentos.some(unidad=>unidad.id===depActual))depSel.value=depActual;
 
   const divisionPadreId=depSel.value||dirSel.value;
-  const divisiones=divisionPadreId?unidadesHijas(divisionPadreId,'Division'):[];
+  const divisiones=divisionPadreId?listaUnica(unidadesHijas(divisionPadreId,'Division'),item=>item.nombre):[];
   setSelectOptions('correccionDivision',divisiones,'Division',item=>item.id,item=>item.nombre);
+  if(!['direccion','departamento'].includes(nivel)&&divisiones.some(unidad=>unidad.id===divActual))divSel.value=divActual;
 
   const seccionPadreId=divSel.value||depSel.value||dirSel.value;
-  const secciones=seccionPadreId?unidadesHijas(seccionPadreId,'Seccion'):[];
+  const secciones=seccionPadreId?listaUnica(unidadesHijas(seccionPadreId,'Seccion'),item=>item.nombre):[];
   setSelectOptions('correccionSeccion',secciones,'Seccion',item=>item.id,item=>item.nombre);
+  if(nivel!=='direccion'&&nivel!=='departamento'&&nivel!=='division'&&secciones.some(unidad=>unidad.id===secActual))secSel.value=secActual;
 }
 
 function seleccionarEstructuraCorreccion(emp){
