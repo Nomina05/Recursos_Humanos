@@ -112,6 +112,7 @@
     <a id="menu-disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
     <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
     <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
+    <a id="menu-ia" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i>IA</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -193,6 +194,7 @@
           <button class="btn btn-secondary" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i> Disciplinario</button>
           <button class="btn btn-secondary" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i> Comunicacion</button>
           <button class="btn btn-secondary" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i> Supervisor</button>
+          <button class="btn btn-secondary" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i> IA</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1536,6 +1538,69 @@
       </div>
     </section>
 
+    <section id="ia" class="hidden">
+      <h1>Panel de IA y Automatizacion</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Riesgo rotacion alto</h3><p id="iaRotacionAlta">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Clima laboral</h3><p id="iaClimaPromedio">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Candidatos recomendados</h3><p id="iaCandidatosRecomendados">0</p></div>
+        <div class="card presupuesto-total"><h3>Reportes IA</h3><p id="iaReportesGenerados">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Asistente virtual RRHH</h2>
+        <form id="formAsistenteIA" novalidate>
+          <input id="iaPregunta" placeholder="Pregunta al asistente: rotacion, clima, candidatos, nomina, asistencia..." required>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-robot"></i> Consultar</button>
+            <button class="btn btn-secondary" type="button" onclick="generarReporteIA()"><i class="fa-solid fa-file-lines"></i> Generar reporte automatico</button>
+          </div>
+        </form>
+        <div class="profile-grid" id="iaRespuesta"></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Prediccion de rotacion</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Cargo</th><th>Unidad</th><th>Riesgo</th><th>Score</th><th>Factores detectados</th></tr></thead>
+            <tbody id="tablaIARotacion"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Automatizacion de entrevistas y recomendacion de candidatos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Candidato</th><th>Vacante</th><th>Etapa</th><th>Score IA</th><th>Recomendacion</th><th>Senales</th></tr></thead>
+            <tbody id="tablaIACandidatos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Analisis de clima laboral</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Indicador</th><th>Valor</th><th>Lectura IA</th></tr></thead>
+            <tbody id="tablaIAClima"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>IA para evaluacion de CV</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Candidato</th><th>Documento</th><th>CV / referencia</th><th>Score CV</th><th>Resultado</th></tr></thead>
+            <tbody id="tablaIACV"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1555,6 +1620,7 @@
           <option value="disciplinario">Disciplinario y Legal</option>
           <option value="comunicacion">Comunicacion Interna</option>
           <option value="supervisor">Supervisor / Manager</option>
+          <option value="ia">IA y Automatizacion</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1691,6 +1757,7 @@ let firmasReglamentos=JSON.parse(localStorage.getItem('firmasReglamentos')||'[]'
 let publicacionesInternas=JSON.parse(localStorage.getItem('publicacionesInternas')||'[]');
 let mensajesInternos=JSON.parse(localStorage.getItem('mensajesInternos')||'[]');
 let reconocimientosInternos=JSON.parse(localStorage.getItem('reconocimientosInternos')||'[]');
+let reportesIA=JSON.parse(localStorage.getItem('reportesIA')||'[]');
 let pieChart=null,barChart=null,circleChart=null;
 
 const SUPABASE_URL='https://incslaemduhgcnivhkqz.supabase.co';
@@ -1814,6 +1881,7 @@ function showSection(id){
   if(id==='disciplinario')renderDisciplinarioLegal();
   if(id==='comunicacion')renderComunicacionInterna();
   if(id==='supervisor')renderSupervisorManager();
+  if(id==='ia')renderIAAutomatizacion();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -1856,6 +1924,7 @@ function guardarStorage(){
   localStorage.setItem('publicacionesInternas',JSON.stringify(publicacionesInternas));
   localStorage.setItem('mensajesInternos',JSON.stringify(mensajesInternos));
   localStorage.setItem('reconocimientosInternos',JSON.stringify(reconocimientosInternos));
+  localStorage.setItem('reportesIA',JSON.stringify(reportesIA));
 }
 
 function guardarPresupuesto(){
@@ -4140,6 +4209,11 @@ function generarReporte(){
       const pendientes=vacacionesLicencias.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado==='Pendiente').length;
       tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cargo)}</td><td>${safeText([emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' / '))}</td><td>${safeText(emp.estado)}</td><td>${safeText(asistencia?.estado||'Sin registro')}</td><td>${safeText(evaluacion?evaluacion.resultado:'')}</td><td>${metasActivas}</td><td>${pendientes}</td></tr>`);
     });
+  }else if(tipo==='ia'){
+    thead.innerHTML='<tr><th>Modulo</th><th>Registro</th><th>Score / Valor</th><th>Recomendacion IA</th></tr>';
+    analizarRotacionIA().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>Rotacion</td><td>${safeText(item.empleado)}</td><td>${item.score}</td><td>${safeText(item.riesgo+' - '+item.factores.join(', '))}</td></tr>`));
+    analizarCandidatosIA().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>Candidatos</td><td>${safeText(item.candidato)}</td><td>${item.score}</td><td>${safeText(item.recomendacion)}</td></tr>`));
+    analizarClimaIA().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>Clima</td><td>${safeText(item.indicador)}</td><td>${safeText(item.valor)}</td><td>${safeText(item.lectura)}</td></tr>`));
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -6318,6 +6392,151 @@ function renderSupervisorKpis(){
   ].map(([label,value])=>`<tr><td>${safeText(label)}</td><td>${safeText(value)}</td></tr>`).join('');
 }
 
+function scoreRotacionEmpleado(emp){
+  let score=0;
+  const factores=[];
+  const evaluacion=ultimaEvaluacionEmpleado(emp.codigo);
+  const ausencias=asistenciasTiempo.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado==='Ausente').length;
+  const tardanzas=asistenciasTiempo.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado==='Tarde').length;
+  const casos=casosDisciplinarios.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado!=='Cerrado').length;
+  const planes=planesMejora.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado!=='Cerrado').length;
+  if(emp.estado==='Inactivo'){score+=40;factores.push('empleado inactivo');}
+  if(!evaluacion){score+=15;factores.push('sin evaluacion reciente');}
+  if(evaluacion&&Number(evaluacion.resultado)<70){score+=25;factores.push('desempeno bajo');}
+  if(ausencias>=3){score+=20;factores.push('ausencias frecuentes');}
+  if(tardanzas>=5){score+=15;factores.push('tardanzas recurrentes');}
+  if(casos){score+=15;factores.push('casos disciplinarios abiertos');}
+  if(planes){score+=10;factores.push('plan de mejora abierto');}
+  score=Math.min(100,score);
+  return {score,factores:factores.length?factores:['sin senales criticas']};
+}
+
+function analizarRotacionIA(){
+  return empleadosPermitidos().map(emp=>{
+    const r=scoreRotacionEmpleado(emp);
+    const riesgo=r.score>=60?'Alto':r.score>=35?'Medio':'Bajo';
+    return {codigo:emp.codigo,empleado:`${emp.nombre} ${emp.apellido}`,cargo:emp.cargo,unidad:[emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' / '),score:r.score,riesgo,factores:r.factores};
+  }).sort((a,b)=>b.score-a.score);
+}
+
+function analizarCandidatosIA(){
+  return candidatos.map(c=>{
+    let score=0;
+    const senales=[];
+    if(c.etapa&&c.etapa!=='CV recibido'){score+=20;senales.push('avance en pipeline');}
+    if(Number(c.evaluacionTecnica||0)>0){score+=Number(c.evaluacionTecnica)*0.3;senales.push('evaluacion tecnica');}
+    if(Number(c.pruebaPsicometrica||0)>0){score+=Number(c.pruebaPsicometrica)*0.2;senales.push('psicometrica');}
+    if(Number(c.evaluacionEntrevista||0)>0){score+=Number(c.evaluacionEntrevista)*0.3;senales.push('entrevista');}
+    if((c.cv||'').trim()){score+=10;senales.push('CV cargado');}
+    if(c.decision==='Recomendado'||c.decision==='Contratar')score+=15;
+    score=Math.min(100,Math.round(score));
+    const vacante=vacantes.find(v=>v.id===c.vacanteId);
+    return {candidato:c.nombre,documento:c.documento,vacante:vacante?.titulo||'Banco de candidatos',etapa:c.etapa,cv:c.cv,score,recomendacion:score>=75?'Recomendado':score>=50?'Evaluar en entrevista':'Revisar perfil',senales:senales.join(', ')||'sin datos suficientes'};
+  }).sort((a,b)=>b.score-a.score);
+}
+
+function analizarClimaIA(){
+  const equipo=empleadosPermitidos();
+  const codigos=new Set(equipo.map(emp=>emp.codigo));
+  const mensajesAbiertos=mensajesInternos.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Abierto').length;
+  const reconocimientos=reconocimientosInternos.filter(item=>codigos.has(item.empleadoCodigo)).length;
+  const casosAbiertos=casosDisciplinarios.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado!=='Cerrado').length;
+  const ausencias=asistenciasTiempo.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Ausente').length;
+  const planesAbiertos=planesMejora.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado!=='Cerrado').length;
+  const score=Math.max(0,Math.min(100,75+(reconocimientos*2)-(mensajesAbiertos*3)-(casosAbiertos*5)-(ausencias*1)-(planesAbiertos*2)));
+  return [
+    {indicador:'Indice estimado de clima',valor:score.toFixed(1),lectura:score>=75?'Saludable':score>=55?'Atencion preventiva':'Riesgo alto'},
+    {indicador:'Mensajes/foros abiertos',valor:mensajesAbiertos,lectura:mensajesAbiertos?'Revisar conversaciones pendientes':'Sin conversaciones abiertas'},
+    {indicador:'Reconocimientos',valor:reconocimientos,lectura:reconocimientos?'Senal positiva de cultura':'Oportunidad para reconocer logros'},
+    {indicador:'Casos disciplinarios abiertos',valor:casosAbiertos,lectura:casosAbiertos?'Puede afectar clima laboral':'Sin alertas disciplinarias abiertas'},
+    {indicador:'Ausencias registradas',valor:ausencias,lectura:ausencias?'Revisar patrones por area':'Ausencias controladas'}
+  ];
+}
+
+function responderAsistenteIA(pregunta){
+  const q=(pregunta||'').toLowerCase();
+  const rotacion=analizarRotacionIA();
+  const clima=analizarClimaIA();
+  const candidatosIA=analizarCandidatosIA();
+  if(q.includes('rotacion')||q.includes('riesgo'))return [
+    ['Mayor riesgo',rotacion[0]?`${rotacion[0].empleado} (${rotacion[0].riesgo}, ${rotacion[0].score})`:'Sin empleados evaluados'],
+    ['Accion sugerida','Priorizar conversaciones 1:1, revisar ausencias, desempeno y planes de mejora abiertos.']
+  ];
+  if(q.includes('clima'))return clima.map(item=>[item.indicador,`${item.valor} - ${item.lectura}`]);
+  if(q.includes('candidato')||q.includes('cv'))return candidatosIA.slice(0,5).map(item=>[item.candidato,`${item.recomendacion} (${item.score}) - ${item.vacante}`]);
+  if(q.includes('nomina'))return [['Nomina procesada',`${nominaProcesada.length} registros`],['Neto estimado',formatoNumero(nominaProcesada.reduce((sum,item)=>sum+Number(item.neto||0),0))]];
+  if(q.includes('asistencia'))return [['Asistencia hoy',resumenAsistenciaFecha(fechaHoyISO()).presentes],['Tardanzas hoy',resumenAsistenciaFecha(fechaHoyISO()).tardes]];
+  return [
+    ['Resumen IA',`Empleados: ${empleadosPermitidos().length}, candidatos: ${candidatos.length}, reportes IA: ${reportesIA.length}`],
+    ['Sugerencia','Puede consultar por rotacion, clima, candidatos, CV, nomina o asistencia.']
+  ];
+}
+
+document.getElementById('formAsistenteIA').addEventListener('submit',event=>{
+  event.preventDefault();
+  const respuesta=responderAsistenteIA(document.getElementById('iaPregunta').value);
+  document.getElementById('iaRespuesta').innerHTML=respuesta.map(([label,value])=>panelItem(label,value)).join('');
+});
+
+function renderIAAutomatizacion(){
+  const rotacion=analizarRotacionIA();
+  const candidatosIA=analizarCandidatosIA();
+  const clima=analizarClimaIA();
+  renderIARotacion(rotacion);
+  renderIACandidatos(candidatosIA);
+  renderIAClima(clima);
+  renderIACV(candidatosIA);
+  document.getElementById('iaRotacionAlta').textContent=rotacion.filter(item=>item.riesgo==='Alto').length;
+  document.getElementById('iaClimaPromedio').textContent=clima[0]?.valor||'0';
+  document.getElementById('iaCandidatosRecomendados').textContent=candidatosIA.filter(item=>item.score>=75).length;
+  document.getElementById('iaReportesGenerados').textContent=reportesIA.length;
+}
+
+function renderIARotacion(rows){
+  const tbody=document.getElementById('tablaIARotacion');
+  if(!tbody)return;
+  tbody.innerHTML=rows.map(item=>`<tr><td>${safeText(item.empleado)}</td><td>${safeText(item.cargo)}</td><td>${safeText(item.unidad)}</td><td>${safeText(item.riesgo)}</td><td>${item.score}</td><td>${safeText(item.factores.join(', '))}</td></tr>`).join('');
+}
+
+function renderIACandidatos(rows){
+  const tbody=document.getElementById('tablaIACandidatos');
+  if(!tbody)return;
+  tbody.innerHTML=rows.map(item=>`<tr><td>${safeText(item.candidato)}</td><td>${safeText(item.vacante)}</td><td>${safeText(item.etapa)}</td><td>${item.score}</td><td>${safeText(item.recomendacion)}</td><td>${safeText(item.senales)}</td></tr>`).join('');
+}
+
+function renderIAClima(rows){
+  const tbody=document.getElementById('tablaIAClima');
+  if(!tbody)return;
+  tbody.innerHTML=rows.map(item=>`<tr><td>${safeText(item.indicador)}</td><td>${safeText(item.valor)}</td><td>${safeText(item.lectura)}</td></tr>`).join('');
+}
+
+function renderIACV(rows){
+  const tbody=document.getElementById('tablaIACV');
+  if(!tbody)return;
+  tbody.innerHTML=rows.map(item=>`<tr><td>${safeText(item.candidato)}</td><td>${safeText(item.documento)}</td><td>${safeText(item.cv)}</td><td>${item.score}</td><td>${safeText(item.recomendacion)}</td></tr>`).join('');
+}
+
+function generarReporteIA(){
+  const rotacion=analizarRotacionIA();
+  const clima=analizarClimaIA();
+  const candidatosIA=analizarCandidatosIA();
+  reportesIA.unshift({
+    id:'IA'+Date.now(),
+    fecha:new Date().toISOString(),
+    rotacionAlta:rotacion.filter(item=>item.riesgo==='Alto').length,
+    clima:clima[0]?.valor||0,
+    candidatosRecomendados:candidatosIA.filter(item=>item.score>=75).length
+  });
+  guardarStorage();
+  renderIAAutomatizacion();
+  document.getElementById('iaRespuesta').innerHTML=[
+    ['Reporte generado',formatoFechaISO(new Date().toISOString())],
+    ['Rotacion alta',rotacion.filter(item=>item.riesgo==='Alto').length],
+    ['Clima laboral',clima[0]?.valor||0],
+    ['Candidatos recomendados',candidatosIA.filter(item=>item.score>=75).length]
+  ].map(([label,value])=>panelItem(label,value)).join('');
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -6351,6 +6570,7 @@ function renderSupervisorKpis(){
   renderDisciplinarioLegal();
   renderComunicacionInterna();
   renderSupervisorManager();
+  renderIAAutomatizacion();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
