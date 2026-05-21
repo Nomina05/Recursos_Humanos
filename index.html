@@ -111,6 +111,7 @@
     <a id="menu-beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
     <a id="menu-disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
     <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
+    <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
     <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
     <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
     <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
@@ -191,6 +192,7 @@
           <button class="btn btn-secondary" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i> Beneficios</button>
           <button class="btn btn-secondary" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i> Disciplinario</button>
           <button class="btn btn-secondary" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i> Comunicacion</button>
+          <button class="btn btn-secondary" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i> Supervisor</button>
           <button class="btn btn-warning" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i> Corregir datos</button>
           <button class="btn btn-secondary" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i> Reportes</button>
           <button class="btn" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i> Estructura</button>
@@ -1473,6 +1475,67 @@
       </div>
     </section>
 
+    <section id="supervisor" class="hidden">
+      <h1>Panel del Supervisor / Manager</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Equipo</h3><p id="supEquipoTotal">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Asistencia hoy</h3><p id="supAsistenciaHoy">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Solicitudes pendientes</h3><p id="supSolicitudesPendientes">0</p></div>
+        <div class="card presupuesto-total"><h3>KPI promedio</h3><p id="supKpiPromedio">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Aprobar solicitudes</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Empleado</th><th>Desde</th><th>Hasta</th><th>Dias</th><th>Estado</th><th>Motivo</th><th>Accion</th></tr></thead>
+            <tbody id="tablaSupervisorSolicitudes"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Ver equipo</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Codigo</th><th>Empleado</th><th>Cargo</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Estado</th><th>Salario</th></tr></thead>
+            <tbody id="tablaSupervisorEquipo"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Asistencia del equipo</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Empleado</th><th>Estado</th><th>Entrada</th><th>Salida</th><th>Horas extras</th><th>Nota</th></tr></thead>
+            <tbody id="tablaSupervisorAsistencia"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Evaluaciones y gestion de metas</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Ultima evaluacion</th><th>Resultado</th><th>Metas activas</th><th>Avance promedio</th><th>Planes mejora</th></tr></thead>
+            <tbody id="tablaSupervisorEvaluaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>KPIs del departamento</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+            <tbody id="tablaSupervisorKpis"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section id="reportes" class="hidden">
       <h1>Reportes</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -1491,6 +1554,7 @@
           <option value="beneficios">Beneficios y Compensaciones</option>
           <option value="disciplinario">Disciplinario y Legal</option>
           <option value="comunicacion">Comunicacion Interna</option>
+          <option value="supervisor">Supervisor / Manager</option>
           <option value="nomina">Nomina del Mes</option>
         </select>
         <button class="btn btn-primary" onclick="generarReporte()"><i class="fa-solid fa-gear"></i> Generar</button>
@@ -1749,6 +1813,7 @@ function showSection(id){
   if(id==='beneficios')renderBeneficiosCompensaciones();
   if(id==='disciplinario')renderDisciplinarioLegal();
   if(id==='comunicacion')renderComunicacionInterna();
+  if(id==='supervisor')renderSupervisorManager();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -4065,6 +4130,16 @@ function generarReporte(){
     publicacionesInternas.forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.titulo)}</td><td>${safeText(item.audiencia)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.contenido)}</td></tr>`));
     mensajesInternosVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.tipo)}</td><td>${safeText(item.canal)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.contenido)}</td></tr>`));
     reconocimientosVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>Reconocimiento</td><td>${safeText(item.titulo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.otorgadoPor)}</td><td>${safeText(item.motivo)}</td></tr>`));
+  }else if(tipo==='supervisor'){
+    thead.innerHTML='<tr><th>Codigo</th><th>Empleado</th><th>Cargo</th><th>Unidad</th><th>Estado</th><th>Asistencia hoy</th><th>Ultima evaluacion</th><th>Metas activas</th><th>Solicitudes pendientes</th></tr>';
+    const hoy=fechaHoyISO();
+    empleadosPermitidos().forEach(emp=>{
+      const asistencia=asistenciasTiempo.find(item=>item.empleadoCodigo===emp.codigo&&item.fecha===hoy);
+      const evaluacion=ultimaEvaluacionEmpleado(emp.codigo);
+      const metasActivas=metasDesempeno.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado!=='Completada').length;
+      const pendientes=vacacionesLicencias.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado==='Pendiente').length;
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cargo)}</td><td>${safeText([emp.direccion,emp.departamento,emp.division,emp.seccion].filter(Boolean).join(' / '))}</td><td>${safeText(emp.estado)}</td><td>${safeText(asistencia?.estado||'Sin registro')}</td><td>${safeText(evaluacion?evaluacion.resultado:'')}</td><td>${metasActivas}</td><td>${pendientes}</td></tr>`);
+    });
   }else if(tipo==='nomina'){
     thead.innerHTML='<tr><th>Tipo de Nomina</th><th>Mes</th><th>Total</th></tr>';
     const key=ahoraYYYYMM();
@@ -6139,6 +6214,110 @@ function eliminarReconocimientoInterno(id){
   renderComunicacionInterna();
 }
 
+function ultimaEvaluacionEmpleado(codigo){
+  return evaluacionesDesempeno
+    .filter(item=>item.empleadoCodigo===codigo)
+    .sort((a,b)=>(b.periodo||'').localeCompare(a.periodo||'')||Number(b.resultado||0)-Number(a.resultado||0))[0];
+}
+
+function promedioMetasEmpleado(codigo){
+  const metas=metasDesempeno.filter(item=>item.empleadoCodigo===codigo);
+  if(!metas.length)return 0;
+  return metas.reduce((sum,item)=>sum+Number(item.avance||0),0)/metas.length;
+}
+
+function renderSupervisorManager(){
+  renderSupervisorSolicitudes();
+  renderSupervisorEquipo();
+  renderSupervisorAsistencia();
+  renderSupervisorEvaluaciones();
+  renderSupervisorKpis();
+  const equipo=empleadosPermitidos();
+  const codigos=new Set(equipo.map(emp=>emp.codigo));
+  const asistenciaHoy=asistenciasTiempo.filter(item=>codigos.has(item.empleadoCodigo)&&item.fecha===fechaHoyISO()&&['Presente','Tarde'].includes(item.estado)).length;
+  const solicitudes=vacacionesLicencias.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Pendiente').length;
+  const evals=equipo.map(emp=>ultimaEvaluacionEmpleado(emp.codigo)).filter(Boolean);
+  const promedio=evals.length?evals.reduce((sum,item)=>sum+Number(item.resultado||0),0)/evals.length:0;
+  document.getElementById('supEquipoTotal').textContent=equipo.length;
+  document.getElementById('supAsistenciaHoy').textContent=asistenciaHoy;
+  document.getElementById('supSolicitudesPendientes').textContent=solicitudes;
+  document.getElementById('supKpiPromedio').textContent=promedio.toFixed(1);
+}
+
+function renderSupervisorSolicitudes(){
+  const tbody=document.getElementById('tablaSupervisorSolicitudes');
+  if(!tbody)return;
+  const codigos=empleadosPermitidosCodigos();
+  tbody.innerHTML=vacacionesLicencias
+    .filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Pendiente')
+    .sort((a,b)=>(a.fechaInicio||'').localeCompare(b.fechaInicio||''))
+    .map(item=>`<tr><td>${safeText(item.tipo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(formatoFechaISO(item.fechaInicio))}</td><td>${safeText(formatoFechaISO(item.fechaFin))}</td><td>${safeText(item.dias)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.motivo)}</td><td><button class="btn btn-secondary" onclick="aprobarSolicitudSupervisor('${safeText(item.id)}')"><i class="fa-solid fa-check"></i> Aprobar</button> <button class="btn btn-warning" onclick="rechazarSolicitudSupervisor('${safeText(item.id)}')"><i class="fa-solid fa-xmark"></i> Rechazar</button></td></tr>`)
+    .join('');
+}
+
+function aprobarSolicitudSupervisor(id){
+  cambiarEstadoVacacion(id,'Aprobado');
+  renderSupervisorManager();
+}
+
+function rechazarSolicitudSupervisor(id){
+  cambiarEstadoVacacion(id,'Rechazado');
+  renderSupervisorManager();
+}
+
+function renderSupervisorEquipo(){
+  const tbody=document.getElementById('tablaSupervisorEquipo');
+  if(!tbody)return;
+  tbody.innerHTML=empleadosPermitidos()
+    .sort((a,b)=>(a.nombre+' '+a.apellido).localeCompare(b.nombre+' '+b.apellido,'es'))
+    .map(emp=>`<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.estado)}</td><td>${formatoNumero(emp.salario)}</td></tr>`)
+    .join('');
+}
+
+function renderSupervisorAsistencia(){
+  const tbody=document.getElementById('tablaSupervisorAsistencia');
+  if(!tbody)return;
+  const codigos=empleadosPermitidosCodigos();
+  tbody.innerHTML=asistenciasTiempo
+    .filter(item=>codigos.has(item.empleadoCodigo))
+    .sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))
+    .slice(0,60)
+    .map(item=>`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.estado)}</td><td>${safeText(item.entrada)}</td><td>${safeText(item.salida)}</td><td>${safeText(item.horasExtra||0)}</td><td>${safeText(item.nota)}</td></tr>`)
+    .join('');
+}
+
+function renderSupervisorEvaluaciones(){
+  const tbody=document.getElementById('tablaSupervisorEvaluaciones');
+  if(!tbody)return;
+  tbody.innerHTML=empleadosPermitidos().map(emp=>{
+    const evaluacion=ultimaEvaluacionEmpleado(emp.codigo);
+    const metasActivas=metasDesempeno.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado!=='Completada').length;
+    const planes=planesMejora.filter(item=>item.empleadoCodigo===emp.codigo&&item.estado!=='Cerrado').length;
+    return `<tr><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(evaluacion?.periodo||'')}</td><td>${safeText(evaluacion?.resultado||'')}</td><td>${metasActivas}</td><td>${promedioMetasEmpleado(emp.codigo).toFixed(1)}%</td><td>${planes}</td></tr>`;
+  }).join('');
+}
+
+function renderSupervisorKpis(){
+  const tbody=document.getElementById('tablaSupervisorKpis');
+  if(!tbody)return;
+  const equipo=empleadosPermitidos();
+  const codigos=new Set(equipo.map(emp=>emp.codigo));
+  const activos=equipo.filter(emp=>emp.estado!=='Inactivo').length;
+  const tardanzas=asistenciasTiempo.filter(item=>codigos.has(item.empleadoCodigo)&&item.fecha===fechaHoyISO()&&item.estado==='Tarde').length;
+  const ausencias=asistenciasTiempo.filter(item=>codigos.has(item.empleadoCodigo)&&item.fecha===fechaHoyISO()&&item.estado==='Ausente').length;
+  const vacacionesPend=vacacionesLicencias.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Pendiente').length;
+  const metasCompletadas=metasDesempeno.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado==='Completada').length;
+  const planesAbiertos=planesMejora.filter(item=>codigos.has(item.empleadoCodigo)&&item.estado!=='Cerrado').length;
+  tbody.innerHTML=[
+    ['Empleados activos',activos],
+    ['Tardanzas hoy',tardanzas],
+    ['Ausencias hoy',ausencias],
+    ['Solicitudes pendientes',vacacionesPend],
+    ['Metas completadas',metasCompletadas],
+    ['Planes de mejora abiertos',planesAbiertos]
+  ].map(([label,value])=>`<tr><td>${safeText(label)}</td><td>${safeText(value)}</td></tr>`).join('');
+}
+
 (async function init(){
   cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
@@ -6171,6 +6350,7 @@ function eliminarReconocimientoInterno(id){
   renderBeneficiosCompensaciones();
   renderDisciplinarioLegal();
   renderComunicacionInterna();
+  renderSupervisorManager();
   actualizarSelectsEmpleado();
   actualizarDashboard();
   aplicarEstadoSesion();
