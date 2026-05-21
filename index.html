@@ -341,6 +341,13 @@
 
     <section id="estructura" class="hidden">
       <h1>Estructura Organizacional</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn btn-secondary" onclick="mostrarCatalogoEstructura('unidades')"><i class="fa-solid fa-sitemap"></i> Unidades</button>
+        <button class="btn btn-secondary" onclick="mostrarCatalogoEstructura('cargos')"><i class="fa-solid fa-briefcase"></i> Cargos</button>
+        <button class="btn btn-secondary" onclick="mostrarCatalogoEstructura('centros')"><i class="fa-solid fa-building"></i> Centros de Servicio</button>
+      </div>
+
+      <div id="catalogoUnidades">
       <form id="formUnidad" novalidate>
         <input type="hidden" id="unidadId">
         <select id="unidadTipo" onchange="actualizarPadresUnidad()" required>
@@ -366,6 +373,44 @@
           </thead>
           <tbody id="tablaEstructura"></tbody>
         </table>
+      </div>
+      </div>
+
+      <div id="catalogoCargos" class="hidden">
+        <form id="formCargoCatalogo" novalidate>
+          <input type="hidden" id="cargoCatalogoOriginal">
+          <select id="cargoCatalogoGrupo" required></select>
+          <input id="cargoCatalogoNombre" placeholder="Nombre del cargo" required>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Cargo</button>
+            <button type="button" class="btn" onclick="limpiarCargoCatalogo()">Nuevo</button>
+          </div>
+        </form>
+        <h2>Catalogo de cargos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Grupo</th><th>Cargo</th><th>Accion</th></tr></thead>
+            <tbody id="tablaCargosCatalogo"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="catalogoCentros" class="hidden">
+        <form id="formCentroCatalogo" novalidate>
+          <input type="hidden" id="centroCatalogoOriginal">
+          <input id="centroCatalogoNombre" placeholder="Nombre del centro de servicio" required>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Centro</button>
+            <button type="button" class="btn" onclick="limpiarCentroCatalogo()">Nuevo</button>
+          </div>
+        </form>
+        <h2>Catalogo de centros de servicio</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Centro de Servicio</th><th>Accion</th></tr></thead>
+            <tbody id="tablaCentrosCatalogo"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -539,7 +584,7 @@ const gruposOcupacionales=[
   ]}
 ];
 
-const centrosServicio=[
+let centrosServicio=[
   'Canca la Reina',
   'Cayetano Germosen',
   'Tanque de Llenado Guauci',
@@ -559,6 +604,34 @@ const centrosServicio=[
   'Gaspar Hernandez'
 ];
 
+function cargarCatalogosPersonalizados(){
+  try{
+    const gruposGuardados=JSON.parse(localStorage.getItem('gruposOcupacionalesCatalogo')||'[]');
+    if(Array.isArray(gruposGuardados)&&gruposGuardados.length){
+      gruposGuardados.forEach(grupoGuardado=>{
+        let grupo=gruposOcupacionales.find(item=>item.id===grupoGuardado.id||item.nombre===grupoGuardado.nombre);
+        if(!grupo){
+          grupo={id:grupoGuardado.id||('G'+Date.now()),nombre:grupoGuardado.nombre,cargos:[]};
+          gruposOcupacionales.push(grupo);
+        }
+        (grupoGuardado.cargos||[]).forEach(cargo=>{
+          if(!grupo.cargos.some(item=>normalizarCatalogo(item)===normalizarCatalogo(cargo)))grupo.cargos.push(cargo);
+        });
+        grupo.cargos.sort((a,b)=>a.localeCompare(b,'es'));
+      });
+    }
+    const centrosGuardados=JSON.parse(localStorage.getItem('centrosServicioCatalogo')||'[]');
+    if(Array.isArray(centrosGuardados)){
+      centrosGuardados.forEach(centro=>{
+        if(centro&&!centrosServicio.some(item=>normalizarCatalogo(item)===normalizarCatalogo(centro)))centrosServicio.push(centro);
+      });
+      centrosServicio.sort((a,b)=>a.localeCompare(b,'es'));
+    }
+  }catch(error){
+    console.warn('No se pudieron cargar catalogos personalizados',error);
+  }
+}
+
 function showSection(id){
   const sesion=usuarioSesionActual();
   if((id==='usuarios'||id==='estructura')&&sesion?.rol!=='Administrador'){
@@ -572,7 +645,7 @@ function showSection(id){
   if(id==='dashboard')actualizarDashboard();
   if(id==='registro')actualizarSelectsEmpleado();
   if(id==='empleados')renderEmpleados();
-  if(id==='estructura'){renderEstructura();actualizarPadresUnidad();}
+  if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
   if(id==='notificaciones')renderNotificacionesCorreccion();
@@ -586,6 +659,8 @@ function guardarStorage(){
   localStorage.setItem('estructuraOrganizacional',JSON.stringify(estructuraOrganizacional));
   localStorage.setItem('usuariosSistema',JSON.stringify(usuarios));
   localStorage.setItem('usuarioVistaId',usuarioVistaId);
+  localStorage.setItem('gruposOcupacionalesCatalogo',JSON.stringify(gruposOcupacionales));
+  localStorage.setItem('centrosServicioCatalogo',JSON.stringify(centrosServicio));
 }
 
 function guardarPresupuesto(){
@@ -908,6 +983,17 @@ function renderGruposOcupacionales(){
     grupoSel.insertAdjacentHTML('beforeend',`<option value="${safeText(grupo.id)}">${safeText(grupo.nombre)}</option>`);
   });
   actualizarCargosEmpleado();
+}
+
+function renderGrupoCargoCatalogo(){
+  const grupoSel=document.getElementById('cargoCatalogoGrupo');
+  if(!grupoSel)return;
+  const current=grupoSel.value;
+  grupoSel.innerHTML='<option value="">Grupo ocupacional</option>';
+  gruposOcupacionales.forEach(grupo=>{
+    grupoSel.insertAdjacentHTML('beforeend',`<option value="${safeText(grupo.id)}">${safeText(grupo.nombre)}</option>`);
+  });
+  if(gruposOcupacionales.some(grupo=>grupo.id===current))grupoSel.value=current;
 }
 
 function actualizarCargosEmpleado(){
@@ -1439,6 +1525,136 @@ function renderEstructura(){
       return `<tr><td>${safeText(unidad.tipo)}</td><td>${safeText(unidad.nombre)}</td><td>${safeText(padre?padre.nombre:'')}</td><td>${safeText(rutaUnidad(unidad))}</td><td><button class="btn btn-warning" onclick="cargarUnidadParaEditar('${safeText(unidad.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarUnidad('${safeText(unidad.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
     }).join('');
 }
+
+function mostrarCatalogoEstructura(tipo){
+  document.getElementById('catalogoUnidades').classList.toggle('hidden',tipo!=='unidades');
+  document.getElementById('catalogoCargos').classList.toggle('hidden',tipo!=='cargos');
+  document.getElementById('catalogoCentros').classList.toggle('hidden',tipo!=='centros');
+  renderCatalogosEstructura();
+}
+
+function renderCatalogosEstructura(){
+  renderGrupoCargoCatalogo();
+  renderCargosCatalogo();
+  renderCentrosCatalogo();
+}
+
+function renderCargosCatalogo(){
+  const tbody=document.getElementById('tablaCargosCatalogo');
+  if(!tbody)return;
+  const rows=[];
+  gruposOcupacionales.forEach(grupo=>{
+    grupo.cargos.slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(cargo=>{
+      rows.push(`<tr><td>${safeText(grupo.nombre)}</td><td>${safeText(cargo)}</td><td><button class="btn btn-warning" onclick="cargarCargoCatalogo('${safeText(grupo.id)}','${safeText(cargo)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarCargoCatalogo('${safeText(grupo.id)}','${safeText(cargo)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+    });
+  });
+  tbody.innerHTML=rows.join('');
+}
+
+function limpiarCargoCatalogo(){
+  document.getElementById('cargoCatalogoOriginal').value='';
+  document.getElementById('cargoCatalogoGrupo').value='';
+  document.getElementById('cargoCatalogoNombre').value='';
+}
+
+function cargarCargoCatalogo(grupoId,cargo){
+  document.getElementById('cargoCatalogoOriginal').value=cargo;
+  document.getElementById('cargoCatalogoGrupo').value=grupoId;
+  document.getElementById('cargoCatalogoNombre').value=cargo;
+  mostrarCatalogoEstructura('cargos');
+}
+
+function cargoEnUso(cargo){
+  return empleados.some(emp=>normalizarCatalogo(emp.cargo)===normalizarCatalogo(cargo));
+}
+
+function eliminarCargoCatalogo(grupoId,cargo){
+  if(cargoEnUso(cargo)){alert('No puede eliminar un cargo usado por empleados.');return;}
+  if(!confirm('Desea eliminar este cargo?'))return;
+  const grupo=gruposOcupacionales.find(item=>item.id===grupoId);
+  if(!grupo)return;
+  grupo.cargos=grupo.cargos.filter(item=>normalizarCatalogo(item)!==normalizarCatalogo(cargo));
+  guardarStorage();
+  renderGruposOcupacionales();
+  renderCatalogosEstructura();
+}
+
+const formCargoCatalogo=document.getElementById('formCargoCatalogo');
+formCargoCatalogo.addEventListener('submit',event=>{
+  event.preventDefault();
+  const grupoId=document.getElementById('cargoCatalogoGrupo').value;
+  const nombre=document.getElementById('cargoCatalogoNombre').value.trim();
+  const original=document.getElementById('cargoCatalogoOriginal').value;
+  if(!grupoId||!nombre){alert('Complete grupo ocupacional y nombre del cargo.');return;}
+  const grupo=gruposOcupacionales.find(item=>item.id===grupoId);
+  if(!grupo)return;
+  const duplicado=gruposOcupacionales.some(item=>item.cargos.some(cargo=>normalizarCatalogo(cargo)===normalizarCatalogo(nombre)&&normalizarCatalogo(cargo)!==normalizarCatalogo(original)));
+  if(duplicado){alert('Ya existe un cargo con ese nombre.');return;}
+  if(original){
+    gruposOcupacionales.forEach(item=>{item.cargos=item.cargos.filter(cargo=>normalizarCatalogo(cargo)!==normalizarCatalogo(original));});
+    empleados.forEach(emp=>{if(normalizarCatalogo(emp.cargo)===normalizarCatalogo(original)){emp.cargo=nombre;emp.grupoOcupacional=grupo.nombre;}});
+  }
+  if(!grupo.cargos.some(cargo=>normalizarCatalogo(cargo)===normalizarCatalogo(nombre)))grupo.cargos.push(nombre);
+  grupo.cargos.sort((a,b)=>a.localeCompare(b,'es'));
+  guardarStorage();
+  limpiarCargoCatalogo();
+  renderGruposOcupacionales();
+  renderCatalogosEstructura();
+  renderEmpleados();
+});
+
+function renderCentrosCatalogo(){
+  const tbody=document.getElementById('tablaCentrosCatalogo');
+  if(!tbody)return;
+  tbody.innerHTML=centrosServicio.slice().sort((a,b)=>a.localeCompare(b,'es')).map(centro=>
+    `<tr><td>${safeText(centro)}</td><td><button class="btn btn-warning" onclick="cargarCentroCatalogo('${safeText(centro)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-danger" onclick="eliminarCentroCatalogo('${safeText(centro)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`
+  ).join('');
+}
+
+function limpiarCentroCatalogo(){
+  document.getElementById('centroCatalogoOriginal').value='';
+  document.getElementById('centroCatalogoNombre').value='';
+}
+
+function cargarCentroCatalogo(centro){
+  document.getElementById('centroCatalogoOriginal').value=centro;
+  document.getElementById('centroCatalogoNombre').value=centro;
+  mostrarCatalogoEstructura('centros');
+}
+
+function centroEnUso(centro){
+  return empleados.some(emp=>normalizarCatalogo(emp.centroServicio)===normalizarCatalogo(centro));
+}
+
+function eliminarCentroCatalogo(centro){
+  if(centroEnUso(centro)){alert('No puede eliminar un centro usado por empleados.');return;}
+  if(!confirm('Desea eliminar este centro de servicio?'))return;
+  centrosServicio=centrosServicio.filter(item=>normalizarCatalogo(item)!==normalizarCatalogo(centro));
+  guardarStorage();
+  renderCentrosServicio();
+  renderCatalogosEstructura();
+}
+
+const formCentroCatalogo=document.getElementById('formCentroCatalogo');
+formCentroCatalogo.addEventListener('submit',event=>{
+  event.preventDefault();
+  const original=document.getElementById('centroCatalogoOriginal').value;
+  const nombre=document.getElementById('centroCatalogoNombre').value.trim();
+  if(!nombre){alert('Indique el nombre del centro de servicio.');return;}
+  const duplicado=centrosServicio.some(centro=>normalizarCatalogo(centro)===normalizarCatalogo(nombre)&&normalizarCatalogo(centro)!==normalizarCatalogo(original));
+  if(duplicado){alert('Ya existe un centro con ese nombre.');return;}
+  if(original){
+    centrosServicio=centrosServicio.filter(centro=>normalizarCatalogo(centro)!==normalizarCatalogo(original));
+    empleados.forEach(emp=>{if(normalizarCatalogo(emp.centroServicio)===normalizarCatalogo(original))emp.centroServicio=nombre;});
+  }
+  centrosServicio.push(nombre);
+  centrosServicio.sort((a,b)=>a.localeCompare(b,'es'));
+  guardarStorage();
+  limpiarCentroCatalogo();
+  renderCentrosServicio();
+  renderCatalogosEstructura();
+  renderEmpleados();
+});
 
 function setOptions(selectId, items, placeholder){
   const sel=document.getElementById(selectId);
@@ -2368,6 +2584,7 @@ function limpiarFormulario(){
 }
 
 (async function init(){
+  cargarCatalogosPersonalizados();
   renderGruposOcupacionales();
   renderCentrosServicio();
   await asegurarUsuarioAdminBase();
