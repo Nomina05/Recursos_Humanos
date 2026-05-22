@@ -61,6 +61,11 @@ th{background:#f7f9fc;color:#31445f}
 .alert b{display:block;margin-bottom:4px}
 .muted{color:var(--muted);font-size:13px}
 .chart-box{height:310px}
+.gis-map{background:#f4f8fc;border:1px solid var(--line);border-radius:8px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));min-height:220px;padding:12px}
+.gis-zone{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px}
+.gis-zone strong{display:block;margin-bottom:6px}
+.gis-layer{display:flex;gap:5px;flex-wrap:wrap}
+.gis-layer span{background:#e9f7f1;border-radius:999px;color:#07523c;font-size:11px;font-weight:700;padding:4px 7px}
 body.embedded{background:transparent}
 body.embedded header{display:none}
 body.embedded .wrap{padding:0}
@@ -85,6 +90,9 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="cobrosComercial" onclick="mostrarPanelComercial('cobrosComercial')">Cobros y Caja</button>
     <button type="button" data-panel="suspensionesComercial" onclick="mostrarPanelComercial('suspensionesComercial')">Suspensiones</button>
     <button type="button" data-panel="atencionComercial" onclick="mostrarPanelComercial('atencionComercial')">Atencion</button>
+    <button type="button" data-panel="tecnicoComercial" onclick="mostrarPanelComercial('tecnicoComercial')">Tecnico Operativo</button>
+    <button type="button" data-panel="gisComercial" onclick="mostrarPanelComercial('gisComercial')">GIS</button>
+    <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -985,6 +993,337 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="tecnicoComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel Tecnico Operativo</h2>
+      <p class="muted">Integra ordenes de trabajo, brigadas tecnicas y materiales utilizados por operacion.</p>
+      <div class="modules">
+        <span>Ordenes de Trabajo</span>
+        <span>Reparaciones</span>
+        <span>Instalaciones</span>
+        <span>Inspecciones</span>
+        <span>Fugas</span>
+        <span>Nuevas Conexiones</span>
+        <span>Brigadas Tecnicas</span>
+        <span>Materiales Utilizados</span>
+        <span>Integrado con inventario</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Ordenes pendientes</small><strong id="ordenesTecnicasKpi">0</strong><span>Trabajo operativo abierto</span></article>
+        <article class="panel kpi"><small>Brigadas programadas</small><strong id="brigadasTecnicasKpi">0</strong><span>Asignaciones por ejecutar</span></article>
+        <article class="panel kpi"><small>Materiales usados</small><strong id="materialesTecnicosKpi">0</strong><span>Renglones registrados</span></article>
+        <article class="panel kpi"><small>Vinculos comerciales</small><strong id="vinculosTecnicosKpi">0</strong><span>Contratos y tickets enlazados</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Orden de Trabajo</h3>
+        <form id="formOrdenTecnica">
+          <select id="ordenTecnicaContrato" required><option value="">Contrato</option></select>
+          <select id="ordenTecnicaTicket"><option value="">Ticket relacionado</option></select>
+          <select id="ordenTecnicaTipo" required>
+            <option value="">Tipo de orden</option>
+            <option>Reparacion</option>
+            <option>Instalacion</option>
+            <option>Inspeccion</option>
+            <option>Fuga</option>
+            <option>Nueva conexion</option>
+          </select>
+          <select id="ordenTecnicaPrioridad" required>
+            <option>Normal</option>
+            <option>Alta</option>
+            <option>Urgente</option>
+          </select>
+          <input id="ordenTecnicaFecha" type="date" required>
+          <textarea id="ordenTecnicaDetalle" placeholder="Detalle de la operacion" required></textarea>
+          <button type="submit">Crear orden</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Brigada Tecnica</h3>
+        <form id="formBrigadaTecnica">
+          <select id="brigadaTecnicaOrden" required><option value="">Orden de trabajo</option></select>
+          <input id="brigadaTecnicaNombre" placeholder="Brigada o tecnico responsable" required>
+          <input id="brigadaTecnicaFecha" type="datetime-local" required>
+          <select id="brigadaTecnicaEstado" required>
+            <option>Programada</option>
+            <option>En ruta</option>
+            <option>En ejecucion</option>
+          </select>
+          <textarea id="brigadaTecnicaNota" placeholder="Nota operativa"></textarea>
+          <button type="submit">Asignar brigada</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Material Utilizado</h3>
+        <form id="formMaterialTecnico">
+          <select id="materialTecnicoOrden" required><option value="">Orden de trabajo</option></select>
+          <select id="materialTecnicoArticulo" required><option value="">Articulo de Almacen</option></select>
+          <input id="materialTecnicoCantidad" type="number" min="0.01" step="0.01" placeholder="Cantidad" required>
+          <input id="materialTecnicoUnidad" placeholder="Unidad" readonly>
+          <textarea id="materialTecnicoNota" placeholder="Observacion del material"></textarea>
+          <button type="submit">Registrar material</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Ordenes Tecnicas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Tipo</th><th>Contrato</th><th>Ticket</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaOrdenesTecnicas"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Brigadas Tecnicas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Brigada</th><th>Fecha</th><th>Estado</th><th>Nota</th></tr></thead>
+            <tbody id="tablaBrigadasTecnicas"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel">
+      <h3>Materiales Utilizados</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Orden</th><th>Articulo</th><th>Cantidad</th><th>Unidad</th><th>Nota</th><th>Fecha</th></tr></thead>
+          <tbody id="tablaMaterialesTecnicos"></tbody>
+        </table>
+      </div>
+      <p class="muted">Los articulos se toman del catalogo de Solicitud a Almacen. Esta fase registra el uso por orden; el control de existencias se conecta cuando Almacen maneje inventario disponible.</p>
+    </article>
+  </section>
+
+  <section id="gisComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel GIS y Geolocalizacion</h2>
+      <p class="muted">Ubica usuarios, activos de red, averias y sectores de cobertura para apoyar la operacion del acueducto.</p>
+      <div class="modules">
+        <span>Mapa de Usuarios</span>
+        <span>Redes de Agua</span>
+        <span>Tuberias</span>
+        <span>Valvulas</span>
+        <span>Pozos</span>
+        <span>Tanques</span>
+        <span>Geolocalizacion de Averias</span>
+        <span>Sectores de Cobertura</span>
+        <span>Analisis de Perdidas</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Usuarios ubicados</small><strong id="usuariosGisKpi">0</strong><span>Contratos por sector</span></article>
+        <article class="panel kpi"><small>Activos de red</small><strong id="activosGisKpi">0</strong><span>Tuberias, valvulas, pozos y tanques</span></article>
+        <article class="panel kpi"><small>Averias abiertas</small><strong id="averiasGisKpi">0</strong><span>Incidencias geolocalizadas</span></article>
+        <article class="panel kpi"><small>Sectores con perdidas</small><strong id="perdidasGisKpi">0</strong><span>Priorizacion comercial</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Activo de Red</h3>
+        <form id="formActivoGis">
+          <select id="activoGisTipo" required>
+            <option value="">Tipo de activo</option>
+            <option>Red de agua</option>
+            <option>Tuberia</option>
+            <option>Valvula</option>
+            <option>Pozo</option>
+            <option>Tanque</option>
+          </select>
+          <input id="activoGisCodigo" placeholder="Codigo del activo" required>
+          <input id="activoGisSector" placeholder="Sector de cobertura" required>
+          <input id="activoGisGps" placeholder="GPS latitud,longitud" required>
+          <textarea id="activoGisDetalle" placeholder="Diametro, capacidad, estado o referencia"></textarea>
+          <button type="submit">Registrar activo</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Averia Geolocalizada</h3>
+        <form id="formAveriaGis">
+          <select id="averiaGisOrden"><option value="">Orden tecnica relacionada</option></select>
+          <select id="averiaGisTicket"><option value="">Ticket relacionado</option></select>
+          <select id="averiaGisTipo" required>
+            <option value="">Tipo de averia</option>
+            <option>Fuga</option>
+            <option>Rotura</option>
+            <option>Baja presion</option>
+            <option>Obstruccion</option>
+            <option>Otra</option>
+          </select>
+          <input id="averiaGisSector" placeholder="Sector" required>
+          <input id="averiaGisGps" placeholder="GPS latitud,longitud" required>
+          <textarea id="averiaGisDetalle" placeholder="Detalle operativo" required></textarea>
+          <button type="submit">Registrar averia</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Sector de Cobertura</h3>
+        <form id="formCoberturaGis">
+          <input id="coberturaGisSector" placeholder="Sector" required>
+          <input id="coberturaGisZona" placeholder="Zona">
+          <input id="coberturaGisUsuarios" type="number" min="0" step="1" placeholder="Usuarios estimados">
+          <input id="coberturaGisPerdida" type="number" min="0" max="100" step="0.01" placeholder="Perdida estimada %">
+          <textarea id="coberturaGisNota" placeholder="Nota de cobertura"></textarea>
+          <button type="submit">Guardar sector</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Mapa de Usuarios y Red</h3>
+        <div class="gis-map" id="mapaGisCobertura"></div>
+      </article>
+      <article class="panel">
+        <h3>Analisis de Perdidas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Sector</th><th>Usuarios</th><th>Activos</th><th>Averias</th><th>Perdida</th></tr></thead>
+            <tbody id="tablaAnalisisGis"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Activos Geolocalizados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Codigo</th><th>Sector</th><th>GPS</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaActivosGis"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Averias</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Sector</th><th>GPS</th><th>Orden/Ticket</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaAveriasGis"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
+
+  <section id="financieroComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel Financiero Integrado</h2>
+      <p class="muted">Conecta la operacion comercial con cuentas por cobrar, ingresos, conciliaciones, presupuestos y reportes institucionales.</p>
+      <div class="modules">
+        <span>Cuentas por Cobrar</span>
+        <span>Ingresos Comerciales</span>
+        <span>Conciliaciones</span>
+        <span>Presupuestos</span>
+        <span>Reportes Financieros</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Cuentas por cobrar</small><strong id="cuentasCobrarFinancieroKpi">RD$ 0</strong><span id="facturasCobrarFinancieroKpi">0 facturas con saldo</span></article>
+        <article class="panel kpi"><small>Ingresos cobrados</small><strong id="ingresosFinancieroKpi">RD$ 0</strong><span>Pagos comerciales registrados</span></article>
+        <article class="panel kpi"><small>Conciliaciones pendientes</small><strong id="conciliacionesFinancieroKpi">0</strong><span>Bancos y medios electronicos</span></article>
+        <article class="panel kpi"><small>Presupuesto vigente</small><strong id="presupuestoFinancieroKpi">RD$ 0</strong><span id="periodoPresupuestoFinancieroKpi">Sin presupuesto</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Presupuesto Comercial</h3>
+        <form id="formPresupuestoFinanciero">
+          <input id="presupuestoFinancieroPeriodo" type="month" required>
+          <select id="presupuestoFinancieroRenglon" required>
+            <option value="">Renglon</option>
+            <option>Ingresos comerciales</option>
+            <option>Recaudacion esperada</option>
+            <option>Cartera recuperable</option>
+            <option>Operacion comercial</option>
+          </select>
+          <input id="presupuestoFinancieroMonto" type="number" min="0" step="0.01" placeholder="Monto presupuestado" required>
+          <textarea id="presupuestoFinancieroNota" placeholder="Nota presupuestaria"></textarea>
+          <button type="submit">Guardar presupuesto</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Reporte Financiero</h3>
+        <form id="formReporteFinanciero">
+          <input id="reporteFinancieroPeriodo" type="month" required>
+          <select id="reporteFinancieroTipo" required>
+            <option value="">Tipo de reporte</option>
+            <option>Resumen comercial</option>
+            <option>Cuentas por cobrar</option>
+            <option>Ingresos y conciliacion</option>
+          </select>
+          <button type="submit">Generar reporte</button>
+        </form>
+        <div class="compact-list" id="resumenReporteFinanciero" style="margin-top:10px"></div>
+      </article>
+
+      <article class="panel">
+        <h3>Integracion Contable</h3>
+        <p class="muted">Esta fase prepara el cierre comercial para contabilidad institucional con saldos, cobros conciliados y presupuesto por periodo.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Metodo</th><th>Cobrado</th><th>Conciliado</th><th>Pendiente</th></tr></thead>
+            <tbody id="tablaMediosFinancieros"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Cuentas por Cobrar</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Factura</th><th>Periodo</th><th>Contrato</th><th>Total</th><th>Cobrado</th><th>Saldo</th></tr></thead>
+            <tbody id="tablaCuentasFinancieras"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Conciliaciones</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Factura</th><th>Metodo</th><th>Referencia</th><th>Monto</th><th>Estado</th></tr></thead>
+            <tbody id="tablaConciliacionesFinancieras"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Presupuestos Registrados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Renglon</th><th>Monto</th><th>Nota</th></tr></thead>
+            <tbody id="tablaPresupuestosFinancieros"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Reportes Financieros Generados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Periodo</th><th>Reporte</th><th>CxC</th><th>Ingresos</th><th>Pendiente</th></tr></thead>
+            <tbody id="tablaReportesFinancieros"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -1012,6 +1351,14 @@ let brigadasSuspensionComerciales=JSON.parse(localStorage.getItem('brigadasSuspe
 let evidenciasSuspensionComerciales=JSON.parse(localStorage.getItem('evidenciasSuspensionComerciales')||'[]');
 let ticketsAtencionComercial=JSON.parse(localStorage.getItem('ticketsAtencionComercial')||'[]');
 let seguimientosAtencionComercial=JSON.parse(localStorage.getItem('seguimientosAtencionComercial')||'[]');
+let ordenesTecnicasComerciales=JSON.parse(localStorage.getItem('ordenesTecnicasComerciales')||'[]');
+let brigadasTecnicasComerciales=JSON.parse(localStorage.getItem('brigadasTecnicasComerciales')||'[]');
+let materialesTecnicosComerciales=JSON.parse(localStorage.getItem('materialesTecnicosComerciales')||'[]');
+let activosGisComerciales=JSON.parse(localStorage.getItem('activosGisComerciales')||'[]');
+let averiasGisComerciales=JSON.parse(localStorage.getItem('averiasGisComerciales')||'[]');
+let coberturasGisComerciales=JSON.parse(localStorage.getItem('coberturasGisComerciales')||'[]');
+let presupuestosFinancierosComerciales=JSON.parse(localStorage.getItem('presupuestosFinancierosComerciales')||'[]');
+let reportesFinancierosComerciales=JSON.parse(localStorage.getItem('reportesFinancierosComerciales')||'[]');
 let graficoComparativo=null;
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -1036,6 +1383,9 @@ function mostrarPanelComercial(id){
   cobrosComercial.style.display=id==='cobrosComercial'?'block':'none';
   suspensionesComercial.style.display=id==='suspensionesComercial'?'block':'none';
   atencionComercial.style.display=id==='atencionComercial'?'block':'none';
+  tecnicoComercial.style.display=id==='tecnicoComercial'?'block':'none';
+  gisComercial.style.display=id==='gisComercial'?'block':'none';
+  financieroComercial.style.display=id==='financieroComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
@@ -1044,6 +1394,9 @@ function mostrarPanelComercial(id){
   if(id==='cobrosComercial')renderCobrosComercial();
   if(id==='suspensionesComercial')renderSuspensionesComercial();
   if(id==='atencionComercial')renderAtencionComercial();
+  if(id==='tecnicoComercial')renderTecnicoComercial();
+  if(id==='gisComercial')renderGisComercial();
+  if(id==='financieroComercial')renderFinancieroComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -1085,6 +1438,20 @@ function guardarSuspensionesComercial(){
 function guardarAtencionComercial(){
   localStorage.setItem('ticketsAtencionComercial',JSON.stringify(ticketsAtencionComercial));
   localStorage.setItem('seguimientosAtencionComercial',JSON.stringify(seguimientosAtencionComercial));
+}
+function guardarTecnicoComercial(){
+  localStorage.setItem('ordenesTecnicasComerciales',JSON.stringify(ordenesTecnicasComerciales));
+  localStorage.setItem('brigadasTecnicasComerciales',JSON.stringify(brigadasTecnicasComerciales));
+  localStorage.setItem('materialesTecnicosComerciales',JSON.stringify(materialesTecnicosComerciales));
+}
+function guardarGisComercial(){
+  localStorage.setItem('activosGisComerciales',JSON.stringify(activosGisComerciales));
+  localStorage.setItem('averiasGisComerciales',JSON.stringify(averiasGisComerciales));
+  localStorage.setItem('coberturasGisComerciales',JSON.stringify(coberturasGisComerciales));
+}
+function guardarFinancieroComercial(){
+  localStorage.setItem('presupuestosFinancierosComerciales',JSON.stringify(presupuestosFinancierosComerciales));
+  localStorage.setItem('reportesFinancierosComerciales',JSON.stringify(reportesFinancierosComerciales));
 }
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
@@ -1673,6 +2040,179 @@ function renderAtencionComercial(){
     <tr><td>${safeText(item.canal)}</td><td>${Number(item.abiertos).toLocaleString('es-DO')}</td><td>${safeText(item.ultimo)}</td></tr>
   `).join('');
 }
+function articulosTecnicosAlmacen(){
+  return JSON.parse(localStorage.getItem('rrhhArticulosAlmacen')||'[]');
+}
+function etiquetaContratoTecnico(id){
+  const contrato=contratoCatastroPorId(id);
+  const inmueble=contrato?inmuebleContrato(contrato.id):null;
+  return contrato?`${contrato.numero} - ${nombreClienteCatastro(inmueble?.clienteId)}`:'Contrato no disponible';
+}
+function ordenTecnicaPorId(id){
+  return ordenesTecnicasComerciales.find(item=>item.id===id);
+}
+function opcionesOrdenesTecnicas(etiqueta, filtro){
+  return `<option value="">${etiqueta}</option>`+ordenesTecnicasComerciales
+    .filter(item=>!filtro||filtro(item))
+    .map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.tipo)} - ${safeText(etiquetaContratoTecnico(item.contratoId))}</option>`)
+    .join('');
+}
+function opcionesContratosTecnicos(){
+  return '<option value="">Contrato</option>'+catastroContratos.map(item=>`<option value="${safeText(item.id)}">${safeText(etiquetaContratoTecnico(item.id))}</option>`).join('');
+}
+function opcionesTicketsTecnicos(){
+  return '<option value="">Ticket relacionado</option>'+ticketsAtencionComercial
+    .filter(item=>item.estado!=='Cerrado')
+    .map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.categoria)} - ${safeText(nombreClienteCatastro(item.clienteId))}</option>`)
+    .join('');
+}
+function opcionesArticulosTecnicos(){
+  const articulos=articulosTecnicosAlmacen();
+  return '<option value="">Articulo de Almacen</option>'+articulos
+    .map(item=>`<option value="${safeText(item.id||item.nombre)}" data-nombre="${safeText(item.nombre)}" data-unidad="${safeText(item.unidad)}">${safeText(item.nombre)} - ${safeText(item.unidad)}</option>`)
+    .join('');
+}
+function etiquetaTicketTecnico(id){
+  const ticket=ticketAtencionPorId(id);
+  return ticket?`${ticket.numero} - ${ticket.categoria}`:'-';
+}
+function cerrarOrdenTecnica(id){
+  const orden=ordenTecnicaPorId(id);
+  if(!orden)return;
+  orden.estado='Completada';
+  orden.cierre=new Date().toISOString();
+  guardarTecnicoComercial();
+  renderTecnicoComercial();
+}
+function renderTecnicoComercial(){
+  ordenTecnicaContrato.innerHTML=opcionesContratosTecnicos();
+  ordenTecnicaTicket.innerHTML=opcionesTicketsTecnicos();
+  brigadaTecnicaOrden.innerHTML=opcionesOrdenesTecnicas('Orden de trabajo',item=>item.estado!=='Completada');
+  materialTecnicoOrden.innerHTML=opcionesOrdenesTecnicas('Orden de trabajo');
+  materialTecnicoArticulo.innerHTML=opcionesArticulosTecnicos();
+  materialTecnicoUnidad.value='';
+  const pendientes=ordenesTecnicasComerciales.filter(item=>item.estado!=='Completada');
+  const vinculos=new Set(ordenesTecnicasComerciales.flatMap(item=>[item.contratoId,item.ticketId].filter(Boolean)));
+  ordenesTecnicasKpi.textContent=pendientes.length;
+  brigadasTecnicasKpi.textContent=brigadasTecnicasComerciales.filter(item=>item.estado!=='Finalizada').length;
+  materialesTecnicosKpi.textContent=materialesTecnicosComerciales.length;
+  vinculosTecnicosKpi.textContent=vinculos.size;
+  tablaOrdenesTecnicas.innerHTML=ordenesTecnicasComerciales.length?ordenesTecnicasComerciales.slice(0,120).map(item=>`
+    <tr>
+      <td>${safeText(item.numero)}</td>
+      <td>${safeText(item.tipo)}</td>
+      <td>${safeText(etiquetaContratoTecnico(item.contratoId))}</td>
+      <td>${safeText(etiquetaTicketTecnico(item.ticketId))}</td>
+      <td><span class="badge">${safeText(item.prioridad)}</span></td>
+      <td>${safeText(item.fecha)}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+      <td>${item.estado!=='Completada'?`<button type="button" onclick="cerrarOrdenTecnica('${safeText(item.id)}')">Completar</button>`:'-'}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="8">No hay ordenes tecnicas registradas.</td></tr>';
+  tablaBrigadasTecnicas.innerHTML=brigadasTecnicasComerciales.length?brigadasTecnicasComerciales.slice(0,120).map(item=>`
+    <tr><td>${safeText(ordenTecnicaPorId(item.ordenId)?.numero||'-')}</td><td>${safeText(item.brigada)}</td><td>${safeText(item.fecha.replace('T',' '))}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${safeText(item.nota||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay brigadas tecnicas asignadas.</td></tr>';
+  tablaMaterialesTecnicos.innerHTML=materialesTecnicosComerciales.length?materialesTecnicosComerciales.slice(0,160).map(item=>`
+    <tr><td>${safeText(ordenTecnicaPorId(item.ordenId)?.numero||'-')}</td><td>${safeText(item.articulo)}</td><td>${Number(item.cantidad||0).toLocaleString('es-DO')}</td><td>${safeText(item.unidad||'-')}</td><td>${safeText(item.nota||'-')}</td><td>${safeText(item.fecha)}</td></tr>
+  `).join(''):'<tr><td colspan="6">No hay materiales utilizados.</td></tr>';
+}
+function normalizarSectorGis(valor){
+  return String(valor||'Sin sector').trim().toLowerCase();
+}
+function coberturaGisPorSector(sector){
+  return coberturasGisComerciales.find(item=>normalizarSectorGis(item.sector)===normalizarSectorGis(sector));
+}
+function usuariosGisPorSector(sector){
+  const inmuebles=catastroInmuebles.filter(item=>normalizarSectorGis(item.sector)===normalizarSectorGis(sector));
+  return catastroContratos.filter(contrato=>inmuebles.some(inmueble=>inmueble.id===contrato.inmuebleId)).length;
+}
+function sectoresGis(){
+  const sectores=[
+    ...catastroInmuebles.map(item=>item.sector),
+    ...activosGisComerciales.map(item=>item.sector),
+    ...averiasGisComerciales.map(item=>item.sector),
+    ...coberturasGisComerciales.map(item=>item.sector),
+    ...comercialPeriodos.map(item=>item.perdidas)
+  ].filter(Boolean);
+  const mapa=new Map();
+  sectores.forEach(item=>{
+    const key=normalizarSectorGis(item);
+    if(!mapa.has(key))mapa.set(key,String(item).trim());
+  });
+  return [...mapa.values()];
+}
+function perdidaSectorGis(sector){
+  const cobertura=coberturaGisPorSector(sector);
+  if(cobertura&&cobertura.perdida!=='')return `${Number(cobertura.perdida||0).toFixed(1)}%`;
+  return comercialPeriodos.some(item=>normalizarSectorGis(item.perdidas)===normalizarSectorGis(sector))?'Priorizado':'-';
+}
+function activosGisPorSector(sector){
+  return activosGisComerciales.filter(item=>normalizarSectorGis(item.sector)===normalizarSectorGis(sector));
+}
+function averiasGisPorSector(sector){
+  return averiasGisComerciales.filter(item=>normalizarSectorGis(item.sector)===normalizarSectorGis(sector)&&item.estado!=='Cerrada');
+}
+function opcionesOrdenesGis(){
+  return '<option value="">Orden tecnica relacionada</option>'+ordenesTecnicasComerciales
+    .map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.tipo)}</option>`)
+    .join('');
+}
+function opcionesTicketsGis(){
+  return '<option value="">Ticket relacionado</option>'+ticketsAtencionComercial
+    .filter(item=>item.estado!=='Cerrado')
+    .map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.categoria)}</option>`)
+    .join('');
+}
+function referenciaAveriaGis(item){
+  const orden=ordenTecnicaPorId(item.ordenId);
+  const ticket=ticketAtencionPorId(item.ticketId);
+  return [orden?.numero,ticket?.numero].filter(Boolean).join(' / ')||'-';
+}
+function cerrarAveriaGis(id){
+  const averia=averiasGisComerciales.find(item=>item.id===id);
+  if(!averia)return;
+  averia.estado='Cerrada';
+  averia.cierre=new Date().toISOString();
+  guardarGisComercial();
+  renderGisComercial();
+}
+function renderGisComercial(){
+  averiaGisOrden.innerHTML=opcionesOrdenesGis();
+  averiaGisTicket.innerHTML=opcionesTicketsGis();
+  const sectores=sectoresGis();
+  const sectoresPerdida=sectores.filter(sector=>perdidaSectorGis(sector)!=='-');
+  usuariosGisKpi.textContent=catastroContratos.length;
+  activosGisKpi.textContent=activosGisComerciales.length;
+  averiasGisKpi.textContent=averiasGisComerciales.filter(item=>item.estado!=='Cerrada').length;
+  perdidasGisKpi.textContent=sectoresPerdida.length;
+  mapaGisCobertura.innerHTML=sectores.length?sectores.map(sector=>{
+    const cobertura=coberturaGisPorSector(sector)||{};
+    const activos=activosGisPorSector(sector);
+    const averias=averiasGisPorSector(sector);
+    const usuarios=Number(cobertura.usuarios||0)||usuariosGisPorSector(sector);
+    return `<article class="gis-zone">
+      <strong>${safeText(sector)}</strong>
+      <div class="gis-layer">
+        <span>${usuarios.toLocaleString('es-DO')} usuarios</span>
+        <span>${activos.length.toLocaleString('es-DO')} activos</span>
+        <span>${averias.length.toLocaleString('es-DO')} averias</span>
+        <span>Perdida ${safeText(perdidaSectorGis(sector))}</span>
+      </div>
+      <small class="muted">${safeText(cobertura.zona||'Zona por definir')} ${cobertura.nota?`| ${safeText(cobertura.nota)}`:''}</small>
+    </article>`;
+  }).join(''):'<div class="muted">Registre sectores, activos o averias para construir la vista GIS.</div>';
+  tablaAnalisisGis.innerHTML=sectores.length?sectores.map(sector=>{
+    const cobertura=coberturaGisPorSector(sector)||{};
+    const usuarios=Number(cobertura.usuarios||0)||usuariosGisPorSector(sector);
+    return `<tr><td>${safeText(sector)}</td><td>${usuarios.toLocaleString('es-DO')}</td><td>${activosGisPorSector(sector).length.toLocaleString('es-DO')}</td><td>${averiasGisPorSector(sector).length.toLocaleString('es-DO')}</td><td>${safeText(perdidaSectorGis(sector))}</td></tr>`;
+  }).join(''):'<tr><td colspan="5">No hay sectores para analizar.</td></tr>';
+  tablaActivosGis.innerHTML=activosGisComerciales.length?activosGisComerciales.slice(0,160).map(item=>`
+    <tr><td>${safeText(item.tipo)}</td><td>${safeText(item.codigo)}</td><td>${safeText(item.sector)}</td><td>${safeText(item.gps)}</td><td>${safeText(item.detalle||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay activos geolocalizados.</td></tr>';
+  tablaAveriasGis.innerHTML=averiasGisComerciales.length?averiasGisComerciales.slice(0,160).map(item=>`
+    <tr><td>${safeText(item.tipo)}</td><td>${safeText(item.sector)}</td><td>${safeText(item.gps)}</td><td>${safeText(referenciaAveriaGis(item))}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${item.estado!=='Cerrada'?`<button type="button" onclick="cerrarAveriaGis('${safeText(item.id)}')">Cerrar</button>`:'-'}</td></tr>
+  `).join(''):'<tr><td colspan="6">No hay averias geolocalizadas.</td></tr>';
+}
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
   const facturacion=Number(actual.facturacion||0);
@@ -2203,6 +2743,115 @@ formSeguimientoTicket.addEventListener('submit',event=>{
   formSeguimientoTicket.reset();
   renderAtencionComercial();
 });
+formOrdenTecnica.addEventListener('submit',event=>{
+  event.preventDefault();
+  ordenesTecnicasComerciales.unshift({
+    id:idCatastro('OTC'),
+    numero:`OT-${new Date().getFullYear()}-${String(ordenesTecnicasComerciales.length+1).padStart(6,'0')}`,
+    contratoId:ordenTecnicaContrato.value,
+    ticketId:ordenTecnicaTicket.value,
+    tipo:ordenTecnicaTipo.value,
+    prioridad:ordenTecnicaPrioridad.value,
+    fecha:ordenTecnicaFecha.value,
+    detalle:ordenTecnicaDetalle.value.trim(),
+    estado:'Abierta',
+    creado:new Date().toISOString()
+  });
+  guardarTecnicoComercial();
+  formOrdenTecnica.reset();
+  ordenTecnicaFecha.value=new Date().toISOString().slice(0,10);
+  renderTecnicoComercial();
+});
+formBrigadaTecnica.addEventListener('submit',event=>{
+  event.preventDefault();
+  brigadasTecnicasComerciales.unshift({
+    id:idCatastro('BRT'),
+    ordenId:brigadaTecnicaOrden.value,
+    brigada:brigadaTecnicaNombre.value.trim(),
+    fecha:brigadaTecnicaFecha.value,
+    estado:brigadaTecnicaEstado.value,
+    nota:brigadaTecnicaNota.value.trim(),
+    creado:new Date().toISOString()
+  });
+  guardarTecnicoComercial();
+  formBrigadaTecnica.reset();
+  renderTecnicoComercial();
+});
+materialTecnicoArticulo.addEventListener('change',()=>{
+  materialTecnicoUnidad.value=materialTecnicoArticulo.selectedOptions[0]?.dataset.unidad||'';
+});
+formMaterialTecnico.addEventListener('submit',event=>{
+  event.preventDefault();
+  const articulo=materialTecnicoArticulo.selectedOptions[0];
+  if(!articulo?.dataset.nombre){
+    alert('Seleccione un articulo del catalogo de Almacen.');
+    return;
+  }
+  materialesTecnicosComerciales.unshift({
+    id:idCatastro('MAT'),
+    ordenId:materialTecnicoOrden.value,
+    articuloId:materialTecnicoArticulo.value,
+    articulo:articulo.dataset.nombre,
+    cantidad:Number(materialTecnicoCantidad.value||0),
+    unidad:articulo.dataset.unidad||materialTecnicoUnidad.value.trim(),
+    nota:materialTecnicoNota.value.trim(),
+    fecha:new Date().toISOString().slice(0,10),
+    creado:new Date().toISOString()
+  });
+  guardarTecnicoComercial();
+  formMaterialTecnico.reset();
+  renderTecnicoComercial();
+});
+formActivoGis.addEventListener('submit',event=>{
+  event.preventDefault();
+  activosGisComerciales.unshift({
+    id:idCatastro('GIS'),
+    tipo:activoGisTipo.value,
+    codigo:activoGisCodigo.value.trim(),
+    sector:activoGisSector.value.trim(),
+    gps:activoGisGps.value.trim(),
+    detalle:activoGisDetalle.value.trim(),
+    creado:new Date().toISOString()
+  });
+  guardarGisComercial();
+  formActivoGis.reset();
+  renderGisComercial();
+});
+formAveriaGis.addEventListener('submit',event=>{
+  event.preventDefault();
+  averiasGisComerciales.unshift({
+    id:idCatastro('AVG'),
+    ordenId:averiaGisOrden.value,
+    ticketId:averiaGisTicket.value,
+    tipo:averiaGisTipo.value,
+    sector:averiaGisSector.value.trim(),
+    gps:averiaGisGps.value.trim(),
+    detalle:averiaGisDetalle.value.trim(),
+    estado:'Abierta',
+    creado:new Date().toISOString()
+  });
+  guardarGisComercial();
+  formAveriaGis.reset();
+  renderGisComercial();
+});
+formCoberturaGis.addEventListener('submit',event=>{
+  event.preventDefault();
+  const sector=coberturaGisSector.value.trim();
+  const cobertura={
+    id:idCatastro('COB'),
+    sector,
+    zona:coberturaGisZona.value.trim(),
+    usuarios:Number(coberturaGisUsuarios.value||0),
+    perdida:coberturaGisPerdida.value===''?'':Number(coberturaGisPerdida.value),
+    nota:coberturaGisNota.value.trim(),
+    actualizado:new Date().toISOString()
+  };
+  const idx=coberturasGisComerciales.findIndex(item=>normalizarSectorGis(item.sector)===normalizarSectorGis(sector));
+  if(idx>=0)coberturasGisComerciales[idx]={...coberturasGisComerciales[idx],...cobertura};else coberturasGisComerciales.unshift(cobertura);
+  guardarGisComercial();
+  formCoberturaGis.reset();
+  renderGisComercial();
+});
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
 });
@@ -2217,6 +2866,7 @@ facturaPeriodo.value=new Date().toISOString().slice(0,7);
 masivaPeriodo.value=new Date().toISOString().slice(0,7);
 convenioPrimerVencimiento.value=new Date().toISOString().slice(0,10);
 corteFecha.value=new Date().toISOString().slice(0,10);
+ordenTecnicaFecha.value=new Date().toISOString().slice(0,10);
 renderComercial();
 </script>
 </body>
