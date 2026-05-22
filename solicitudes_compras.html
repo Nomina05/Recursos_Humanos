@@ -22,16 +22,25 @@ header{background:var(--azul);color:#fff;padding:12px;display:flex;justify-conte
 
 .main{padding:15px}
 .card{background:#fff;padding:15px;border-radius:10px;margin-bottom:10px}
-
 input, textarea, select{padding:10px;border:1px solid #ccc;border-radius:8px;font-family:Segoe UI}
 textarea{width:100%;min-height:80px;box-sizing:border-box;resize:vertical;margin-top:8px}
 button{padding:8px 10px;border:none;border-radius:8px;cursor:pointer;margin-top:5px}
 .btn-primary{background:var(--azul);color:#fff}
 .btn-success{background:var(--verde);color:#fff}
 .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-items:center}
+.form-grid .span-2{grid-column:span 2}
 .tabla{width:100%;border-collapse:collapse;margin-top:10px;background:#fff}
 .tabla th,.tabla td{border-bottom:1px solid var(--borde);padding:8px;text-align:left;font-size:14px}
 .tabla th{background:#f8fafc}
+.panel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:10px}
+.module-strip{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.module-pill{background:#e8eef8;border-radius:999px;color:#17324d;font-size:12px;font-weight:700;padding:5px 8px}
+.plan-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.plan-kpi{background:#fff;border:1px solid var(--borde);border-left:4px solid var(--azul);border-radius:9px;padding:10px}
+.plan-kpi small{display:block;color:#64748b}
+.plan-kpi strong{display:block;font-size:20px;margin-top:4px}
+.table-wrap{overflow:auto}
+.estado-pill{border-radius:999px;display:inline-flex;font-size:12px;font-weight:700;padding:4px 7px;background:#eef3ff;color:#17324d}
 
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .kpi{text-align:center;background:#fff;padding:10px;border-radius:10px}
@@ -118,6 +127,7 @@ body.embedded .card,
 body.embedded .proceso,
 body.embedded .kpi{border:1px solid var(--borde);box-shadow:none}
 @media(max-width:900px){.proceso-resumen{grid-template-columns:1fr}.drawer{width:100%}}
+@media(max-width:900px){.form-grid{grid-template-columns:1fr}.form-grid .span-2{grid-column:auto}}
 </style>
 </head>
 
@@ -133,6 +143,7 @@ body.embedded .kpi{border:1px solid var(--borde);box-shadow:none}
 <div class="nav">
   <button onclick="vista('usuarios')">Usuarios</button>
   <button onclick="vista('reg')">Registro</button>
+  <button onclick="vista('planificacion')">Planificacion</button>
   <button onclick="vista('dash')">Dashboard</button>
   <button onclick="vista('proc')">Procesos</button>
 </div>
@@ -144,6 +155,7 @@ body.embedded .kpi{border:1px solid var(--borde);box-shadow:none}
 </div>
 <div class="embedded-tabs" aria-label="Vistas de solicitudes de compras">
   <button type="button" data-vista="reg" onclick="vista('reg')">Nueva solicitud</button>
+  <button type="button" data-vista="planificacion" onclick="vista('planificacion')">Planificacion</button>
   <button type="button" data-vista="dash" onclick="vista('dash')">Dashboard</button>
   <button type="button" data-vista="proc" onclick="vista('proc')">Procesos</button>
 </div>
@@ -200,6 +212,92 @@ body.embedded .kpi{border:1px solid var(--borde);box-shadow:none}
 </div>
 </div>
 
+<!-- PLANIFICACION -->
+<div id="planificacion" style="display:none">
+  <div class="card">
+    <h3>Panel de Planificacion de Compras</h3>
+    <div class="module-strip">
+      <span class="module-pill">Plan Anual de Compras</span>
+      <span class="module-pill">Programacion Presupuestaria</span>
+      <span class="module-pill">Solicitudes futuras</span>
+      <span class="module-pill">Calendario de adquisiciones</span>
+      <span class="module-pill">Priorizacion institucional</span>
+      <span class="module-pill">Estimacion de costos</span>
+      <span class="module-pill">Indicadores de ejecucion</span>
+      <span class="module-pill">Reprogramaciones</span>
+      <span class="module-pill">Historial de modificaciones</span>
+    </div>
+    <div class="plan-kpis">
+      <div class="plan-kpi"><small>Partidas PAC/PACC</small><strong id="pacTotalItems">0</strong></div>
+      <div class="plan-kpi"><small>Programado</small><strong id="pacTotalMonto">RD$ 0</strong></div>
+      <div class="plan-kpi"><small>Ejecucion estimada</small><strong id="pacEjecucion">0%</strong></div>
+      <div class="plan-kpi"><small>Reprogramaciones</small><strong id="pacReprogramaciones">0</strong></div>
+    </div>
+    <form id="pacForm" class="form-grid">
+      <input id="pacAnio" type="number" min="2020" placeholder="Anio PAC/PACC" required>
+      <input id="pacDescripcion" class="span-2" placeholder="Bien, servicio u obra planificada" required>
+      <input id="pacUnidad" placeholder="Unidad solicitante" required>
+      <input id="pacPartida" placeholder="Programa, partida o fuente">
+      <input id="pacCosto" type="number" min="0" step="0.01" placeholder="Costo estimado" required>
+      <select id="pacPrioridad" required>
+        <option value="">Prioridad</option>
+        <option>Alta</option>
+        <option>Media</option>
+        <option>Baja</option>
+      </select>
+      <input id="pacFecha" type="date" required>
+      <input id="pacSolicitudFutura" type="date" title="Fecha prevista para generar solicitud">
+      <select id="pacEstado">
+        <option>Programado</option>
+        <option>En ejecucion</option>
+        <option>Adjudicado</option>
+        <option>Completado</option>
+      </select>
+      <input id="pacNotas" class="span-2" placeholder="Notas o criterio de priorizacion">
+      <button class="btn-primary" type="submit">Agregar al plan</button>
+    </form>
+  </div>
+
+  <div class="panel-grid">
+    <section class="card">
+      <h3>Plan Anual y Programacion Presupuestaria</h3>
+      <div class="table-wrap">
+        <table class="tabla">
+          <thead><tr><th>Anio</th><th>Adquisicion</th><th>Unidad</th><th>Presupuesto</th><th>Prioridad</th><th>Estado</th><th>Accion</th></tr></thead>
+          <tbody id="pacTabla"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <h3>Solicitudes Futuras y Calendario</h3>
+      <div class="table-wrap">
+        <table class="tabla">
+          <thead><tr><th>Adquisicion</th><th>Solicitud</th><th>Adquisicion</th><th>Costo</th></tr></thead>
+          <tbody id="pacCalendario"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <h3>Reprogramaciones</h3>
+      <div class="table-wrap">
+        <table class="tabla">
+          <thead><tr><th>Adquisicion</th><th>Fecha anterior</th><th>Nueva fecha</th><th>Motivo</th></tr></thead>
+          <tbody id="pacReprogramacionesTabla"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="card">
+      <h3>Historial de Modificaciones</h3>
+      <div class="table-wrap">
+        <table class="tabla">
+          <thead><tr><th>Fecha</th><th>Adquisicion</th><th>Cambio</th></tr></thead>
+          <tbody id="pacHistorial"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
 <!-- DASH -->
 <div id="dash" style="display:none">
 <div class="kpis">
@@ -252,6 +350,8 @@ body.embedded .kpi{border:1px solid var(--borde);box-shadow:none}
 
 let procesos = JSON.parse(localStorage.getItem('data')||'[]');
 let usuariosRegistrados = [];
+let pacCompras = JSON.parse(localStorage.getItem('pacCompras')||'[]');
+let pacHistorialCompras = JSON.parse(localStorage.getItem('pacHistorialCompras')||'[]');
 const RRHH_USERS_KEY = 'usuariosSistema';
 const RRHH_SESSION_KEY = 'sesionUsuarioId';
 const ETAPAS = [
@@ -480,10 +580,11 @@ async function cargarProcesosSql(){
 
 // ====== VISTA ======
 function vista(v){
-  usuarios.style.display='none'; reg.style.display='none'; dash.style.display='none'; proc.style.display='none';
+  usuarios.style.display='none'; reg.style.display='none'; planificacion.style.display='none'; dash.style.display='none'; proc.style.display='none';
   document.getElementById(v).style.display='block';
   document.querySelectorAll('.embedded-tabs button').forEach(btn=>btn.classList.toggle('activo', btn.dataset.vista===v));
   if(v==='usuarios'){ cargarUsuariosSistema(); renderUsuarios(); }
+  if(v==='planificacion') renderPlanificacionCompras();
   if(v==='dash') kpi();
   if(v==='proc') render();
 }
@@ -496,6 +597,175 @@ purchaseMessagesBtn.addEventListener('click',()=>{
   purchaseMessagesPanel.hidden = !purchaseMessagesPanel.hidden;
   if(!purchaseMessagesPanel.hidden) markPurchaseMessagesRead();
 });
+
+// ====== PLANIFICACION PAC/PACC ======
+function textoSeguro(valor){
+  return String(valor || '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#39;");
+}
+
+function formatoMontoPac(valor){
+  return Number(valor || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'});
+}
+
+function formatoFechaPac(valor){
+  if(!valor) return '-';
+  const fecha = new Date(`${valor}T00:00:00`);
+  return Number.isNaN(fecha.getTime()) ? textoSeguro(valor) : fecha.toLocaleDateString('es-DO');
+}
+
+function guardarPlanificacionCompras(){
+  localStorage.setItem('pacCompras', JSON.stringify(pacCompras));
+  localStorage.setItem('pacHistorialCompras', JSON.stringify(pacHistorialCompras));
+}
+
+function agregarHistorialPac(item, cambio){
+  pacHistorialCompras.unshift({
+    id:`HIST-${Date.now()}`,
+    pacId:item.id,
+    descripcion:item.descripcion,
+    cambio,
+    fecha:new Date().toISOString()
+  });
+  pacHistorialCompras = pacHistorialCompras.slice(0, 120);
+}
+
+function estadoPacOptions(estado){
+  return ['Programado','En ejecucion','Adjudicado','Completado','Reprogramado']
+    .map(opcion=>`<option${opcion===estado?' selected':''}>${opcion}</option>`)
+    .join('');
+}
+
+function renderPlanificacionCompras(){
+  const totalMonto = pacCompras.reduce((s,item)=>s + Number(item.costo || 0), 0);
+  const completado = pacCompras.filter(item=>item.estado==='Completado').reduce((s,item)=>s + Number(item.costo || 0), 0);
+  const reprogramaciones = pacHistorialCompras.filter(item=>item.tipo==='reprogramacion');
+  pacTotalItems.innerText = pacCompras.length;
+  pacTotalMonto.innerText = formatoMontoPac(totalMonto);
+  pacEjecucion.innerText = totalMonto ? `${((completado / totalMonto) * 100).toFixed(1)}%` : '0%';
+  pacReprogramaciones.innerText = reprogramaciones.length;
+
+  pacTabla.innerHTML = pacCompras.length ? pacCompras.map(item=>`
+    <tr>
+      <td>${textoSeguro(item.anio)}</td>
+      <td><b>${textoSeguro(item.descripcion)}</b><br><small>${textoSeguro(item.partida || 'Sin partida')}</small></td>
+      <td>${textoSeguro(item.unidad)}</td>
+      <td>${formatoMontoPac(item.costo)}</td>
+      <td>${textoSeguro(item.prioridad)}</td>
+      <td><select onchange="cambiarEstadoPac('${item.id}',this.value)">${estadoPacOptions(item.estado)}</select></td>
+      <td><button onclick="reprogramarCompraPac('${item.id}')">Reprogramar</button></td>
+    </tr>
+  `).join('') : '<tr><td colspan="7">No hay adquisiciones planificadas.</td></tr>';
+
+  pacCalendario.innerHTML = pacCompras.length ? [...pacCompras]
+    .sort((a,b)=>String(a.fechaAdquisicion).localeCompare(String(b.fechaAdquisicion)))
+    .map(item=>`
+      <tr>
+        <td><b>${textoSeguro(item.descripcion)}</b><br><span class="estado-pill">${textoSeguro(item.prioridad)}</span></td>
+        <td>${formatoFechaPac(item.fechaSolicitud)}</td>
+        <td>${formatoFechaPac(item.fechaAdquisicion)}</td>
+        <td>${formatoMontoPac(item.costo)}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="4">El calendario aun no tiene partidas.</td></tr>';
+
+  pacReprogramacionesTabla.innerHTML = reprogramaciones.length ? reprogramaciones.slice(0,20).map(item=>`
+    <tr>
+      <td>${textoSeguro(item.descripcion)}</td>
+      <td>${formatoFechaPac(item.fechaAnterior)}</td>
+      <td>${formatoFechaPac(item.fechaNueva)}</td>
+      <td>${textoSeguro(item.motivo || '-')}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="4">No hay reprogramaciones registradas.</td></tr>';
+
+  pacHistorial.innerHTML = pacHistorialCompras.length ? pacHistorialCompras.slice(0,30).map(item=>`
+    <tr>
+      <td>${new Date(item.fecha).toLocaleString('es-DO')}</td>
+      <td>${textoSeguro(item.descripcion)}</td>
+      <td>${textoSeguro(item.cambio)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="3">No hay modificaciones registradas.</td></tr>';
+}
+
+function crearPartidaPac(event){
+  event.preventDefault();
+  const item = {
+    id:`PAC-${Date.now()}`,
+    anio:pacAnio.value.trim(),
+    descripcion:pacDescripcion.value.trim(),
+    unidad:pacUnidad.value.trim(),
+    partida:pacPartida.value.trim(),
+    costo:Number(pacCosto.value || 0),
+    prioridad:pacPrioridad.value,
+    fechaAdquisicion:pacFecha.value,
+    fechaSolicitud:pacSolicitudFutura.value,
+    estado:pacEstado.value,
+    notas:pacNotas.value.trim(),
+    creado:new Date().toISOString()
+  };
+  if(!item.anio || !item.descripcion || !item.unidad || !item.costo || !item.prioridad || !item.fechaAdquisicion){
+    alert('Complete anio, adquisicion, unidad, costo, prioridad y fecha de adquisicion.');
+    return;
+  }
+  pacCompras.unshift(item);
+  agregarHistorialPac(item, `Partida creada en estado ${item.estado}.`);
+  guardarPlanificacionCompras();
+  pacForm.reset();
+  pacAnio.value = new Date().getFullYear();
+  renderPlanificacionCompras();
+}
+
+function cambiarEstadoPac(id, estado){
+  const item = pacCompras.find(row=>row.id===id);
+  if(!item || item.estado===estado) return;
+  const anterior = item.estado;
+  item.estado = estado;
+  agregarHistorialPac(item, `Estado cambiado de ${anterior} a ${estado}.`);
+  guardarPlanificacionCompras();
+  renderPlanificacionCompras();
+}
+
+function reprogramarCompraPac(id){
+  const item = pacCompras.find(row=>row.id===id);
+  if(!item) return;
+  const fechaNueva = prompt('Nueva fecha de adquisicion (AAAA-MM-DD):', item.fechaAdquisicion || '');
+  if(!fechaNueva) return;
+  const costoNuevoTxt = prompt('Nuevo costo estimado:', String(item.costo || 0));
+  if(costoNuevoTxt===null) return;
+  const costoNuevo = Number(costoNuevoTxt);
+  if(Number.isNaN(costoNuevo) || costoNuevo < 0){
+    alert('El costo estimado no es valido.');
+    return;
+  }
+  const motivo = prompt('Motivo de la reprogramacion:','') || 'Sin motivo indicado';
+  const fechaAnterior = item.fechaAdquisicion;
+  const costoAnterior = Number(item.costo || 0);
+  item.fechaAdquisicion = fechaNueva;
+  item.costo = costoNuevo;
+  item.estado = 'Reprogramado';
+  pacHistorialCompras.unshift({
+    id:`REP-${Date.now()}`,
+    tipo:'reprogramacion',
+    pacId:item.id,
+    descripcion:item.descripcion,
+    fechaAnterior,
+    fechaNueva,
+    costoAnterior,
+    costoNuevo,
+    motivo,
+    cambio:`Reprogramada de ${fechaAnterior || '-'} a ${fechaNueva}. Costo: ${formatoMontoPac(costoAnterior)} a ${formatoMontoPac(costoNuevo)}.`,
+    fecha:new Date().toISOString()
+  });
+  pacHistorialCompras = pacHistorialCompras.slice(0, 120);
+  guardarPlanificacionCompras();
+  renderPlanificacionCompras();
+}
+
+pacForm.addEventListener('submit', crearPartidaPac);
+pacAnio.value = new Date().getFullYear();
 
 // ====== USUARIOS ======
 function crearUsuario(){
