@@ -84,6 +84,7 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="facturacionComercial" onclick="mostrarPanelComercial('facturacionComercial')">Facturacion</button>
     <button type="button" data-panel="cobrosComercial" onclick="mostrarPanelComercial('cobrosComercial')">Cobros y Caja</button>
     <button type="button" data-panel="suspensionesComercial" onclick="mostrarPanelComercial('suspensionesComercial')">Suspensiones</button>
+    <button type="button" data-panel="atencionComercial" onclick="mostrarPanelComercial('atencionComercial')">Atencion</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -871,6 +872,119 @@ body.embedded .wrap{padding:0}
       </div>
     </article>
   </section>
+
+  <section id="atencionComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Atencion al Cliente</h2>
+      <p class="muted">CRM ciudadano para reclamos, solicitudes, tickets, SLA y canales de contacto.</p>
+      <div class="modules">
+        <span>Reclamos</span>
+        <span>Facturacion</span>
+        <span>Fugas</span>
+        <span>Baja presion</span>
+        <span>Medidor</span>
+        <span>Solicitudes</span>
+        <span>Nuevas conexiones</span>
+        <span>Traslados</span>
+        <span>Cambios de titular</span>
+        <span>Tickets</span>
+        <span>Seguimiento</span>
+        <span>SLA</span>
+        <span>Call Center</span>
+        <span>Chat y WhatsApp</span>
+        <span>Integracion omnicanal</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Tickets abiertos</small><strong id="ticketsAbiertosKpi">0</strong><span>Atencion en curso</span></article>
+        <article class="panel kpi"><small>Reclamos</small><strong id="reclamosKpi">0</strong><span>Incidencias ciudadanas</span></article>
+        <article class="panel kpi"><small>SLA vencido</small><strong id="slaVencidoKpi">0</strong><span>Tickets fuera de plazo</span></article>
+        <article class="panel kpi"><small>Canales</small><strong id="canalesKpi">0</strong><span>Call center, chat y WhatsApp</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Crear Ticket</h3>
+        <form id="formTicketAtencion">
+          <select id="ticketCliente" required><option value="">Cliente</option></select>
+          <select id="ticketContrato"><option value="">Contrato relacionado</option></select>
+          <select id="ticketClase" required>
+            <option value="">Clase</option>
+            <option>Reclamo</option>
+            <option>Solicitud</option>
+          </select>
+          <select id="ticketCategoria" required>
+            <option value="">Categoria</option>
+            <option>Facturacion</option>
+            <option>Fuga</option>
+            <option>Baja presion</option>
+            <option>Medidor</option>
+            <option>Nueva conexion</option>
+            <option>Traslado</option>
+            <option>Cambio de titular</option>
+          </select>
+          <select id="ticketCanal" required>
+            <option value="">Canal</option>
+            <option>Call Center</option>
+            <option>Chat</option>
+            <option>WhatsApp</option>
+            <option>Presencial</option>
+          </select>
+          <input id="ticketSlaHoras" type="number" min="1" step="1" placeholder="SLA horas" value="48" required>
+          <textarea id="ticketDetalle" placeholder="Detalle del ciudadano" required></textarea>
+          <button type="submit">Crear ticket</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Seguimiento</h3>
+        <form id="formSeguimientoTicket">
+          <select id="seguimientoTicket" required><option value="">Ticket</option></select>
+          <select id="seguimientoEstado" required>
+            <option>En seguimiento</option>
+            <option>Escalado</option>
+            <option>Resuelto</option>
+            <option>Cerrado</option>
+          </select>
+          <input id="seguimientoResponsable" placeholder="Responsable" required>
+          <textarea id="seguimientoNota" placeholder="Nota de seguimiento" required></textarea>
+          <button type="submit">Guardar seguimiento</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Call Center y Omnicanal</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Canal</th><th>Abiertos</th><th>Ultimo ticket</th></tr></thead>
+            <tbody id="tablaCanalesAtencion"></tbody>
+          </table>
+        </div>
+        <p class="muted">La fase actual centraliza tickets por canal; la conexion real con WhatsApp/chat externo queda como integracion posterior.</p>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Tickets y SLA</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ticket</th><th>Cliente</th><th>Clase</th><th>Categoria</th><th>Canal</th><th>SLA</th><th>Estado</th></tr></thead>
+            <tbody id="tablaTicketsAtencion"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Historial de Seguimiento</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Ticket</th><th>Estado</th><th>Responsable</th><th>Nota</th></tr></thead>
+            <tbody id="tablaSeguimientoAtencion"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -896,6 +1010,8 @@ let reconexionesComerciales=JSON.parse(localStorage.getItem('reconexionesComerci
 let ordenesCorteComerciales=JSON.parse(localStorage.getItem('ordenesCorteComerciales')||'[]');
 let brigadasSuspensionComerciales=JSON.parse(localStorage.getItem('brigadasSuspensionComerciales')||'[]');
 let evidenciasSuspensionComerciales=JSON.parse(localStorage.getItem('evidenciasSuspensionComerciales')||'[]');
+let ticketsAtencionComercial=JSON.parse(localStorage.getItem('ticketsAtencionComercial')||'[]');
+let seguimientosAtencionComercial=JSON.parse(localStorage.getItem('seguimientosAtencionComercial')||'[]');
 let graficoComparativo=null;
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -919,6 +1035,7 @@ function mostrarPanelComercial(id){
   facturacionComercial.style.display=id==='facturacionComercial'?'block':'none';
   cobrosComercial.style.display=id==='cobrosComercial'?'block':'none';
   suspensionesComercial.style.display=id==='suspensionesComercial'?'block':'none';
+  atencionComercial.style.display=id==='atencionComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
@@ -926,6 +1043,7 @@ function mostrarPanelComercial(id){
   if(id==='facturacionComercial')renderFacturacionComercial();
   if(id==='cobrosComercial')renderCobrosComercial();
   if(id==='suspensionesComercial')renderSuspensionesComercial();
+  if(id==='atencionComercial')renderAtencionComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -963,6 +1081,10 @@ function guardarSuspensionesComercial(){
   localStorage.setItem('brigadasSuspensionComerciales',JSON.stringify(brigadasSuspensionComerciales));
   localStorage.setItem('evidenciasSuspensionComerciales',JSON.stringify(evidenciasSuspensionComerciales));
   localStorage.setItem('reconexionesComerciales',JSON.stringify(reconexionesComerciales));
+}
+function guardarAtencionComercial(){
+  localStorage.setItem('ticketsAtencionComercial',JSON.stringify(ticketsAtencionComercial));
+  localStorage.setItem('seguimientosAtencionComercial',JSON.stringify(seguimientosAtencionComercial));
 }
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
@@ -1501,6 +1623,56 @@ function renderSuspensionesComercial(){
     <tr><td>${safeText(item.fecha)}</td><td>${safeText(etiquetaOrdenOperativa(item.tipo,item.ordenId))}</td><td>${safeText(item.foto||'Sin foto')}</td><td>${safeText(item.gps||'-')}</td><td>${safeText(item.firma)}</td><td>${safeText(item.nota||'-')}</td></tr>
   `).join(''):'<tr><td colspan="6">No hay evidencias registradas.</td></tr>';
 }
+function ticketAtencionPorId(id){
+  return ticketsAtencionComercial.find(item=>item.id===id);
+}
+function opcionesContratosAtencion(){
+  return '<option value="">Contrato relacionado</option>'+catastroContratos.map(item=>{
+    const inmueble=inmuebleContrato(item.id)||{};
+    return `<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(nombreClienteCatastro(inmueble.clienteId))}</option>`;
+  }).join('');
+}
+function vencimientoTicket(item){
+  return new Date(new Date(item.creado).getTime()+Number(item.slaHoras||0)*3600000);
+}
+function ticketVencido(item){
+  return !['Resuelto','Cerrado'].includes(item.estado)&&vencimientoTicket(item).getTime()<Date.now();
+}
+function resumenCanalesAtencion(){
+  return ['Call Center','Chat','WhatsApp','Presencial'].map(canal=>{
+    const tickets=ticketsAtencionComercial.filter(item=>item.canal===canal);
+    return {canal,abiertos:tickets.filter(item=>!['Resuelto','Cerrado'].includes(item.estado)).length,ultimo:tickets[0]?.numero||'-'};
+  });
+}
+function renderAtencionComercial(){
+  ticketCliente.innerHTML=opcionesClientesCatastro('Cliente');
+  ticketContrato.innerHTML=opcionesContratosAtencion();
+  seguimientoTicket.innerHTML='<option value="">Ticket</option>'+ticketsAtencionComercial.filter(item=>item.estado!=='Cerrado').map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.categoria)}</option>`).join('');
+  const abiertos=ticketsAtencionComercial.filter(item=>!['Resuelto','Cerrado'].includes(item.estado));
+  const reclamos=ticketsAtencionComercial.filter(item=>item.clase==='Reclamo');
+  const vencidos=ticketsAtencionComercial.filter(ticketVencido);
+  ticketsAbiertosKpi.textContent=abiertos.length;
+  reclamosKpi.textContent=reclamos.length;
+  slaVencidoKpi.textContent=vencidos.length;
+  canalesKpi.textContent=new Set(ticketsAtencionComercial.map(item=>item.canal)).size;
+  tablaTicketsAtencion.innerHTML=ticketsAtencionComercial.length?ticketsAtencionComercial.slice(0,120).map(item=>`
+    <tr>
+      <td>${safeText(item.numero)}</td>
+      <td>${safeText(nombreClienteCatastro(item.clienteId))}</td>
+      <td>${safeText(item.clase)}</td>
+      <td>${safeText(item.categoria)}</td>
+      <td>${safeText(item.canal)}</td>
+      <td>${ticketVencido(item)?'<span class="badge">Vencido</span>':safeText(vencimientoTicket(item).toLocaleString('es-DO'))}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+    </tr>
+  `).join(''):'<tr><td colspan="7">No hay tickets ciudadanos.</td></tr>';
+  tablaSeguimientoAtencion.innerHTML=seguimientosAtencionComercial.length?seguimientosAtencionComercial.slice(0,120).map(item=>`
+    <tr><td>${safeText(new Date(item.fecha).toLocaleString('es-DO'))}</td><td>${safeText(ticketAtencionPorId(item.ticketId)?.numero||'-')}</td><td>${safeText(item.estado)}</td><td>${safeText(item.responsable)}</td><td>${safeText(item.nota)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay seguimientos registrados.</td></tr>';
+  tablaCanalesAtencion.innerHTML=resumenCanalesAtencion().map(item=>`
+    <tr><td>${safeText(item.canal)}</td><td>${Number(item.abiertos).toLocaleString('es-DO')}</td><td>${safeText(item.ultimo)}</td></tr>
+  `).join('');
+}
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
   const facturacion=Number(actual.facturacion||0);
@@ -1983,6 +2155,53 @@ formEvidenciaSuspension.addEventListener('submit',event=>{
   guardarSuspensionesComercial();
   formEvidenciaSuspension.reset();
   renderSuspensionesComercial();
+});
+formTicketAtencion.addEventListener('submit',event=>{
+  event.preventDefault();
+  const ticket={
+    id:idCatastro('TCK'),
+    numero:`TK-${new Date().getFullYear()}-${String(ticketsAtencionComercial.length+1).padStart(6,'0')}`,
+    clienteId:ticketCliente.value,
+    contratoId:ticketContrato.value,
+    clase:ticketClase.value,
+    categoria:ticketCategoria.value,
+    canal:ticketCanal.value,
+    slaHoras:Number(ticketSlaHoras.value||48),
+    detalle:ticketDetalle.value.trim(),
+    estado:'Abierto',
+    creado:new Date().toISOString()
+  };
+  ticketsAtencionComercial.unshift(ticket);
+  seguimientosAtencionComercial.unshift({
+    id:idCatastro('SEG'),
+    ticketId:ticket.id,
+    estado:'Abierto',
+    responsable:'Registro inicial',
+    nota:ticket.detalle,
+    fecha:ticket.creado
+  });
+  guardarAtencionComercial();
+  formTicketAtencion.reset();
+  ticketSlaHoras.value='48';
+  renderAtencionComercial();
+});
+formSeguimientoTicket.addEventListener('submit',event=>{
+  event.preventDefault();
+  const ticket=ticketAtencionPorId(seguimientoTicket.value);
+  if(!ticket)return;
+  ticket.estado=seguimientoEstado.value;
+  ticket.actualizado=new Date().toISOString();
+  seguimientosAtencionComercial.unshift({
+    id:idCatastro('SEG'),
+    ticketId:ticket.id,
+    estado:seguimientoEstado.value,
+    responsable:seguimientoResponsable.value.trim(),
+    nota:seguimientoNota.value.trim(),
+    fecha:ticket.actualizado
+  });
+  guardarAtencionComercial();
+  formSeguimientoTicket.reset();
+  renderAtencionComercial();
 });
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
