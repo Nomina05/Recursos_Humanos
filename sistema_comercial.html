@@ -81,6 +81,9 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="catastroComercial" onclick="mostrarPanelComercial('catastroComercial')">Catastro Comercial</button>
     <button type="button" data-panel="medidoresComerciales" onclick="mostrarPanelComercial('medidoresComerciales')">Medidores</button>
     <button type="button" data-panel="lecturaComercial" onclick="mostrarPanelComercial('lecturaComercial')">Lectura</button>
+    <button type="button" data-panel="facturacionComercial" onclick="mostrarPanelComercial('facturacionComercial')">Facturacion</button>
+    <button type="button" data-panel="cobrosComercial" onclick="mostrarPanelComercial('cobrosComercial')">Cobros y Caja</button>
+    <button type="button" data-panel="suspensionesComercial" onclick="mostrarPanelComercial('suspensionesComercial')">Suspensiones</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -515,6 +518,359 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="facturacionComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Facturacion</h2>
+      <p class="muted">Control de tarifarios, consumo facturable, procesamiento mensual, ajustes y preparacion e-CF.</p>
+      <div class="modules">
+        <span>Generacion de Facturas</span>
+        <span>Consumo</span>
+        <span>Cargo fijo</span>
+        <span>Alcantarillado</span>
+        <span>Mora</span>
+        <span>ITBIS</span>
+        <span>Tarifarios</span>
+        <span>Escalas de consumo</span>
+        <span>Subsidios</span>
+        <span>Facturacion Masiva</span>
+        <span>Notas de Credito/Debito</span>
+        <span>Reimpresion</span>
+        <span>Facturacion Electronica</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Facturas</small><strong id="facturasTotalKpi">0</strong><span>Documentos comerciales</span></article>
+        <article class="panel kpi"><small>Total facturado</small><strong id="facturasMontoKpi">RD$ 0</strong><span>Incluye ajustes aplicados</span></article>
+        <article class="panel kpi"><small>Tarifarios</small><strong id="tarifariosKpi">0</strong><span>Categorias y escalas</span></article>
+        <article class="panel kpi"><small>e-CF pendientes</small><strong id="ecfPendientesKpi">0</strong><span>Preparacion para DGII</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Tarifarios</h3>
+        <form id="formTarifario">
+          <input id="tarifaCategoria" placeholder="Categoria comercial" required>
+          <input id="tarifaDesde" type="number" min="0" step="0.01" placeholder="Escala desde m3" required>
+          <input id="tarifaHasta" type="number" min="0" step="0.01" placeholder="Escala hasta m3" required>
+          <input id="tarifaConsumo" type="number" min="0" step="0.01" placeholder="Tarifa por m3" required>
+          <input id="tarifaCargoFijo" type="number" min="0" step="0.01" placeholder="Cargo fijo" required>
+          <input id="tarifaAlcantarillado" type="number" min="0" step="0.01" placeholder="Alcantarillado %" value="0">
+          <input id="tarifaSubsidio" type="number" min="0" max="100" step="0.01" placeholder="Subsidio %" value="0">
+          <input id="tarifaItbis" type="number" min="0" max="100" step="0.01" placeholder="ITBIS %" value="0">
+          <button type="submit">Guardar tarifa</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Generacion de Factura</h3>
+        <form id="formFactura">
+          <select id="facturaContrato" required><option value="">Contrato activo</option></select>
+          <select id="facturaTarifa" required><option value="">Tarifario</option></select>
+          <input id="facturaPeriodo" type="month" required>
+          <input id="facturaConsumo" type="number" min="0" step="0.01" placeholder="Consumo m3" required>
+          <input id="facturaMora" type="number" min="0" step="0.01" placeholder="Mora" value="0">
+          <select id="facturaComprobante">
+            <option>Factura comercial</option>
+            <option>Preparacion e-CF</option>
+          </select>
+          <input id="facturaENcf" placeholder="e-NCF si aplica">
+          <button type="button" class="secondary" onclick="usarConsumoFactura()">Usar consumo reciente</button>
+          <button type="submit">Generar factura</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Facturacion Masiva</h3>
+        <form id="formFacturacionMasiva">
+          <input id="masivaPeriodo" type="month" required>
+          <button type="submit">Procesar contratos activos</button>
+        </form>
+        <p class="muted">El proceso usa la clasificacion del inmueble para localizar la tarifa y el consumo mas reciente del medidor instalado.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Categoria</th><th>Escala</th><th>Consumo</th><th>Cargo fijo</th><th>Subsidio</th></tr></thead>
+            <tbody id="tablaTarifarios"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Notas de Credito / Debito</h3>
+        <form id="formNotaFactura">
+          <select id="notaFacturaId" required><option value="">Factura</option></select>
+          <select id="notaFacturaTipo" required>
+            <option value="">Tipo de nota</option>
+            <option>Credito</option>
+            <option>Debito</option>
+          </select>
+          <input id="notaFacturaMonto" type="number" min="0" step="0.01" placeholder="Monto" required>
+          <input id="notaFacturaMotivo" class="span-all" placeholder="Motivo" required>
+          <button type="submit">Registrar nota</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Factura</th><th>Tipo</th><th>Monto</th><th>Motivo</th></tr></thead>
+            <tbody id="tablaNotasFactura"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Facturacion Electronica</h3>
+        <p class="muted">Estado interno para preparar datos e-CF antes de la integracion certificada.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Factura</th><th>Cliente</th><th>e-NCF</th><th>Estado e-CF</th><th>Accion</th></tr></thead>
+            <tbody id="tablaEcfFactura"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel">
+      <h3>Facturas y Reimpresion</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Factura</th><th>Periodo</th><th>Contrato</th><th>Consumo</th><th>Subtotal</th><th>Mora</th><th>ITBIS</th><th>Total</th><th>Accion</th></tr></thead>
+          <tbody id="tablaFacturas"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section id="cobrosComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Cobros y Caja</h2>
+      <p class="muted">Gestion financiera comercial para caja, cobros, convenios, morosidad, reconexiones y conciliacion.</p>
+      <div class="modules">
+        <span>Caja</span>
+        <span>Apertura</span>
+        <span>Cierre</span>
+        <span>Arqueo</span>
+        <span>Cobros</span>
+        <span>Efectivo</span>
+        <span>Transferencia</span>
+        <span>Tarjeta</span>
+        <span>Pago movil</span>
+        <span>Convenios de Pago</span>
+        <span>Morosidad</span>
+        <span>Reconexiones</span>
+        <span>Integracion Bancaria</span>
+        <span>Pago en linea</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Caja activa</small><strong id="cajaEstadoKpi">Cerrada</strong><span id="cajaAperturaKpi">Sin apertura</span></article>
+        <article class="panel kpi"><small>Cobros del dia</small><strong id="cobrosDiaKpi">RD$ 0</strong><span>Por forma de pago</span></article>
+        <article class="panel kpi"><small>Deuda vencida</small><strong id="morosidadMontoKpi">RD$ 0</strong><span id="morosidadFacturasKpi">0 facturas con saldo</span></article>
+        <article class="panel kpi"><small>Conciliacion</small><strong id="conciliacionKpi">0</strong><span>Pagos bancarios pendientes</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Caja</h3>
+        <form id="formCaja">
+          <input id="cajaCajero" placeholder="Cajero responsable" required>
+          <input id="cajaFondoInicial" type="number" min="0" step="0.01" placeholder="Fondo inicial" required>
+          <button type="submit">Abrir caja</button>
+          <button type="button" class="secondary" onclick="cerrarCajaComercial()">Cerrar caja</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Caja</th><th>Cajero</th><th>Apertura</th><th>Cierre</th><th>Arqueo</th></tr></thead>
+            <tbody id="tablaCaja"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Cobros</h3>
+        <form id="formCobro">
+          <select id="cobroFactura" required><option value="">Factura con saldo</option></select>
+          <input id="cobroMonto" type="number" min="0" step="0.01" placeholder="Monto cobrado" required>
+          <select id="cobroMetodo" required>
+            <option value="">Metodo</option>
+            <option>Efectivo</option>
+            <option>Transferencia</option>
+            <option>Tarjeta</option>
+            <option>Pago movil</option>
+            <option>Pago en linea</option>
+          </select>
+          <input id="cobroReferencia" placeholder="Referencia">
+          <label class="muted"><input id="cobroReconexion" type="checkbox"> Pago de reconexion</label>
+          <button type="submit">Registrar cobro</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Convenios de Pago</h3>
+        <form id="formConvenio">
+          <select id="convenioFactura" required><option value="">Factura con saldo</option></select>
+          <input id="convenioCuotas" type="number" min="1" step="1" placeholder="Cuotas" required>
+          <input id="convenioPenalidad" type="number" min="0" step="0.01" placeholder="Penalidad" value="0">
+          <input id="convenioPrimerVencimiento" type="date" required>
+          <button type="submit">Crear acuerdo</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Factura</th><th>Cuotas</th><th>Penalidad</th><th>Estado</th></tr></thead>
+            <tbody id="tablaConvenios"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Morosidad y Deuda Vencida</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Factura</th><th>Contrato</th><th>Periodo</th><th>Saldo</th><th>Interes/Mora</th><th>Accion</th></tr></thead>
+            <tbody id="tablaMorosidadCaja"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Reconexiones</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Factura</th><th>Pago</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <tbody id="tablaReconexionesCaja"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Arqueo de Caja</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Metodo</th><th>Total</th></tr></thead>
+            <tbody id="tablaArqueoCaja"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Integracion Bancaria y Conciliacion</h3>
+        <p class="muted">Los pagos por transferencia, tarjeta, pago movil o pago en linea pueden conciliarse manualmente en esta fase.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Factura</th><th>Metodo</th><th>Referencia</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaConciliacionCaja"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
+
+  <section id="suspensionesComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Suspensiones y Reconexiones</h2>
+      <p class="muted">Ordenes de corte, programacion de brigadas, validacion de pago, restablecimiento y evidencias.</p>
+      <div class="modules">
+        <span>Ordenes de Corte</span>
+        <span>Mora</span>
+        <span>Fraude</span>
+        <span>Solicitud</span>
+        <span>Programacion de Brigadas</span>
+        <span>Reconexion</span>
+        <span>Validacion de Pago</span>
+        <span>Restablecimiento</span>
+        <span>Evidencias</span>
+        <span>Fotos</span>
+        <span>GPS</span>
+        <span>Firma digital</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Cortes pendientes</small><strong id="cortesPendientesKpi">0</strong><span>Ordenes operativas</span></article>
+        <article class="panel kpi"><small>Brigadas programadas</small><strong id="brigadasKpi">0</strong><span>Cortes y reconexiones</span></article>
+        <article class="panel kpi"><small>Reconexiones</small><strong id="reconexionesPendientesKpi">0</strong><span>Validacion y restablecimiento</span></article>
+        <article class="panel kpi"><small>Evidencias</small><strong id="evidenciasSuspensionKpi">0</strong><span>Foto, GPS y firma</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Ordenes de Corte</h3>
+        <form id="formOrdenCorte">
+          <select id="corteContrato" required><option value="">Contrato</option></select>
+          <select id="corteCausa" required>
+            <option value="">Causa</option>
+            <option>Mora</option>
+            <option>Fraude</option>
+            <option>Solicitud</option>
+          </select>
+          <input id="corteFactura" placeholder="Factura o referencia">
+          <input id="corteFecha" type="date" required>
+          <input id="corteDetalle" class="span-all" placeholder="Detalle de la orden">
+          <button type="submit">Crear corte</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Programacion de Brigadas</h3>
+        <form id="formBrigadaSuspension">
+          <select id="brigadaOrden" required><option value="">Orden operativa</option></select>
+          <input id="brigadaNombre" placeholder="Brigada o tecnico" required>
+          <input id="brigadaFecha" type="datetime-local" required>
+          <button type="submit">Programar brigada</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Brigada</th><th>Programada</th><th>Estado</th></tr></thead>
+            <tbody id="tablaBrigadasSuspension"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Evidencias</h3>
+        <form id="formEvidenciaSuspension">
+          <select id="evidenciaOrden" required><option value="">Orden operativa</option></select>
+          <input id="evidenciaFoto" type="file" accept="image/*" title="Foto">
+          <input id="evidenciaGps" placeholder="GPS latitud,longitud">
+          <button type="button" class="secondary" onclick="capturarGpsEvidencia()">Usar GPS</button>
+          <input id="evidenciaFirma" placeholder="Firma digital / responsable" required>
+          <textarea id="evidenciaNota" placeholder="Nota de evidencia"></textarea>
+          <button type="submit">Guardar evidencia</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Ordenes de Corte</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Contrato</th><th>Causa</th><th>Fecha</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaOrdenesCorte"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Reconexiones</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Factura</th><th>Pago</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaReconexionesOperacion"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel">
+      <h3>Registro de Evidencias</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Orden</th><th>Foto</th><th>GPS</th><th>Firma</th><th>Nota</th></tr></thead>
+          <tbody id="tablaEvidenciasSuspension"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -530,6 +886,16 @@ let medidoresReemplazos=JSON.parse(localStorage.getItem('medidoresReemplazosCome
 let medidoresLecturas=JSON.parse(localStorage.getItem('medidoresLecturasComercial')||'[]');
 let rutasLectura=JSON.parse(localStorage.getItem('rutasLecturaComercial')||'[]');
 let capturasLectura=JSON.parse(localStorage.getItem('capturasLecturaComercial')||'[]');
+let tarifasFacturacion=JSON.parse(localStorage.getItem('tarifasFacturacionComercial')||'[]');
+let facturasComerciales=JSON.parse(localStorage.getItem('facturasComerciales')||'[]');
+let notasFacturacion=JSON.parse(localStorage.getItem('notasFacturacionComercial')||'[]');
+let cajasComerciales=JSON.parse(localStorage.getItem('cajasComerciales')||'[]');
+let cobrosComerciales=JSON.parse(localStorage.getItem('cobrosComerciales')||'[]');
+let conveniosComerciales=JSON.parse(localStorage.getItem('conveniosComerciales')||'[]');
+let reconexionesComerciales=JSON.parse(localStorage.getItem('reconexionesComerciales')||'[]');
+let ordenesCorteComerciales=JSON.parse(localStorage.getItem('ordenesCorteComerciales')||'[]');
+let brigadasSuspensionComerciales=JSON.parse(localStorage.getItem('brigadasSuspensionComerciales')||'[]');
+let evidenciasSuspensionComerciales=JSON.parse(localStorage.getItem('evidenciasSuspensionComerciales')||'[]');
 let graficoComparativo=null;
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -550,10 +916,16 @@ function mostrarPanelComercial(id){
   catastroComercial.style.display=id==='catastroComercial'?'block':'none';
   medidoresComerciales.style.display=id==='medidoresComerciales'?'block':'none';
   lecturaComercial.style.display=id==='lecturaComercial'?'block':'none';
+  facturacionComercial.style.display=id==='facturacionComercial'?'block':'none';
+  cobrosComercial.style.display=id==='cobrosComercial'?'block':'none';
+  suspensionesComercial.style.display=id==='suspensionesComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
   if(id==='lecturaComercial')renderLecturaComercial();
+  if(id==='facturacionComercial')renderFacturacionComercial();
+  if(id==='cobrosComercial')renderCobrosComercial();
+  if(id==='suspensionesComercial')renderSuspensionesComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -575,11 +947,31 @@ function guardarLecturaComercial(){
   localStorage.setItem('rutasLecturaComercial',JSON.stringify(rutasLectura));
   localStorage.setItem('capturasLecturaComercial',JSON.stringify(capturasLectura));
 }
+function guardarFacturacionComercial(){
+  localStorage.setItem('tarifasFacturacionComercial',JSON.stringify(tarifasFacturacion));
+  localStorage.setItem('facturasComerciales',JSON.stringify(facturasComerciales));
+  localStorage.setItem('notasFacturacionComercial',JSON.stringify(notasFacturacion));
+}
+function guardarCobrosComercial(){
+  localStorage.setItem('cajasComerciales',JSON.stringify(cajasComerciales));
+  localStorage.setItem('cobrosComerciales',JSON.stringify(cobrosComerciales));
+  localStorage.setItem('conveniosComerciales',JSON.stringify(conveniosComerciales));
+  localStorage.setItem('reconexionesComerciales',JSON.stringify(reconexionesComerciales));
+}
+function guardarSuspensionesComercial(){
+  localStorage.setItem('ordenesCorteComerciales',JSON.stringify(ordenesCorteComerciales));
+  localStorage.setItem('brigadasSuspensionComerciales',JSON.stringify(brigadasSuspensionComerciales));
+  localStorage.setItem('evidenciasSuspensionComerciales',JSON.stringify(evidenciasSuspensionComerciales));
+  localStorage.setItem('reconexionesComerciales',JSON.stringify(reconexionesComerciales));
+}
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
 }
 function inmuebleCatastroPorId(id){
   return catastroInmuebles.find(item=>item.id===id);
+}
+function contratoCatastroPorId(id){
+  return catastroContratos.find(item=>item.id===id);
 }
 function nombreClienteCatastro(id){
   const cliente=clienteCatastroPorId(id);
@@ -818,6 +1210,296 @@ function sincronizarLecturasPendientes(){
   guardarLecturaComercial();
   renderLecturaComercial();
   alert(total?`${total} lectura(s) sincronizada(s).`:'No hay lecturas pendientes.');
+}
+function tarifaPorId(id){
+  return tarifasFacturacion.find(item=>item.id===id);
+}
+function tarifaParaConsumo(categoria, consumo){
+  const clave=String(categoria||'').toLowerCase();
+  return tarifasFacturacion.find(item=>String(item.categoria).toLowerCase()===clave&&consumo>=Number(item.desde||0)&&consumo<=Number(item.hasta||Infinity));
+}
+function facturaPorId(id){
+  return facturasComerciales.find(item=>item.id===id);
+}
+function inmuebleContrato(id){
+  return inmuebleCatastroPorId(contratoCatastroPorId(id)?.inmuebleId);
+}
+function medidorContrato(id){
+  const inmuebleId=contratoCatastroPorId(id)?.inmuebleId;
+  const instalacion=[...medidoresInstalaciones].filter(item=>item.inmuebleId===inmuebleId).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)))[0];
+  return instalacion?medidorPorId(instalacion.medidorId):null;
+}
+function consumoRecienteContrato(id){
+  const medidor=medidorContrato(id);
+  return medidor?Number(ultimaLecturaMedidor(medidor.id)?.consumo||0):0;
+}
+function opcionesContratosFacturacion(){
+  return '<option value="">Contrato activo</option>'+catastroContratos.filter(item=>item.estado==='Activo').map(item=>{
+    const inmueble=inmuebleContrato(item.id)||{};
+    return `<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(nombreClienteCatastro(inmueble.clienteId))}</option>`;
+  }).join('');
+}
+function opcionesTarifarios(){
+  return '<option value="">Tarifario</option>'+tarifasFacturacion.map(item=>`<option value="${safeText(item.id)}">${safeText(item.categoria)} ${Number(item.desde).toLocaleString('es-DO')}-${Number(item.hasta).toLocaleString('es-DO')} m3</option>`).join('');
+}
+function calcularFactura(tarifa, consumo, mora){
+  const consumoMonto=Number(consumo||0)*Number(tarifa.consumo||0);
+  const cargoFijo=Number(tarifa.cargoFijo||0);
+  const base=consumoMonto+cargoFijo;
+  const alcantarillado=base*(Number(tarifa.alcantarillado||0)/100);
+  const subsidio=(base+alcantarillado)*(Number(tarifa.subsidio||0)/100);
+  const subtotal=Math.max(0,base+alcantarillado-subsidio);
+  const itbis=subtotal*(Number(tarifa.itbis||0)/100);
+  return {consumoMonto,cargoFijo,alcantarillado,subsidio,subtotal,mora:Number(mora||0),itbis,total:subtotal+Number(mora||0)+itbis};
+}
+function ajustesFactura(id){
+  return notasFacturacion.filter(item=>item.facturaId===id).reduce((sum,item)=>sum+(item.tipo==='Debito'?Number(item.monto||0):-Number(item.monto||0)),0);
+}
+function totalFacturaConAjustes(item){
+  return Math.max(0,Number(item.total||0)+ajustesFactura(item.id));
+}
+function cobrosFactura(id){
+  return cobrosComerciales.filter(item=>item.facturaId===id).reduce((sum,item)=>sum+Number(item.monto||0),0);
+}
+function saldoFactura(item){
+  return Math.max(0,totalFacturaConAjustes(item)-cobrosFactura(item.id));
+}
+function cajaActiva(){
+  return cajasComerciales.find(item=>item.estado==='Abierta');
+}
+function opcionesFacturasSaldo(etiqueta){
+  return `<option value="">${etiqueta}</option>`+facturasComerciales.filter(item=>saldoFactura(item)>0).map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - saldo ${safeText(moneda(saldoFactura(item)))}</option>`).join('');
+}
+function cobrosCaja(id){
+  return cobrosComerciales.filter(item=>item.cajaId===id);
+}
+function totalCobrosMetodo(lista, metodo){
+  return lista.filter(item=>item.metodo===metodo).reduce((sum,item)=>sum+Number(item.monto||0),0);
+}
+function arqueoCaja(item){
+  if(!item)return [];
+  const lista=cobrosCaja(item.id);
+  return ['Efectivo','Transferencia','Tarjeta','Pago movil','Pago en linea'].map(metodo=>({metodo,total:totalCobrosMetodo(lista,metodo)}));
+}
+function usarConsumoFactura(){
+  facturaConsumo.value=consumoRecienteContrato(facturaContrato.value)||0;
+}
+function crearFactura(contratoId, tarifa, periodo, consumo, mora, comprobante, encf){
+  if(facturasComerciales.some(item=>item.contratoId===contratoId&&item.periodo===periodo))return null;
+  const calculo=calcularFactura(tarifa,consumo,mora);
+  const factura={
+    id:idCatastro('FAC'),
+    numero:`FC-${new Date().getFullYear()}-${String(facturasComerciales.length+1).padStart(6,'0')}`,
+    contratoId,
+    tarifaId:tarifa.id,
+    periodo,
+    consumo:Number(consumo||0),
+    comprobante,
+    encf:encf||'',
+    estadoEcf:comprobante==='Preparacion e-CF'?'Pendiente integracion DGII':'No solicitado',
+    creado:new Date().toISOString(),
+    ...calculo
+  };
+  facturasComerciales.unshift(factura);
+  return factura;
+}
+function renderFacturacionComercial(){
+  facturaContrato.innerHTML=opcionesContratosFacturacion();
+  facturaTarifa.innerHTML=opcionesTarifarios();
+  notaFacturaId.innerHTML='<option value="">Factura</option>'+facturasComerciales.map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.periodo)}</option>`).join('');
+  facturasTotalKpi.textContent=facturasComerciales.length;
+  facturasMontoKpi.textContent=moneda(facturasComerciales.reduce((sum,item)=>sum+totalFacturaConAjustes(item),0));
+  tarifariosKpi.textContent=tarifasFacturacion.length;
+  ecfPendientesKpi.textContent=facturasComerciales.filter(item=>item.estadoEcf==='Pendiente integracion DGII').length;
+  tablaTarifarios.innerHTML=tarifasFacturacion.length?tarifasFacturacion.map(item=>`
+    <tr><td>${safeText(item.categoria)}</td><td>${Number(item.desde).toLocaleString('es-DO')} - ${Number(item.hasta).toLocaleString('es-DO')} m3</td><td>${moneda(item.consumo)}/m3</td><td>${moneda(item.cargoFijo)}</td><td>${Number(item.subsidio||0).toFixed(1)}%</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay tarifarios registrados.</td></tr>';
+  tablaNotasFactura.innerHTML=notasFacturacion.length?notasFacturacion.slice(0,80).map(item=>`
+    <tr><td>${safeText(item.fecha)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${safeText(item.tipo)}</td><td>${moneda(item.monto)}</td><td>${safeText(item.motivo)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay notas registradas.</td></tr>';
+  tablaFacturas.innerHTML=facturasComerciales.length?facturasComerciales.map(item=>`
+    <tr>
+      <td>${safeText(item.numero)}</td><td>${safeText(item.periodo)}</td><td>${safeText(contratoCatastroPorId(item.contratoId)?.numero||'-')}</td>
+      <td>${Number(item.consumo||0).toLocaleString('es-DO')} m3</td><td>${moneda(item.subtotal)}</td><td>${moneda(item.mora)}</td><td>${moneda(item.itbis)}</td><td>${moneda(totalFacturaConAjustes(item))}</td>
+      <td><button type="button" onclick="imprimirFacturaComercial('${safeText(item.id)}')">Reimprimir</button></td>
+    </tr>
+  `).join(''):'<tr><td colspan="9">No hay facturas generadas.</td></tr>';
+  tablaEcfFactura.innerHTML=facturasComerciales.length?facturasComerciales.map(item=>{
+    const inmueble=inmuebleContrato(item.contratoId)||{};
+    return `<tr><td>${safeText(item.numero)}</td><td>${safeText(nombreClienteCatastro(inmueble.clienteId))}</td><td>${safeText(item.encf||'Pendiente')}</td><td><span class="badge">${safeText(item.estadoEcf)}</span></td><td><button type="button" onclick="prepararEcfFactura('${safeText(item.id)}')">Preparar</button></td></tr>`;
+  }).join(''):'<tr><td colspan="5">No hay facturas para preparar.</td></tr>';
+}
+function prepararEcfFactura(id){
+  const factura=facturaPorId(id);
+  if(!factura)return;
+  factura.comprobante='Preparacion e-CF';
+  factura.encf=prompt('e-NCF o referencia preliminar:',factura.encf||'')||factura.encf||'';
+  factura.estadoEcf='Pendiente integracion DGII';
+  guardarFacturacionComercial();
+  renderFacturacionComercial();
+}
+function imprimirFacturaComercial(id){
+  const item=facturaPorId(id);
+  if(!item)return;
+  const contrato=contratoCatastroPorId(item.contratoId)||{};
+  const inmueble=inmuebleContrato(item.contratoId)||{};
+  const popup=window.open('','_blank','width=760,height=900');
+  if(!popup){alert('Permita ventanas emergentes para reimprimir.');return;}
+  popup.document.write(`<!doctype html><html><head><title>${safeText(item.numero)}</title><style>body{font:14px Arial;padding:28px;color:#132238}h1{margin:0 0 8px}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{border:1px solid #ccc;padding:8px;text-align:left}.total{font-size:20px;font-weight:bold}</style></head><body><h1>Factura Comercial</h1><div>Factura: ${safeText(item.numero)} | Periodo: ${safeText(item.periodo)}</div><div>Contrato: ${safeText(contrato.numero||'-')} | Cliente: ${safeText(nombreClienteCatastro(inmueble.clienteId))}</div><table><tr><th>Concepto</th><th>Monto</th></tr><tr><td>Consumo ${Number(item.consumo||0).toLocaleString('es-DO')} m3</td><td>${moneda(item.consumoMonto)}</td></tr><tr><td>Cargo fijo</td><td>${moneda(item.cargoFijo)}</td></tr><tr><td>Alcantarillado</td><td>${moneda(item.alcantarillado)}</td></tr><tr><td>Subsidio</td><td>-${moneda(item.subsidio)}</td></tr><tr><td>Mora</td><td>${moneda(item.mora)}</td></tr><tr><td>ITBIS</td><td>${moneda(item.itbis)}</td></tr><tr><td>Ajustes</td><td>${moneda(ajustesFactura(item.id))}</td></tr><tr><td class="total">Total</td><td class="total">${moneda(totalFacturaConAjustes(item))}</td></tr></table></body></html>`);
+  popup.document.close();
+  popup.focus();
+  popup.print();
+}
+function renderCobrosComercial(){
+  const activa=cajaActiva();
+  const hoy=new Date().toISOString().slice(0,10);
+  const cobrosHoy=cobrosComerciales.filter(item=>item.fecha===hoy);
+  const deuda=facturasComerciales.filter(item=>saldoFactura(item)>0);
+  const pendientesBanco=cobrosComerciales.filter(item=>item.conciliacion==='Pendiente');
+  cajaEstadoKpi.textContent=activa?'Abierta':'Cerrada';
+  cajaAperturaKpi.textContent=activa?`${activa.cajero} | ${new Date(activa.apertura).toLocaleString('es-DO')}`:'Sin apertura';
+  cobrosDiaKpi.textContent=moneda(cobrosHoy.reduce((sum,item)=>sum+Number(item.monto||0),0));
+  morosidadMontoKpi.textContent=moneda(deuda.reduce((sum,item)=>sum+saldoFactura(item),0));
+  morosidadFacturasKpi.textContent=`${deuda.length} factura(s) con saldo`;
+  conciliacionKpi.textContent=pendientesBanco.length;
+  cobroFactura.innerHTML=opcionesFacturasSaldo('Factura con saldo');
+  convenioFactura.innerHTML=opcionesFacturasSaldo('Factura con saldo');
+  tablaCaja.innerHTML=cajasComerciales.length?cajasComerciales.slice(0,40).map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(item.cajero)}</td><td>${safeText(new Date(item.apertura).toLocaleString('es-DO'))}</td><td>${item.cierre?safeText(new Date(item.cierre).toLocaleString('es-DO')):'Abierta'}</td><td>${item.arqueo?moneda(item.arqueo):'-'}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay cajas registradas.</td></tr>';
+  tablaConvenios.innerHTML=conveniosComerciales.length?conveniosComerciales.slice(0,60).map(item=>`
+    <tr><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${Number(item.cuotas||0).toLocaleString('es-DO')} x ${moneda(item.cuotaMonto)}</td><td>${moneda(item.penalidad)}</td><td><span class="badge">${safeText(item.estado)}</span></td></tr>
+  `).join(''):'<tr><td colspan="4">No hay convenios registrados.</td></tr>';
+  tablaMorosidadCaja.innerHTML=deuda.length?deuda.map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(contratoCatastroPorId(item.contratoId)?.numero||'-')}</td><td>${safeText(item.periodo)}</td><td>${moneda(saldoFactura(item))}</td><td>${moneda(item.mora)}</td><td><button type="button" onclick="crearReconexionDesdeMora('${safeText(item.id)}')">Orden reconexion</button></td></tr>
+  `).join(''):'<tr><td colspan="6">No hay deuda con saldo pendiente.</td></tr>';
+  tablaReconexionesCaja.innerHTML=reconexionesComerciales.length?reconexionesComerciales.slice(0,80).map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${item.cobroId?moneda(cobrosComerciales.find(row=>row.id===item.cobroId)?.monto||0):'Pendiente'}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${safeText(item.fecha)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay ordenes de reconexion.</td></tr>';
+  tablaArqueoCaja.innerHTML=activa?arqueoCaja(activa).map(item=>`<tr><td>${safeText(item.metodo)}</td><td>${moneda(item.total)}</td></tr>`).join(''):`<tr><td colspan="2">Abra una caja para ver el arqueo operativo.</td></tr>`;
+  tablaConciliacionCaja.innerHTML=pendientesBanco.length?pendientesBanco.slice(0,80).map(item=>`
+    <tr><td>${safeText(item.fecha)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${safeText(item.metodo)}</td><td>${safeText(item.referencia||'-')}</td><td><span class="badge">${safeText(item.conciliacion)}</span></td><td><button type="button" onclick="conciliarCobroComercial('${safeText(item.id)}')">Conciliar</button></td></tr>
+  `).join(''):'<tr><td colspan="6">No hay pagos bancarios pendientes.</td></tr>';
+}
+function cerrarCajaComercial(){
+  const item=cajaActiva();
+  if(!item){alert('No hay caja abierta.');return;}
+  const esperado=Number(item.fondoInicial||0)+totalCobrosMetodo(cobrosCaja(item.id),'Efectivo');
+  const contado=prompt(`Efectivo contado para cierre. Esperado ${moneda(esperado)}:`,String(esperado));
+  if(contado===null)return;
+  const arqueo=Number(contado);
+  if(Number.isNaN(arqueo)||arqueo<0){alert('Arqueo invalido.');return;}
+  item.estado='Cerrada';
+  item.cierre=new Date().toISOString();
+  item.arqueo=arqueo;
+  item.diferencia=arqueo-esperado;
+  guardarCobrosComercial();
+  renderCobrosComercial();
+}
+function conciliarCobroComercial(id){
+  const item=cobrosComerciales.find(row=>row.id===id);
+  if(!item)return;
+  item.conciliacion='Conciliado';
+  item.conciliado=new Date().toISOString();
+  guardarCobrosComercial();
+  renderCobrosComercial();
+}
+function crearOrdenReconexion(facturaId, cobroId){
+  if(reconexionesComerciales.some(item=>item.facturaId===facturaId&&item.estado!=='Cancelada'))return;
+  reconexionesComerciales.unshift({
+    id:idCatastro('REC'),
+    numero:`RC-${new Date().getFullYear()}-${String(reconexionesComerciales.length+1).padStart(5,'0')}`,
+    facturaId,
+    cobroId:cobroId||'',
+    estado:cobroId?'Orden automatica':'Pendiente de pago',
+    fecha:new Date().toISOString().slice(0,10),
+    creado:new Date().toISOString()
+  });
+}
+function crearReconexionDesdeMora(facturaId){
+  crearOrdenReconexion(facturaId,'');
+  guardarCobrosComercial();
+  renderCobrosComercial();
+}
+function opcionesContratosSuspension(){
+  return '<option value="">Contrato</option>'+catastroContratos.map(item=>`<option value="${safeText(item.id)}">${safeText(item.numero)} - ${safeText(item.estado)}</option>`).join('');
+}
+function etiquetaOrdenOperativa(tipo, id){
+  const corte=tipo==='Corte'?ordenesCorteComerciales.find(item=>item.id===id):null;
+  const reconexion=tipo==='Reconexion'?reconexionesComerciales.find(item=>item.id===id):null;
+  if(corte)return `${corte.numero} Corte ${corte.causa}`;
+  if(reconexion)return `${reconexion.numero} Reconexion`;
+  return 'Orden no disponible';
+}
+function opcionesOrdenesOperativas(){
+  const cortes=ordenesCorteComerciales.filter(item=>item.estado!=='Corte ejecutado').map(item=>`<option value="Corte|${safeText(item.id)}">${safeText(item.numero)} - Corte ${safeText(item.causa)}</option>`);
+  const reconexiones=reconexionesComerciales.filter(item=>item.estado!=='Restablecido').map(item=>`<option value="Reconexion|${safeText(item.id)}">${safeText(item.numero)} - Reconexion ${safeText(item.estado)}</option>`);
+  return '<option value="">Orden operativa</option>'+[...cortes,...reconexiones].join('');
+}
+function partirOrdenOperativa(valor){
+  const [tipo,id]=String(valor||'').split('|');
+  return {tipo,id};
+}
+function pagoValidadoReconexion(item){
+  return Boolean(item.cobroId&&cobrosComerciales.some(cobro=>cobro.id===item.cobroId))||saldoFactura(facturaPorId(item.facturaId)||{})===0;
+}
+function ejecutarCorte(id){
+  const orden=ordenesCorteComerciales.find(item=>item.id===id);
+  if(!orden)return;
+  orden.estado='Corte ejecutado';
+  orden.ejecutado=new Date().toISOString();
+  const contrato=contratoCatastroPorId(orden.contratoId);
+  if(contrato)contrato.estado='Suspendido';
+  guardarCatastroComercial();
+  guardarSuspensionesComercial();
+  renderSuspensionesComercial();
+}
+function validarPagoReconexion(id){
+  const item=reconexionesComerciales.find(row=>row.id===id);
+  if(!item)return;
+  if(!pagoValidadoReconexion(item)){alert('No se encontro pago validado para esta reconexion.');return;}
+  item.estado='Pago validado';
+  item.validado=new Date().toISOString();
+  guardarSuspensionesComercial();
+  renderSuspensionesComercial();
+}
+function restablecerServicio(id){
+  const item=reconexionesComerciales.find(row=>row.id===id);
+  if(!item||item.estado!=='Pago validado'){alert('Valide el pago antes de restablecer.');return;}
+  item.estado='Restablecido';
+  item.restablecido=new Date().toISOString();
+  const contrato=contratoCatastroPorId(facturaPorId(item.facturaId)?.contratoId);
+  if(contrato)contrato.estado='Activo';
+  guardarCatastroComercial();
+  guardarSuspensionesComercial();
+  renderSuspensionesComercial();
+}
+function capturarGpsEvidencia(){
+  if(!navigator.geolocation){alert('Este navegador no permite obtener GPS.');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    evidenciaGps.value=`${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+  },()=>alert('No se pudo obtener la ubicacion GPS.'));
+}
+function renderSuspensionesComercial(){
+  corteContrato.innerHTML=opcionesContratosSuspension();
+  brigadaOrden.innerHTML=opcionesOrdenesOperativas();
+  evidenciaOrden.innerHTML=opcionesOrdenesOperativas();
+  cortesPendientesKpi.textContent=ordenesCorteComerciales.filter(item=>item.estado!=='Corte ejecutado').length;
+  brigadasKpi.textContent=brigadasSuspensionComerciales.filter(item=>item.estado==='Programada').length;
+  reconexionesPendientesKpi.textContent=reconexionesComerciales.filter(item=>item.estado!=='Restablecido').length;
+  evidenciasSuspensionKpi.textContent=evidenciasSuspensionComerciales.length;
+  tablaOrdenesCorte.innerHTML=ordenesCorteComerciales.length?ordenesCorteComerciales.map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(contratoCatastroPorId(item.contratoId)?.numero||'-')}</td><td>${safeText(item.causa)}</td><td>${safeText(item.fecha)}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${item.estado!=='Corte ejecutado'?`<button type="button" onclick="ejecutarCorte('${safeText(item.id)}')">Ejecutar</button>`:'-'}</td></tr>
+  `).join(''):'<tr><td colspan="6">No hay ordenes de corte.</td></tr>';
+  tablaBrigadasSuspension.innerHTML=brigadasSuspensionComerciales.length?brigadasSuspensionComerciales.map(item=>`
+    <tr><td>${safeText(etiquetaOrdenOperativa(item.tipo,item.ordenId))}</td><td>${safeText(item.brigada)}</td><td>${safeText(item.fecha.replace('T',' '))}</td><td><span class="badge">${safeText(item.estado)}</span></td></tr>
+  `).join(''):'<tr><td colspan="4">No hay brigadas programadas.</td></tr>';
+  tablaReconexionesOperacion.innerHTML=reconexionesComerciales.length?reconexionesComerciales.map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${pagoValidadoReconexion(item)?'Validable':'Pendiente'}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${item.estado==='Pago validado'?`<button type="button" onclick="restablecerServicio('${safeText(item.id)}')">Restablecer</button>`:item.estado!=='Restablecido'?`<button type="button" onclick="validarPagoReconexion('${safeText(item.id)}')">Validar pago</button>`:'-'}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay reconexiones.</td></tr>';
+  tablaEvidenciasSuspension.innerHTML=evidenciasSuspensionComerciales.length?evidenciasSuspensionComerciales.slice(0,100).map(item=>`
+    <tr><td>${safeText(item.fecha)}</td><td>${safeText(etiquetaOrdenOperativa(item.tipo,item.ordenId))}</td><td>${safeText(item.foto||'Sin foto')}</td><td>${safeText(item.gps||'-')}</td><td>${safeText(item.firma)}</td><td>${safeText(item.nota||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="6">No hay evidencias registradas.</td></tr>';
 }
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
@@ -1104,6 +1786,204 @@ formCapturaLectura.addEventListener('submit',event=>{
   capturaFecha.value=new Date().toISOString().slice(0,10);
   renderLecturaComercial();
 });
+formTarifario.addEventListener('submit',event=>{
+  event.preventDefault();
+  const desde=Number(tarifaDesde.value||0);
+  const hasta=Number(tarifaHasta.value||0);
+  if(hasta<desde){
+    alert('La escala final debe ser mayor o igual que la inicial.');
+    return;
+  }
+  tarifasFacturacion.unshift({
+    id:idCatastro('TAR'),
+    categoria:tarifaCategoria.value.trim(),
+    desde,
+    hasta,
+    consumo:Number(tarifaConsumo.value||0),
+    cargoFijo:Number(tarifaCargoFijo.value||0),
+    alcantarillado:Number(tarifaAlcantarillado.value||0),
+    subsidio:Number(tarifaSubsidio.value||0),
+    itbis:Number(tarifaItbis.value||0),
+    creado:new Date().toISOString()
+  });
+  guardarFacturacionComercial();
+  formTarifario.reset();
+  tarifaAlcantarillado.value='0';
+  tarifaSubsidio.value='0';
+  tarifaItbis.value='0';
+  renderFacturacionComercial();
+});
+formFactura.addEventListener('submit',event=>{
+  event.preventDefault();
+  const tarifa=tarifaPorId(facturaTarifa.value);
+  if(!tarifa)return;
+  const creada=crearFactura(facturaContrato.value,tarifa,facturaPeriodo.value,Number(facturaConsumo.value||0),Number(facturaMora.value||0),facturaComprobante.value,facturaENcf.value.trim());
+  if(!creada){
+    alert('Ese contrato ya tiene factura para el periodo seleccionado.');
+    return;
+  }
+  guardarFacturacionComercial();
+  formFactura.reset();
+  facturaPeriodo.value=new Date().toISOString().slice(0,7);
+  facturaMora.value='0';
+  renderFacturacionComercial();
+});
+formFacturacionMasiva.addEventListener('submit',event=>{
+  event.preventDefault();
+  let generadas=0;
+  let sinTarifa=0;
+  catastroContratos.filter(item=>item.estado==='Activo').forEach(contrato=>{
+    const inmueble=inmuebleContrato(contrato.id)||{};
+    const consumo=consumoRecienteContrato(contrato.id);
+    const tarifa=tarifaParaConsumo(inmueble.clasificacion,consumo);
+    if(!tarifa){sinTarifa++;return;}
+    if(crearFactura(contrato.id,tarifa,masivaPeriodo.value,consumo,0,'Factura comercial',''))generadas++;
+  });
+  guardarFacturacionComercial();
+  renderFacturacionComercial();
+  alert(`${generadas} factura(s) generada(s). ${sinTarifa} contrato(s) sin tarifa aplicable.`);
+});
+formNotaFactura.addEventListener('submit',event=>{
+  event.preventDefault();
+  notasFacturacion.unshift({
+    id:idCatastro('NOT'),
+    facturaId:notaFacturaId.value,
+    tipo:notaFacturaTipo.value,
+    monto:Number(notaFacturaMonto.value||0),
+    motivo:notaFacturaMotivo.value.trim(),
+    fecha:new Date().toISOString().slice(0,10),
+    creado:new Date().toISOString()
+  });
+  guardarFacturacionComercial();
+  formNotaFactura.reset();
+  renderFacturacionComercial();
+});
+formCaja.addEventListener('submit',event=>{
+  event.preventDefault();
+  if(cajaActiva()){
+    alert('Debe cerrar la caja activa antes de abrir otra.');
+    return;
+  }
+  cajasComerciales.unshift({
+    id:idCatastro('CAJ'),
+    numero:`CJ-${new Date().getFullYear()}-${String(cajasComerciales.length+1).padStart(5,'0')}`,
+    cajero:cajaCajero.value.trim(),
+    fondoInicial:Number(cajaFondoInicial.value||0),
+    apertura:new Date().toISOString(),
+    estado:'Abierta'
+  });
+  guardarCobrosComercial();
+  formCaja.reset();
+  renderCobrosComercial();
+});
+formCobro.addEventListener('submit',event=>{
+  event.preventDefault();
+  const caja=cajaActiva();
+  if(!caja){
+    alert('Abra una caja antes de registrar cobros.');
+    return;
+  }
+  const factura=facturaPorId(cobroFactura.value);
+  if(!factura)return;
+  const monto=Number(cobroMonto.value||0);
+  if(monto<=0||monto>saldoFactura(factura)){
+    alert('El monto debe ser mayor que cero y no superar el saldo de la factura.');
+    return;
+  }
+  const metodo=cobroMetodo.value;
+  const cobro={
+    id:idCatastro('COB'),
+    cajaId:caja.id,
+    facturaId:factura.id,
+    monto,
+    metodo,
+    referencia:cobroReferencia.value.trim(),
+    conciliacion:metodo==='Efectivo'?'No aplica':'Pendiente',
+    fecha:new Date().toISOString().slice(0,10),
+    creado:new Date().toISOString()
+  };
+  cobrosComerciales.unshift(cobro);
+  if(cobroReconexion.checked)crearOrdenReconexion(factura.id,cobro.id);
+  guardarCobrosComercial();
+  formCobro.reset();
+  renderCobrosComercial();
+  renderFacturacionComercial();
+});
+formConvenio.addEventListener('submit',event=>{
+  event.preventDefault();
+  const factura=facturaPorId(convenioFactura.value);
+  if(!factura)return;
+  const cuotas=Number(convenioCuotas.value||0);
+  const penalidad=Number(convenioPenalidad.value||0);
+  const total=saldoFactura(factura)+penalidad;
+  conveniosComerciales.unshift({
+    id:idCatastro('CVN'),
+    facturaId:factura.id,
+    cuotas,
+    cuotaMonto:cuotas?total/cuotas:0,
+    penalidad,
+    primerVencimiento:convenioPrimerVencimiento.value,
+    estado:'Activo',
+    creado:new Date().toISOString()
+  });
+  guardarCobrosComercial();
+  formConvenio.reset();
+  convenioPenalidad.value='0';
+  convenioPrimerVencimiento.value=new Date().toISOString().slice(0,10);
+  renderCobrosComercial();
+});
+formOrdenCorte.addEventListener('submit',event=>{
+  event.preventDefault();
+  ordenesCorteComerciales.unshift({
+    id:idCatastro('COR'),
+    numero:`CT-${new Date().getFullYear()}-${String(ordenesCorteComerciales.length+1).padStart(5,'0')}`,
+    contratoId:corteContrato.value,
+    causa:corteCausa.value,
+    referencia:corteFactura.value.trim(),
+    fecha:corteFecha.value,
+    detalle:corteDetalle.value.trim(),
+    estado:'Pendiente',
+    creado:new Date().toISOString()
+  });
+  guardarSuspensionesComercial();
+  formOrdenCorte.reset();
+  corteFecha.value=new Date().toISOString().slice(0,10);
+  renderSuspensionesComercial();
+});
+formBrigadaSuspension.addEventListener('submit',event=>{
+  event.preventDefault();
+  const orden=partirOrdenOperativa(brigadaOrden.value);
+  brigadasSuspensionComerciales.unshift({
+    id:idCatastro('BRG'),
+    tipo:orden.tipo,
+    ordenId:orden.id,
+    brigada:brigadaNombre.value.trim(),
+    fecha:brigadaFecha.value,
+    estado:'Programada',
+    creado:new Date().toISOString()
+  });
+  guardarSuspensionesComercial();
+  formBrigadaSuspension.reset();
+  renderSuspensionesComercial();
+});
+formEvidenciaSuspension.addEventListener('submit',event=>{
+  event.preventDefault();
+  const orden=partirOrdenOperativa(evidenciaOrden.value);
+  evidenciasSuspensionComerciales.unshift({
+    id:idCatastro('EVI'),
+    tipo:orden.tipo,
+    ordenId:orden.id,
+    foto:evidenciaFoto.files[0]?.name||'',
+    gps:evidenciaGps.value.trim(),
+    firma:evidenciaFirma.value.trim(),
+    nota:evidenciaNota.value.trim(),
+    fecha:new Date().toISOString().slice(0,10),
+    creado:new Date().toISOString()
+  });
+  guardarSuspensionesComercial();
+  formEvidenciaSuspension.reset();
+  renderSuspensionesComercial();
+});
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
 });
@@ -1114,6 +1994,10 @@ reemplazoFecha.value=new Date().toISOString().slice(0,10);
 lecturaFecha.value=new Date().toISOString().slice(0,10);
 rutaCalendario.value=new Date().toISOString().slice(0,10);
 capturaFecha.value=new Date().toISOString().slice(0,10);
+facturaPeriodo.value=new Date().toISOString().slice(0,7);
+masivaPeriodo.value=new Date().toISOString().slice(0,7);
+convenioPrimerVencimiento.value=new Date().toISOString().slice(0,10);
+corteFecha.value=new Date().toISOString().slice(0,10);
 renderComercial();
 </script>
 </body>
