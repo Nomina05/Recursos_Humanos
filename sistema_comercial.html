@@ -97,6 +97,7 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="gisComercial" onclick="mostrarPanelComercial('gisComercial')">GIS</button>
     <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
     <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
+    <button type="button" data-panel="iaComercial" onclick="mostrarPanelComercial('iaComercial')">IA</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -1403,6 +1404,69 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="iaComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de IA Comercial</h2>
+      <p class="muted">Analiza lecturas, deuda, operaciones y cobertura para priorizar riesgos comerciales y geograficos.</p>
+      <div class="modules">
+        <span>Deteccion de fraude</span>
+        <span>Consumos anormales</span>
+        <span>Prediccion de morosidad</span>
+        <span>Dashboard Geografico</span>
+        <span>Mapa en tiempo real</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Riesgos de fraude</small><strong id="fraudeIaKpi">0</strong><span>Lecturas y operaciones sospechosas</span></article>
+        <article class="panel kpi"><small>Consumos anormales</small><strong id="consumosIaKpi">0</strong><span>Alertas activas de medicion</span></article>
+        <article class="panel kpi"><small>Morosidad alta</small><strong id="morosidadIaKpi">0</strong><span>Contratos priorizados</span></article>
+        <article class="panel kpi"><small>Sectores vigilados</small><strong id="sectoresIaKpi">0</strong><span>Mapa operativo vivo</span></article>
+      </section>
+    </article>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Dashboard Geografico</h3>
+        <div class="gis-map" id="mapaIaComercial"></div>
+      </article>
+      <article class="panel">
+        <h3>Resumen de Riesgo</h3>
+        <div class="alerts" id="alertasIaComercial"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Deteccion de Fraude</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Contrato</th><th>Medidor</th><th>Señal</th><th>Riesgo</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaFraudeIa"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Consumos Anormales</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Medidor</th><th>Ruta</th><th>Anomalia</th><th>Consumo</th></tr></thead>
+            <tbody id="tablaConsumosIa"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel">
+      <h3>Prediccion de Morosidad</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Contrato</th><th>Cliente</th><th>Saldo</th><th>Facturas vencidas</th><th>Señales</th><th>Riesgo</th></tr></thead>
+          <tbody id="tablaMorosidadIa"></tbody>
+        </table>
+      </div>
+      <p class="muted">Esta fase usa puntuaciones explicables con señales del sistema. Puede evolucionar luego a modelos entrenados con historial real.</p>
+    </article>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -1468,6 +1532,7 @@ function mostrarPanelComercial(id){
   gisComercial.style.display=id==='gisComercial'?'block':'none';
   financieroComercial.style.display=id==='financieroComercial'?'block':'none';
   reportesBiComercial.style.display=id==='reportesBiComercial'?'block':'none';
+  iaComercial.style.display=id==='iaComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
@@ -1480,6 +1545,7 @@ function mostrarPanelComercial(id){
   if(id==='gisComercial')renderGisComercial();
   if(id==='financieroComercial')renderFinancieroComercial();
   if(id==='reportesBiComercial')renderReportesBiComercial();
+  if(id==='iaComercial')renderIaComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -2373,6 +2439,296 @@ function renderFinancieroComercial(){
   `).join(''):'<tr><td colspan="6">No hay reportes financieros generados.</td></tr>';
   renderResumenReporteFinanciero(reportesFinancierosComerciales[0]);
 }
+function periodosBiComercial(){
+  const valores=[
+    ...comercialPeriodos.map(item=>item.periodo),
+    ...facturasComerciales.map(item=>item.periodo),
+    ...cobrosComerciales.map(item=>String(item.fecha||'').slice(0,7)),
+    ...medidoresLecturas.map(item=>String(item.fecha||'').slice(0,7))
+  ].filter(Boolean);
+  return [...new Set(valores)].sort((a,b)=>String(b).localeCompare(String(a)));
+}
+function porcentajeBi(numerador, denominador){
+  return denominador?Math.max(0,(Number(numerador||0)/Number(denominador||0))*100):0;
+}
+function datosBiPeriodo(periodo){
+  const facturas=facturasComerciales.filter(item=>item.periodo===periodo);
+  const cobros=cobrosComerciales.filter(item=>String(item.fecha||'').slice(0,7)===periodo);
+  const lecturas=medidoresLecturas.filter(item=>String(item.fecha||'').slice(0,7)===periodo);
+  const facturado=facturas.reduce((sum,item)=>sum+totalFacturaConAjustes(item),0);
+  const cobrado=cobros.reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const consumoFacturado=facturas.reduce((sum,item)=>sum+Number(item.consumo||0),0);
+  const consumoLeido=lecturas.reduce((sum,item)=>sum+Number(item.consumo||0),0);
+  const aguaNoContabilizada=consumoLeido?porcentajeBi(Math.max(0,consumoLeido-consumoFacturado),consumoLeido):0;
+  return {
+    periodo,
+    facturas:facturas.length,
+    cobros:cobros.length,
+    facturado,
+    cobrado,
+    cxc:facturas.reduce((sum,item)=>sum+saldoFactura(item),0),
+    eficiencia:porcentajeBi(cobrado,facturado),
+    consumoFacturado,
+    consumoLeido,
+    aguaNoContabilizada,
+    facturacionPromedio:facturas.length?facturado/facturas.length:0
+  };
+}
+function filasReporteBi(vista, periodo){
+  const actual=datosBiPeriodo(periodo);
+  const historico=periodosBiComercial().map(datosBiPeriodo);
+  if(vista==='Estadisticas historicas'){
+    return {
+      titulo:'Estadisticas historicas comerciales',
+      headers:['Periodo','Facturado','Cobrado','Eficiencia','CxC','Consumo leido','Consumo facturado','Agua no contabilizada'],
+      rows:historico.map(item=>[
+        etiquetaPeriodo(item.periodo),
+        item.facturado,
+        item.cobrado,
+        `${item.eficiencia.toFixed(1)}%`,
+        item.cxc,
+        `${item.consumoLeido.toLocaleString('es-DO')} m3`,
+        `${item.consumoFacturado.toLocaleString('es-DO')} m3`,
+        `${item.aguaNoContabilizada.toFixed(1)}%`
+      ])
+    };
+  }
+  if(vista==='KPIs comerciales'){
+    return {
+      titulo:'KPIs comerciales',
+      headers:['KPI','Resultado','Base'],
+      rows:[
+        ['Eficiencia de cobro',`${actual.eficiencia.toFixed(1)}%`,`${moneda(actual.cobrado)} cobrado de ${moneda(actual.facturado)}`],
+        ['Agua no contabilizada',`${actual.aguaNoContabilizada.toFixed(1)}%`,`${actual.consumoLeido.toLocaleString('es-DO')} m3 leidos y ${actual.consumoFacturado.toLocaleString('es-DO')} m3 facturados`],
+        ['Facturacion promedio',moneda(actual.facturacionPromedio),`${actual.facturas.toLocaleString('es-DO')} factura(s)`],
+        ['Cuentas por cobrar',moneda(actual.cxc),`Periodo ${etiquetaPeriodo(periodo)}`]
+      ]
+    };
+  }
+  return {
+    titulo:'Resumen gerencial comercial',
+    headers:['Indicador','Valor','Detalle'],
+    rows:[
+      ['Periodo',etiquetaPeriodo(periodo),'Corte del reporte'],
+      ['Facturacion',actual.facturado,`${actual.facturas.toLocaleString('es-DO')} factura(s)`],
+      ['Ingresos comerciales',actual.cobrado,`${actual.cobros.toLocaleString('es-DO')} cobro(s)`],
+      ['Eficiencia de cobro',`${actual.eficiencia.toFixed(1)}%`,'Cobrado sobre facturado'],
+      ['Cuentas por cobrar',actual.cxc,'Saldo de facturas del periodo'],
+      ['Agua no contabilizada',`${actual.aguaNoContabilizada.toFixed(1)}%`,'Estimacion por lectura y consumo facturado'],
+      ['Facturacion promedio',actual.facturacionPromedio,'Promedio por factura']
+    ]
+  };
+}
+function valorReporteBi(valor){
+  return typeof valor==='number'?moneda(valor):safeText(valor);
+}
+function construirReporteBi(vista, periodo){
+  const reporte=filasReporteBi(vista,periodo);
+  reporteBiCache={...reporte,periodo};
+  cabeceraReporteBi.innerHTML=`<tr>${reporte.headers.map(item=>`<th>${safeText(item)}</th>`).join('')}</tr>`;
+  tablaReporteBi.innerHTML=reporte.rows.length?reporte.rows.map(row=>`<tr>${row.map(item=>`<td>${valorReporteBi(item)}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${reporte.headers.length}">No hay datos para el reporte.</td></tr>`;
+  const datos=datosBiPeriodo(periodo);
+  resumenReporteBi.innerHTML=`
+    <article class="record"><b>${safeText(reporte.titulo)}</b><small>Periodo ${safeText(etiquetaPeriodo(periodo))}</small></article>
+    <article class="record"><b>${moneda(datos.facturado)} facturado</b><small>${moneda(datos.cobrado)} cobrado | Eficiencia ${datos.eficiencia.toFixed(1)}%</small></article>
+    <article class="record"><b>${datos.aguaNoContabilizada.toFixed(1)}% agua no contabilizada</b><small>Lecturas ${datos.consumoLeido.toLocaleString('es-DO')} m3 | Facturado ${datos.consumoFacturado.toLocaleString('es-DO')} m3</small></article>
+  `;
+}
+function descargarArchivoBi(nombre, contenido, tipo){
+  const enlace=document.createElement('a');
+  const url=URL.createObjectURL(new Blob([contenido],{type:tipo}));
+  enlace.href=url;
+  enlace.download=nombre;
+  enlace.click();
+  setTimeout(()=>URL.revokeObjectURL(url),0);
+}
+function validarReporteBi(){
+  if(reporteBiCache.headers.length)return true;
+  alert('Genere un reporte gerencial primero.');
+  return false;
+}
+function exportarReporteBiExcel(){
+  if(!validarReporteBi())return;
+  if(!window.XLSX){
+    alert('No se pudo cargar la libreria de Excel.');
+    return;
+  }
+  const libro=XLSX.utils.book_new();
+  const hoja=XLSX.utils.aoa_to_sheet([reporteBiCache.headers,...reporteBiCache.rows]);
+  XLSX.utils.book_append_sheet(libro,hoja,'Reporte BI');
+  XLSX.writeFile(libro,`Reporte_BI_${reporteBiCache.periodo}.xlsx`);
+}
+function exportarReporteBiPdf(){
+  if(!validarReporteBi())return;
+  if(!window.jspdf?.jsPDF){
+    alert('No se pudo cargar la libreria PDF.');
+    return;
+  }
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('l','pt','a4');
+  doc.setFontSize(14);
+  doc.text(reporteBiCache.titulo,40,40);
+  doc.setFontSize(10);
+  doc.text(`Periodo: ${etiquetaPeriodo(reporteBiCache.periodo)}`,40,58);
+  doc.autoTable({head:[reporteBiCache.headers],body:reporteBiCache.rows,startY:76,styles:{fontSize:8},headStyles:{fillColor:[22,91,170]}});
+  doc.save(`Reporte_BI_${reporteBiCache.periodo}.pdf`);
+}
+function exportarReporteBiPower(){
+  if(!validarReporteBi())return;
+  const dataset={
+    reporte:reporteBiCache.titulo,
+    periodo:reporteBiCache.periodo,
+    generado:new Date().toISOString(),
+    columnas:reporteBiCache.headers,
+    filas:reporteBiCache.rows,
+    historico:periodosBiComercial().map(datosBiPeriodo)
+  };
+  descargarArchivoBi(`Dataset_PowerBI_Comercial_${reporteBiCache.periodo}.json`,JSON.stringify(dataset,null,2),'application/json');
+}
+function renderReportesBiComercial(){
+  const periodos=periodosBiComercial();
+  const periodo=reporteBiPeriodo.value||periodos[0]||new Date().toISOString().slice(0,7);
+  const datos=datosBiPeriodo(periodo);
+  eficienciaCobroBiKpi.textContent=`${datos.eficiencia.toFixed(1)}%`;
+  aguaNoContabilizadaBiKpi.textContent=`${datos.aguaNoContabilizada.toFixed(1)}%`;
+  facturacionPromedioBiKpi.textContent=moneda(datos.facturacionPromedio);
+  periodosBiKpi.textContent=periodos.length;
+  tablaHistoricoBi.innerHTML=periodos.length?periodos.map(item=>{
+    const row=datosBiPeriodo(item);
+    return `<tr><td>${safeText(etiquetaPeriodo(row.periodo))}</td><td>${moneda(row.facturado)}</td><td>${moneda(row.cobrado)}</td><td>${row.eficiencia.toFixed(1)}%</td><td>${moneda(row.cxc)}</td><td>${row.aguaNoContabilizada.toFixed(1)}%</td></tr>`;
+  }).join(''):'<tr><td colspan="6">No hay estadisticas historicas.</td></tr>';
+  construirReporteBi(reporteBiVista.value||'Resumen gerencial',periodo);
+  const serie=periodos.slice(0,8).reverse().map(datosBiPeriodo);
+  if(graficoHistoricoBi)graficoHistoricoBi.destroy();
+  graficoHistoricoBi=new Chart(document.getElementById('graficoHistoricoBi').getContext('2d'),{
+    type:'line',
+    data:{labels:serie.map(item=>etiquetaPeriodo(item.periodo)),datasets:[
+      {label:'Facturado',data:serie.map(item=>item.facturado),borderColor:'#165baa',backgroundColor:'#165baa'},
+      {label:'Cobrado',data:serie.map(item=>item.cobrado),borderColor:'#0f8b65',backgroundColor:'#0f8b65'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{callback:value=>'RD$ '+Number(value).toLocaleString('es-DO')}}}}
+  });
+}
+function instalacionMedidorIa(id){
+  return [...medidoresInstalaciones]
+    .filter(item=>item.medidorId===id)
+    .sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)))[0];
+}
+function contratoMedidorIa(id){
+  const instalacion=instalacionMedidorIa(id);
+  return catastroContratos.find(item=>item.inmuebleId===instalacion?.inmuebleId);
+}
+function sectorContratoIa(id){
+  const contrato=contratoCatastroPorId(id);
+  const inmueble=contrato?inmuebleContrato(contrato.id):null;
+  return inmueble?.sector||'Sin sector';
+}
+function clienteContratoIa(id){
+  const contrato=contratoCatastroPorId(id);
+  const inmueble=contrato?inmuebleContrato(contrato.id):null;
+  return nombreClienteCatastro(inmueble?.clienteId);
+}
+function etiquetaRiesgoIa(puntos){
+  if(puntos>=80)return 'Critico';
+  if(puntos>=55)return 'Alto';
+  if(puntos>=30)return 'Medio';
+  return 'Bajo';
+}
+function alertasFraudeIa(){
+  const alertasCaptura=capturasLectura.filter(item=>item.anomalia).map(item=>{
+    const contrato=contratoMedidorIa(item.medidorId);
+    const puntos=item.anomalia==='Lectura menor'?88:item.anomalia==='Medidor detenido'?76:58;
+    return {
+      id:item.id,
+      contratoId:contrato?.id||'',
+      medidorId:item.medidorId,
+      senal:item.anomalia,
+      detalle:`Lectura ${Number(item.lectura||0).toLocaleString('es-DO')} m3. Consumo ${Number(item.consumo||0).toLocaleString('es-DO')} m3.`,
+      puntos,
+      sector:contrato?sectorContratoIa(contrato.id):etiquetaRutaLectura(item.rutaId)
+    };
+  });
+  const alertasCorte=ordenesCorteComerciales.filter(item=>item.causa==='Fraude').map(item=>({
+    id:item.id,
+    contratoId:item.contratoId,
+    medidorId:'',
+    senal:'Orden por fraude',
+    detalle:item.detalle||item.referencia||'Orden operativa registrada',
+    puntos:item.estado==='Corte ejecutado'?86:72,
+    sector:sectorContratoIa(item.contratoId)
+  }));
+  return [...alertasCaptura,...alertasCorte].sort((a,b)=>b.puntos-a.puntos);
+}
+function prediccionesMorosidadIa(){
+  return catastroContratos.map(contrato=>{
+    const facturas=facturasComerciales.filter(item=>item.contratoId===contrato.id&&saldoFactura(item)>0);
+    const saldo=facturas.reduce((sum,item)=>sum+saldoFactura(item),0);
+    const conMora=facturas.filter(item=>Number(item.mora||0)>0).length;
+    const cortesMora=ordenesCorteComerciales.filter(item=>item.contratoId===contrato.id&&item.causa==='Mora').length;
+    const puntos=Math.min(100,(facturas.length*22)+(conMora*18)+(cortesMora*24)+(saldo>0?18:0));
+    const senales=[
+      facturas.length?`${facturas.length} factura(s) con saldo`:'',
+      conMora?`${conMora} con mora`:'',
+      cortesMora?`${cortesMora} orden(es) por mora`:''
+    ].filter(Boolean);
+    return {contrato,saldo,facturas:facturas.length,senales,puntos,riesgo:etiquetaRiesgoIa(puntos),sector:sectorContratoIa(contrato.id)};
+  }).filter(item=>item.saldo>0).sort((a,b)=>b.puntos-a.puntos);
+}
+function consumosAnormalesIa(){
+  return capturasLectura.filter(item=>item.anomalia).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+}
+function resumenSectoresIa(){
+  const mapa=new Map();
+  function tocar(sector, campo, puntos){
+    const nombre=String(sector||'Sin sector').trim()||'Sin sector';
+    const key=normalizarSectorGis(nombre);
+    if(!mapa.has(key))mapa.set(key,{sector:nombre,fraude:0,morosidad:0,averias:0,puntos:0});
+    const row=mapa.get(key);
+    row[campo]++;
+    row.puntos+=puntos;
+  }
+  alertasFraudeIa().forEach(item=>tocar(item.sector,'fraude',item.puntos));
+  prediccionesMorosidadIa().filter(item=>item.puntos>=30).forEach(item=>tocar(item.sector,'morosidad',item.puntos));
+  averiasGisComerciales.filter(item=>item.estado!=='Cerrada').forEach(item=>tocar(item.sector,'averias',28));
+  return [...mapa.values()].sort((a,b)=>b.puntos-a.puntos);
+}
+function renderIaComercial(){
+  const fraude=alertasFraudeIa();
+  const consumos=consumosAnormalesIa();
+  const morosidad=prediccionesMorosidadIa();
+  const sectores=resumenSectoresIa();
+  fraudeIaKpi.textContent=fraude.filter(item=>item.puntos>=55).length;
+  consumosIaKpi.textContent=consumos.length;
+  morosidadIaKpi.textContent=morosidad.filter(item=>item.puntos>=55).length;
+  sectoresIaKpi.textContent=sectores.length;
+  mapaIaComercial.innerHTML=sectores.length?sectores.map(item=>`
+    <article class="gis-zone">
+      <strong>${safeText(item.sector)}</strong>
+      <div class="gis-layer">
+        <span>${safeText(etiquetaRiesgoIa(item.puntos))}</span>
+        <span>${item.fraude.toLocaleString('es-DO')} fraude</span>
+        <span>${item.morosidad.toLocaleString('es-DO')} mora</span>
+        <span>${item.averias.toLocaleString('es-DO')} averias</span>
+      </div>
+      <small class="muted">Puntaje operativo ${item.puntos.toLocaleString('es-DO')}</small>
+    </article>
+  `).join(''):'<div class="muted">El mapa de riesgo se activa con lecturas anomalas, deuda o averias geolocalizadas.</div>';
+  alertasIaComercial.innerHTML=[
+    fraude[0]?{titulo:'Fraude priorizado',detalle:`${fraude[0].senal} en ${fraude[0].contratoId?contratoCatastroPorId(fraude[0].contratoId)?.numero||'contrato':'medidor'} con riesgo ${etiquetaRiesgoIa(fraude[0].puntos)}.`}:null,
+    consumos[0]?{titulo:'Consumo anormal reciente',detalle:`${consumos[0].anomalia} en ${etiquetaMedidor(consumos[0].medidorId)}.`}:null,
+    morosidad[0]?{titulo:'Morosidad probable',detalle:`${morosidad[0].contrato.numero} acumula ${moneda(morosidad[0].saldo)} y riesgo ${morosidad[0].riesgo}.`}:null,
+    sectores[0]?{titulo:'Sector mas exigido',detalle:`${sectores[0].sector} concentra ${sectores[0].puntos.toLocaleString('es-DO')} puntos de riesgo operativo.`}:null
+  ].filter(Boolean).map(item=>`<div class="alert"><b>${safeText(item.titulo)}</b>${safeText(item.detalle)}</div>`).join('')||'<div class="muted">No hay alertas de IA con los datos actuales.</div>';
+  tablaFraudeIa.innerHTML=fraude.length?fraude.slice(0,120).map(item=>`
+    <tr><td>${safeText(item.contratoId?contratoCatastroPorId(item.contratoId)?.numero||'-':'-')}</td><td>${safeText(item.medidorId?etiquetaMedidor(item.medidorId):'-')}</td><td>${safeText(item.senal)}</td><td><span class="badge">${safeText(etiquetaRiesgoIa(item.puntos))}</span></td><td>${safeText(item.detalle)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay señales de fraude detectadas.</td></tr>';
+  tablaConsumosIa.innerHTML=consumos.length?consumos.slice(0,120).map(item=>`
+    <tr><td>${safeText(item.fecha)}</td><td>${safeText(etiquetaMedidor(item.medidorId))}</td><td>${safeText(etiquetaRutaLectura(item.rutaId))}</td><td><span class="badge">${safeText(item.anomalia)}</span></td><td>${Number(item.consumo||0).toLocaleString('es-DO')} m3</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay consumos anomalos registrados.</td></tr>';
+  tablaMorosidadIa.innerHTML=morosidad.length?morosidad.slice(0,160).map(item=>`
+    <tr><td>${safeText(item.contrato.numero)}</td><td>${safeText(clienteContratoIa(item.contrato.id))}</td><td>${moneda(item.saldo)}</td><td>${item.facturas.toLocaleString('es-DO')}</td><td>${safeText(item.senales.join(' | '))}</td><td><span class="badge">${safeText(item.riesgo)}</span></td></tr>
+  `).join(''):'<tr><td colspan="6">No hay contratos con riesgo de morosidad.</td></tr>';
+}
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
   const facturacion=Number(actual.facturacion||0);
@@ -3040,6 +3396,10 @@ formReporteFinanciero.addEventListener('submit',event=>{
   guardarFinancieroComercial();
   renderFinancieroComercial();
 });
+formReporteBi.addEventListener('submit',event=>{
+  event.preventDefault();
+  renderReportesBiComercial();
+});
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
 });
@@ -3057,6 +3417,7 @@ corteFecha.value=new Date().toISOString().slice(0,10);
 ordenTecnicaFecha.value=new Date().toISOString().slice(0,10);
 presupuestoFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
 reporteFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
+reporteBiPeriodo.value=new Date().toISOString().slice(0,7);
 renderComercial();
 </script>
 </body>
