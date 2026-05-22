@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema Comercial</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#eef3f8;
+  --ink:#132238;
+  --muted:#5b6b82;
+  --line:#d7e0eb;
+  --panel:#fff;
+  --blue:#165baa;
+  --green:#0f8b65;
+  --gold:#b7791f;
+  --red:#c2410c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
+header{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#102a43;color:#fff;padding:16px 18px}
+header h1{font-size:22px;margin:0}
+header small{display:block;color:#dbeafe;margin-top:4px}
+.wrap{padding:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px}
+.grid{display:grid;gap:12px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.two{grid-template-columns:minmax(320px,1.2fr) minmax(300px,1fr)}
+.kpi{border-left:4px solid var(--blue);min-height:108px}
+.kpi:nth-child(2){border-left-color:var(--green)}
+.kpi:nth-child(3){border-left-color:var(--gold)}
+.kpi:nth-child(4){border-left-color:var(--red)}
+.kpi small{display:block;color:var(--muted);font-weight:600}
+.kpi strong{display:block;font-size:24px;margin:10px 0 4px}
+.kpi span{color:var(--muted);font-size:13px}
+.modules{display:flex;gap:6px;flex-wrap:wrap}
+.modules span,.badge{background:#e5eefb;border-radius:999px;color:#163d70;display:inline-flex;font-size:12px;font-weight:700;padding:5px 8px}
+h2,h3{margin:0 0 10px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+input,select,textarea,button{border:1px solid var(--line);border-radius:7px;font:inherit;padding:9px}
+textarea{grid-column:1/-1;min-height:68px;resize:vertical}
+button{background:var(--blue);border:none;color:#fff;cursor:pointer;font-weight:600}
+button.secondary{background:#e8eef6;color:var(--ink)}
+.table-wrap{overflow:auto}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid var(--line);font-size:13px;padding:9px;text-align:left;vertical-align:top}
+th{background:#f7f9fc;color:#31445f}
+.alerts{display:grid;gap:8px}
+.alert{border:1px solid #fed7aa;border-left:4px solid var(--red);background:#fff7ed;border-radius:8px;padding:10px}
+.alert b{display:block;margin-bottom:4px}
+.muted{color:var(--muted);font-size:13px}
+.chart-box{height:310px}
+body.embedded{background:transparent}
+body.embedded header{display:none}
+body.embedded .wrap{padding:0}
+@media(max-width:900px){.two{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Panel General del Sistema Comercial</h1>
+    <small>Dashboard Ejecutivo para Direccion General y Comercial</small>
+  </div>
+  <span class="badge" id="periodoVista">Periodo actual</span>
+</header>
+<main class="wrap">
+  <section class="panel">
+    <h2>Dashboard Ejecutivo</h2>
+    <div class="modules">
+      <span>Indicadores de recaudacion</span>
+      <span>Facturacion mensual</span>
+      <span>Morosidad</span>
+      <span>Consumo promedio</span>
+      <span>Sectores con perdidas</span>
+      <span>Suspensiones activas</span>
+      <span>Reconexiones</span>
+      <span>Reportes comparativos</span>
+      <span>Alertas operativas</span>
+    </div>
+  </section>
+
+  <section class="grid kpis">
+    <article class="panel kpi"><small>Recaudacion</small><strong id="recaudacionKpi">RD$ 0</strong><span id="recaudacionNota">Sin datos cargados</span></article>
+    <article class="panel kpi"><small>Facturacion mensual</small><strong id="facturacionKpi">RD$ 0</strong><span id="coberturaKpi">Cobertura 0%</span></article>
+    <article class="panel kpi"><small>Morosidad</small><strong id="morosidadKpi">0%</strong><span id="moraMontoKpi">RD$ 0 pendiente</span></article>
+    <article class="panel kpi"><small>Consumo promedio</small><strong id="consumoKpi">0 m3</strong><span id="operacionKpi">0 suspensiones activas</span></article>
+  </section>
+
+  <section class="grid two">
+    <article class="panel">
+      <h3>Actualizar indicadores</h3>
+      <form id="formIndicadores">
+        <input id="periodo" type="month" required>
+        <input id="facturacion" type="number" min="0" step="0.01" placeholder="Facturacion mensual" required>
+        <input id="recaudacion" type="number" min="0" step="0.01" placeholder="Recaudacion" required>
+        <input id="morosidad" type="number" min="0" max="100" step="0.01" placeholder="Morosidad %" required>
+        <input id="consumo" type="number" min="0" step="0.01" placeholder="Consumo promedio m3" required>
+        <input id="suspensiones" type="number" min="0" step="1" placeholder="Suspensiones activas" required>
+        <input id="reconexiones" type="number" min="0" step="1" placeholder="Reconexiones" required>
+        <input id="perdidas" placeholder="Sector con perdidas prioritario">
+        <textarea id="nota" placeholder="Comentario ejecutivo o alerta del periodo"></textarea>
+        <button type="submit">Guardar periodo</button>
+      </form>
+    </article>
+    <article class="panel">
+      <h3>Reportes comparativos</h3>
+      <div class="chart-box"><canvas id="graficoComparativo"></canvas></div>
+    </article>
+  </section>
+
+  <section class="grid two">
+    <article class="panel">
+      <h3>Facturacion, recaudacion y operacion</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Periodo</th><th>Facturacion</th><th>Recaudacion</th><th>Morosidad</th><th>Consumo</th><th>Susp.</th><th>Recon.</th></tr></thead>
+          <tbody id="tablaPeriodos"></tbody>
+        </table>
+      </div>
+    </article>
+    <article class="panel">
+      <h3>Alertas operativas</h3>
+      <div class="alerts" id="alertasOperativas"></div>
+      <h3 style="margin-top:14px">Sectores con perdidas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Periodo</th><th>Sector priorizado</th><th>Nota</th></tr></thead>
+          <tbody id="tablaPerdidas"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</main>
+<script>
+const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
+if(embeddedMode)document.body.classList.add('embedded');
+let comercialPeriodos=JSON.parse(localStorage.getItem('comercialPeriodos')||'[]');
+let graficoComparativo=null;
+function safeText(valor){
+  return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+}
+function moneda(valor){
+  return Number(valor||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'});
+}
+function etiquetaPeriodo(valor){
+  if(!valor)return 'Sin periodo';
+  const partes=valor.split('-');
+  return new Date(Number(partes[0]),Number(partes[1])-1,1).toLocaleDateString('es-DO',{month:'short',year:'numeric'});
+}
+function guardarComercial(){
+  localStorage.setItem('comercialPeriodos',JSON.stringify(comercialPeriodos));
+}
+function renderComercial(){
+  const actual=comercialPeriodos[0]||{};
+  const facturacion=Number(actual.facturacion||0);
+  const recaudacion=Number(actual.recaudacion||0);
+  const pendiente=Math.max(0,facturacion-recaudacion);
+  const cobertura=facturacion?(recaudacion/facturacion)*100:0;
+  periodoVista.textContent=actual.periodo?`Periodo ${etiquetaPeriodo(actual.periodo)}`:'Periodo actual';
+  recaudacionKpi.textContent=moneda(recaudacion);
+  recaudacionNota.textContent=facturacion?`${cobertura.toFixed(1)}% de la facturacion recaudada`:'Sin datos cargados';
+  facturacionKpi.textContent=moneda(facturacion);
+  coberturaKpi.textContent=`Cobertura ${cobertura.toFixed(1)}%`;
+  morosidadKpi.textContent=`${Number(actual.morosidad||0).toFixed(1)}%`;
+  moraMontoKpi.textContent=`${moneda(pendiente)} pendiente`;
+  consumoKpi.textContent=`${Number(actual.consumo||0).toLocaleString('es-DO')} m3`;
+  operacionKpi.textContent=`${Number(actual.suspensiones||0).toLocaleString('es-DO')} suspensiones activas`;
+  tablaPeriodos.innerHTML=comercialPeriodos.length?comercialPeriodos.map(item=>`
+    <tr>
+      <td>${safeText(etiquetaPeriodo(item.periodo))}</td>
+      <td>${moneda(item.facturacion)}</td>
+      <td>${moneda(item.recaudacion)}</td>
+      <td>${Number(item.morosidad||0).toFixed(1)}%</td>
+      <td>${Number(item.consumo||0).toLocaleString('es-DO')} m3</td>
+      <td>${Number(item.suspensiones||0).toLocaleString('es-DO')}</td>
+      <td>${Number(item.reconexiones||0).toLocaleString('es-DO')}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="7">No hay periodos comerciales cargados.</td></tr>';
+  tablaPerdidas.innerHTML=comercialPeriodos.filter(item=>item.perdidas||item.nota).length?comercialPeriodos.filter(item=>item.perdidas||item.nota).map(item=>`
+    <tr><td>${safeText(etiquetaPeriodo(item.periodo))}</td><td>${safeText(item.perdidas||'-')}</td><td>${safeText(item.nota||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="3">No hay sectores priorizados.</td></tr>';
+  const alertas=[];
+  if(Number(actual.morosidad||0)>=20)alertas.push({titulo:'Morosidad alta',detalle:`El periodo registra ${Number(actual.morosidad).toFixed(1)}% de morosidad.`});
+  if(facturacion&&cobertura<80)alertas.push({titulo:'Recaudacion por debajo de meta',detalle:`La cobertura actual es ${cobertura.toFixed(1)}%.`});
+  if(Number(actual.suspensiones||0)>Number(actual.reconexiones||0))alertas.push({titulo:'Suspensiones activas',detalle:`Hay ${Number(actual.suspensiones||0)} suspensiones frente a ${Number(actual.reconexiones||0)} reconexiones.`});
+  if(actual.perdidas)alertas.push({titulo:'Sector con perdidas',detalle:actual.perdidas});
+  alertasOperativas.innerHTML=alertas.length?alertas.map(item=>`<div class="alert"><b>${safeText(item.titulo)}</b>${safeText(item.detalle)}</div>`).join(''):'<div class="muted">Sin alertas operativas para el periodo visible.</div>';
+  const ultimos=[...comercialPeriodos].slice(0,6).reverse();
+  if(graficoComparativo)graficoComparativo.destroy();
+  graficoComparativo=new Chart(graficoComparativoCanvas(),{
+    type:'bar',
+    data:{labels:ultimos.map(item=>etiquetaPeriodo(item.periodo)),datasets:[
+      {label:'Facturacion',data:ultimos.map(item=>Number(item.facturacion||0)),backgroundColor:'#165baa'},
+      {label:'Recaudacion',data:ultimos.map(item=>Number(item.recaudacion||0)),backgroundColor:'#0f8b65'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{callback:value=>'RD$ '+Number(value).toLocaleString('es-DO')}}}}
+  });
+}
+function graficoComparativoCanvas(){
+  return document.getElementById('graficoComparativo').getContext('2d');
+}
+formIndicadores.addEventListener('submit',event=>{
+  event.preventDefault();
+  const item={
+    periodo:periodo.value,
+    facturacion:Number(facturacion.value||0),
+    recaudacion:Number(recaudacion.value||0),
+    morosidad:Number(morosidad.value||0),
+    consumo:Number(consumo.value||0),
+    suspensiones:Number(suspensiones.value||0),
+    reconexiones:Number(reconexiones.value||0),
+    perdidas:perdidas.value.trim(),
+    nota:nota.value.trim(),
+    actualizado:new Date().toISOString()
+  };
+  const idx=comercialPeriodos.findIndex(row=>row.periodo===item.periodo);
+  if(idx>=0)comercialPeriodos[idx]=item;else comercialPeriodos.unshift(item);
+  comercialPeriodos.sort((a,b)=>String(b.periodo).localeCompare(String(a.periodo)));
+  guardarComercial();
+  renderComercial();
+  formIndicadores.reset();
+  periodo.value=new Date().toISOString().slice(0,7);
+});
+periodo.value=new Date().toISOString().slice(0,7);
+renderComercial();
+</script>
+</body>
+</html>

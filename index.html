@@ -148,6 +148,7 @@
           <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
           <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
           <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
+          <a id="menu-comercial" onclick="showSection('comercial')"><i class="fa-solid fa-chart-pie"></i>Sistema Comercial</a>
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="colaboracion">
@@ -819,6 +820,13 @@
       <h1>Solicitudes a Almacen</h1>
       <div class="dashboard-section">
         <iframe class="module-frame" src="solicitudes_almacen.html?embedded=1" title="Solicitudes a Almacen"></iframe>
+      </div>
+    </section>
+
+    <section id="comercial" class="hidden">
+      <h1>Panel General del Sistema Comercial</h1>
+      <div class="dashboard-section">
+        <iframe class="module-frame" src="sistema_comercial.html?embedded=1" title="Sistema Comercial"></iframe>
       </div>
     </section>
 
@@ -2120,7 +2128,8 @@ const MODULOS_USUARIO=[
   ]},
   {grupo:'Otras areas',modulos:[
     {id:'compras',nombre:'Solicitudes de Compras'},
-    {id:'almacen',nombre:'Solicitudes a Almacen'}
+    {id:'almacen',nombre:'Solicitudes a Almacen'},
+    {id:'comercial',nombre:'Sistema Comercial'}
   ]},
   {grupo:'Colaboracion',modulos:[
     {id:'comunicacion',nombre:'Comunicacion interna'},
