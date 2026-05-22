@@ -79,6 +79,7 @@ body.embedded .wrap{padding:0}
   <nav class="tabs" aria-label="Paneles comerciales">
     <button type="button" data-panel="dashboardComercial" class="active" onclick="mostrarPanelComercial('dashboardComercial')">Dashboard Ejecutivo</button>
     <button type="button" data-panel="catastroComercial" onclick="mostrarPanelComercial('catastroComercial')">Catastro Comercial</button>
+    <button type="button" data-panel="medidoresComerciales" onclick="mostrarPanelComercial('medidoresComerciales')">Medidores</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -299,6 +300,132 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="medidoresComerciales" style="display:none">
+    <article class="panel">
+      <h2>Panel de Medidores</h2>
+      <p class="muted">Control de micromedicion, instalaciones, reemplazos y lectura de consumo.</p>
+      <div class="modules">
+        <span>Inventario de Medidores</span>
+        <span>Codigo</span>
+        <span>Marca</span>
+        <span>Serie</span>
+        <span>Diametro</span>
+        <span>Instalaciones</span>
+        <span>Reemplazos</span>
+        <span>Auditoria</span>
+        <span>Historial de Consumo</span>
+        <span>Medidores Inteligentes</span>
+        <span>IoT</span>
+        <span>Telemetria</span>
+        <span>Lectura remota</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Medidores registrados</small><strong id="medidoresTotalKpi">0</strong><span>Inventario disponible y operativo</span></article>
+        <article class="panel kpi"><small>Instalados</small><strong id="medidoresInstaladosKpi">0</strong><span>Micromedicion en campo</span></article>
+        <article class="panel kpi"><small>Consumo promedio</small><strong id="medidoresConsumoKpi">0 m3</strong><span>Lecturas historicas</span></article>
+        <article class="panel kpi"><small>Medidores remotos</small><strong id="medidoresRemotosKpi">0</strong><span>IoT o telemetria habilitada</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Inventario de Medidores</h3>
+        <form id="formMedidor">
+          <input id="medidorCodigo" placeholder="Codigo" required>
+          <input id="medidorMarca" placeholder="Marca" required>
+          <input id="medidorSerie" placeholder="Serie" required>
+          <input id="medidorDiametro" placeholder="Diametro" required>
+          <select id="medidorEstado" required>
+            <option>Disponible</option>
+            <option>Instalado</option>
+            <option>Danado</option>
+            <option>Retirado</option>
+          </select>
+          <select id="medidorInteligente">
+            <option value="No">Medidor convencional</option>
+            <option value="IoT">IoT</option>
+            <option value="Telemetria">Telemetria</option>
+            <option value="Lectura remota">Lectura remota</option>
+          </select>
+          <button type="submit">Guardar medidor</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Instalaciones</h3>
+        <form id="formInstalacionMedidor">
+          <select id="instalacionMedidor" required><option value="">Medidor</option></select>
+          <input id="instalacionFecha" type="date" required>
+          <input id="instalacionTecnico" placeholder="Tecnico responsable" required>
+          <select id="instalacionInmueble"><option value="">Inmueble catastrado</option></select>
+          <input id="instalacionUbicacion" class="span-all" placeholder="Ubicacion si no existe inmueble">
+          <button type="submit">Registrar instalacion</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Reemplazos</h3>
+        <form id="formReemplazoMedidor">
+          <select id="reemplazoAnterior" required><option value="">Medidor reemplazado</option></select>
+          <select id="reemplazoNuevo" required><option value="">Nuevo medidor</option></select>
+          <select id="reemplazoMotivo" required>
+            <option value="">Motivo</option>
+            <option>Medidor danado</option>
+            <option>Cambio por antiguedad</option>
+            <option>Auditoria</option>
+          </select>
+          <input id="reemplazoFecha" type="date" required>
+          <input id="reemplazoResponsable" placeholder="Responsable" required>
+          <button type="submit">Registrar reemplazo</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Historial de Consumo</h3>
+        <form id="formLecturaMedidor">
+          <select id="lecturaMedidor" required><option value="">Medidor</option></select>
+          <input id="lecturaFecha" type="date" required>
+          <input id="lecturaValor" type="number" min="0" step="0.01" placeholder="Lectura actual m3" required>
+          <input id="lecturaConsumo" type="number" min="0" step="0.01" placeholder="Consumo periodo m3" required>
+          <button type="submit">Guardar lectura</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Medidor</th><th>Lectura</th><th>Consumo</th><th>Variacion</th></tr></thead>
+            <tbody id="tablaLecturasMedidor"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Auditoria de Micromedicion</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Medidor</th><th>Accion</th><th>Responsable</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaAuditoriaMedidor"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Inventario y Estado</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Codigo</th><th>Marca</th><th>Serie</th><th>Diametro</th><th>Estado</th><th>Inteligente</th></tr></thead>
+            <tbody id="tablaInventarioMedidor"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Instalaciones y Reemplazos</h3>
+        <div class="compact-list" id="listaMovimientoMedidor"></div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -308,6 +435,10 @@ let catastroClientes=JSON.parse(localStorage.getItem('catastroClientesComerciale
 let catastroInmuebles=JSON.parse(localStorage.getItem('catastroInmueblesComerciales')||'[]');
 let catastroContratos=JSON.parse(localStorage.getItem('catastroContratosComerciales')||'[]');
 let catastroHistorial=JSON.parse(localStorage.getItem('catastroHistorialComercial')||'[]');
+let medidoresInventario=JSON.parse(localStorage.getItem('medidoresInventarioComercial')||'[]');
+let medidoresInstalaciones=JSON.parse(localStorage.getItem('medidoresInstalacionesComercial')||'[]');
+let medidoresReemplazos=JSON.parse(localStorage.getItem('medidoresReemplazosComercial')||'[]');
+let medidoresLecturas=JSON.parse(localStorage.getItem('medidoresLecturasComercial')||'[]');
 let graficoComparativo=null;
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -326,8 +457,10 @@ function guardarComercial(){
 function mostrarPanelComercial(id){
   dashboardComercial.style.display=id==='dashboardComercial'?'block':'none';
   catastroComercial.style.display=id==='catastroComercial'?'block':'none';
+  medidoresComerciales.style.display=id==='medidoresComerciales'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
+  if(id==='medidoresComerciales')renderMedidoresComerciales();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -338,6 +471,12 @@ function guardarCatastroComercial(){
   localStorage.setItem('catastroInmueblesComerciales',JSON.stringify(catastroInmuebles));
   localStorage.setItem('catastroContratosComerciales',JSON.stringify(catastroContratos));
   localStorage.setItem('catastroHistorialComercial',JSON.stringify(catastroHistorial));
+}
+function guardarMedidoresComerciales(){
+  localStorage.setItem('medidoresInventarioComercial',JSON.stringify(medidoresInventario));
+  localStorage.setItem('medidoresInstalacionesComercial',JSON.stringify(medidoresInstalaciones));
+  localStorage.setItem('medidoresReemplazosComercial',JSON.stringify(medidoresReemplazos));
+  localStorage.setItem('medidoresLecturasComercial',JSON.stringify(medidoresLecturas));
 }
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
@@ -354,6 +493,23 @@ function opcionesClientesCatastro(valorInicial){
 }
 function opcionesInmueblesCatastro(){
   return '<option value="">Inmueble</option>'+catastroInmuebles.map(item=>`<option value="${safeText(item.id)}">${safeText(nombreClienteCatastro(item.clienteId))} - ${safeText(item.tipo)} - ${safeText(item.sector)}</option>`).join('');
+}
+function medidorPorId(id){
+  return medidoresInventario.find(item=>item.id===id);
+}
+function etiquetaMedidor(id){
+  const medidor=medidorPorId(id);
+  return medidor?`${medidor.codigo} - ${medidor.serie}`:'Medidor no disponible';
+}
+function opcionesMedidores(etiqueta, filtro){
+  return `<option value="">${etiqueta}</option>`+medidoresInventario
+    .filter(item=>!filtro||filtro(item))
+    .map(item=>`<option value="${safeText(item.id)}">${safeText(item.codigo)} - ${safeText(item.marca)} - ${safeText(item.estado)}</option>`)
+    .join('');
+}
+function etiquetaInmuebleMedidor(id){
+  const inmueble=inmuebleCatastroPorId(id);
+  return inmueble?`${nombreClienteCatastro(inmueble.clienteId)} - ${inmueble.tipo} - ${inmueble.sector}`:'Ubicacion manual';
 }
 function renderCatastroComercial(){
   catastroClientesKpi.textContent=catastroClientes.length;
@@ -403,6 +559,86 @@ function renderCatastroComercial(){
       <td>${safeText(item.detalle)}</td>
     </tr>
   `).join(''):'<tr><td colspan="5">No hay historial comercial registrado.</td></tr>';
+}
+function auditoriaMedidores(){
+  const instalaciones=medidoresInstalaciones.map(item=>({
+    fecha:item.fecha,
+    medidorId:item.medidorId,
+    accion:'Instalacion',
+    responsable:item.tecnico,
+    detalle:item.inmuebleId?etiquetaInmuebleMedidor(item.inmuebleId):item.ubicacion
+  }));
+  const reemplazos=medidoresReemplazos.map(item=>({
+    fecha:item.fecha,
+    medidorId:item.anteriorId,
+    accion:'Reemplazo',
+    responsable:item.responsable,
+    detalle:`${item.motivo}. Nuevo medidor: ${etiquetaMedidor(item.nuevoId)}`
+  }));
+  return [...instalaciones,...reemplazos].sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+}
+function variacionLectura(item){
+  const anteriores=medidoresLecturas
+    .filter(row=>row.medidorId===item.medidorId&&row.id!==item.id&&String(row.fecha)<String(item.fecha))
+    .sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+  const anterior=anteriores[0];
+  if(!anterior)return '-';
+  const cambio=Number(item.consumo||0)-Number(anterior.consumo||0);
+  return `${cambio>0?'+':''}${cambio.toLocaleString('es-DO')} m3`;
+}
+function renderMedidoresComerciales(){
+  const consumos=medidoresLecturas.map(item=>Number(item.consumo||0));
+  const promedio=consumos.length?consumos.reduce((sum,item)=>sum+item,0)/consumos.length:0;
+  medidoresTotalKpi.textContent=medidoresInventario.length;
+  medidoresInstaladosKpi.textContent=medidoresInventario.filter(item=>item.estado==='Instalado').length;
+  medidoresConsumoKpi.textContent=`${promedio.toLocaleString('es-DO',{maximumFractionDigits:2})} m3`;
+  medidoresRemotosKpi.textContent=medidoresInventario.filter(item=>item.inteligente!=='No').length;
+  instalacionMedidor.innerHTML=opcionesMedidores('Medidor',item=>item.estado!=='Retirado');
+  reemplazoAnterior.innerHTML=opcionesMedidores('Medidor reemplazado',item=>item.estado==='Instalado'||item.estado==='Danado');
+  reemplazoNuevo.innerHTML=opcionesMedidores('Nuevo medidor',item=>item.estado==='Disponible');
+  lecturaMedidor.innerHTML=opcionesMedidores('Medidor',item=>item.estado==='Instalado');
+  instalacionInmueble.innerHTML=opcionesInmueblesCatastro();
+  tablaInventarioMedidor.innerHTML=medidoresInventario.length?medidoresInventario.map(item=>`
+    <tr>
+      <td>${safeText(item.codigo)}</td>
+      <td>${safeText(item.marca)}</td>
+      <td>${safeText(item.serie)}</td>
+      <td>${safeText(item.diametro)}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+      <td>${safeText(item.inteligente)}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="6">No hay medidores registrados.</td></tr>';
+  tablaLecturasMedidor.innerHTML=medidoresLecturas.length?[...medidoresLecturas]
+    .sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)))
+    .slice(0,100)
+    .map(item=>`
+      <tr>
+        <td>${safeText(item.fecha)}</td>
+        <td>${safeText(etiquetaMedidor(item.medidorId))}</td>
+        <td>${Number(item.lectura||0).toLocaleString('es-DO')} m3</td>
+        <td>${Number(item.consumo||0).toLocaleString('es-DO')} m3</td>
+        <td>${safeText(variacionLectura(item))}</td>
+      </tr>
+    `).join(''):'<tr><td colspan="5">No hay lecturas historicas.</td></tr>';
+  tablaAuditoriaMedidor.innerHTML=auditoriaMedidores().length?auditoriaMedidores().slice(0,80).map(item=>`
+    <tr>
+      <td>${safeText(item.fecha)}</td>
+      <td>${safeText(etiquetaMedidor(item.medidorId))}</td>
+      <td>${safeText(item.accion)}</td>
+      <td>${safeText(item.responsable)}</td>
+      <td>${safeText(item.detalle||'-')}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="5">No hay movimientos auditables.</td></tr>';
+  const movimientos=[
+    ...medidoresInstalaciones.map(item=>({fecha:item.fecha,titulo:'Instalacion',medidor:item.medidorId,detalle:`${item.tecnico} | ${item.inmuebleId?etiquetaInmuebleMedidor(item.inmuebleId):item.ubicacion||'Sin ubicacion'}`})),
+    ...medidoresReemplazos.map(item=>({fecha:item.fecha,titulo:'Reemplazo',medidor:item.anteriorId,detalle:`${item.motivo} por ${etiquetaMedidor(item.nuevoId)} | ${item.responsable}`}))
+  ].sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+  listaMovimientoMedidor.innerHTML=movimientos.length?movimientos.slice(0,40).map(item=>`
+    <article class="record">
+      <b>${safeText(item.titulo)} - ${safeText(etiquetaMedidor(item.medidor))}</b>
+      <small>${safeText(item.fecha)} | ${safeText(item.detalle)}</small>
+    </article>
+  `).join(''):'<div class="muted">Las instalaciones y reemplazos apareceran aqui.</div>';
 }
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
@@ -550,8 +786,96 @@ formHistorialCatastro.addEventListener('submit',event=>{
   historialFecha.value=new Date().toISOString().slice(0,10);
   renderCatastroComercial();
 });
+formMedidor.addEventListener('submit',event=>{
+  event.preventDefault();
+  const codigo=medidorCodigo.value.trim();
+  const serie=medidorSerie.value.trim();
+  if(medidoresInventario.some(item=>item.codigo.toLowerCase()===codigo.toLowerCase()||item.serie.toLowerCase()===serie.toLowerCase())){
+    alert('Ya existe un medidor con ese codigo o serie.');
+    return;
+  }
+  medidoresInventario.unshift({
+    id:idCatastro('MED'),
+    codigo,
+    marca:medidorMarca.value.trim(),
+    serie,
+    diametro:medidorDiametro.value.trim(),
+    estado:medidorEstado.value,
+    inteligente:medidorInteligente.value,
+    creado:new Date().toISOString()
+  });
+  guardarMedidoresComerciales();
+  formMedidor.reset();
+  renderMedidoresComerciales();
+});
+formInstalacionMedidor.addEventListener('submit',event=>{
+  event.preventDefault();
+  const medidor=medidorPorId(instalacionMedidor.value);
+  if(!medidor)return;
+  if(!instalacionInmueble.value&&!instalacionUbicacion.value.trim()){
+    alert('Seleccione un inmueble o escriba la ubicacion de instalacion.');
+    return;
+  }
+  medidoresInstalaciones.unshift({
+    id:idCatastro('INS'),
+    medidorId:medidor.id,
+    fecha:instalacionFecha.value,
+    tecnico:instalacionTecnico.value.trim(),
+    inmuebleId:instalacionInmueble.value,
+    ubicacion:instalacionUbicacion.value.trim(),
+    creado:new Date().toISOString()
+  });
+  medidor.estado='Instalado';
+  guardarMedidoresComerciales();
+  formInstalacionMedidor.reset();
+  instalacionFecha.value=new Date().toISOString().slice(0,10);
+  renderMedidoresComerciales();
+});
+formReemplazoMedidor.addEventListener('submit',event=>{
+  event.preventDefault();
+  if(reemplazoAnterior.value===reemplazoNuevo.value){
+    alert('Seleccione un medidor nuevo diferente al reemplazado.');
+    return;
+  }
+  const anterior=medidorPorId(reemplazoAnterior.value);
+  const nuevo=medidorPorId(reemplazoNuevo.value);
+  if(!anterior||!nuevo)return;
+  medidoresReemplazos.unshift({
+    id:idCatastro('REP'),
+    anteriorId:anterior.id,
+    nuevoId:nuevo.id,
+    motivo:reemplazoMotivo.value,
+    fecha:reemplazoFecha.value,
+    responsable:reemplazoResponsable.value.trim(),
+    creado:new Date().toISOString()
+  });
+  anterior.estado=reemplazoMotivo.value==='Medidor danado'?'Danado':'Retirado';
+  nuevo.estado='Instalado';
+  guardarMedidoresComerciales();
+  formReemplazoMedidor.reset();
+  reemplazoFecha.value=new Date().toISOString().slice(0,10);
+  renderMedidoresComerciales();
+});
+formLecturaMedidor.addEventListener('submit',event=>{
+  event.preventDefault();
+  medidoresLecturas.unshift({
+    id:idCatastro('LEC'),
+    medidorId:lecturaMedidor.value,
+    fecha:lecturaFecha.value,
+    lectura:Number(lecturaValor.value||0),
+    consumo:Number(lecturaConsumo.value||0),
+    creado:new Date().toISOString()
+  });
+  guardarMedidoresComerciales();
+  formLecturaMedidor.reset();
+  lecturaFecha.value=new Date().toISOString().slice(0,10);
+  renderMedidoresComerciales();
+});
 periodo.value=new Date().toISOString().slice(0,7);
 historialFecha.value=new Date().toISOString().slice(0,10);
+instalacionFecha.value=new Date().toISOString().slice(0,10);
+reemplazoFecha.value=new Date().toISOString().slice(0,10);
+lecturaFecha.value=new Date().toISOString().slice(0,10);
 renderComercial();
 </script>
 </body>
