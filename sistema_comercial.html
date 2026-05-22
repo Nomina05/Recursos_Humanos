@@ -27,6 +27,7 @@ header small{display:block;color:#dbeafe;margin-top:4px}
 .grid{display:grid;gap:12px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 .two{grid-template-columns:minmax(320px,1.2fr) minmax(300px,1fr)}
+.three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
 .kpi{border-left:4px solid var(--blue);min-height:108px}
 .kpi:nth-child(2){border-left-color:var(--green)}
 .kpi:nth-child(3){border-left-color:var(--gold)}
@@ -36,12 +37,21 @@ header small{display:block;color:#dbeafe;margin-top:4px}
 .kpi span{color:var(--muted);font-size:13px}
 .modules{display:flex;gap:6px;flex-wrap:wrap}
 .modules span,.badge{background:#e5eefb;border-radius:999px;color:#163d70;display:inline-flex;font-size:12px;font-weight:700;padding:5px 8px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{background:#e8eef6;color:var(--ink);margin:0}
+.tabs button.active{background:var(--blue);color:#fff}
 h2,h3{margin:0 0 10px}
 form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
 input,select,textarea,button{border:1px solid var(--line);border-radius:7px;font:inherit;padding:9px}
 textarea{grid-column:1/-1;min-height:68px;resize:vertical}
 button{background:var(--blue);border:none;color:#fff;cursor:pointer;font-weight:600}
 button.secondary{background:#e8eef6;color:var(--ink)}
+.span-all{grid-column:1/-1}
+.compact-list{display:grid;gap:8px}
+.record{border:1px solid var(--line);border-left:4px solid var(--green);border-radius:8px;padding:10px}
+.record small{color:var(--muted);display:block;margin-top:4px}
+.record-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.record-actions button{padding:6px 8px;font-size:12px}
 .table-wrap{overflow:auto}
 table{border-collapse:collapse;width:100%}
 th,td{border-bottom:1px solid var(--line);font-size:13px;padding:9px;text-align:left;vertical-align:top}
@@ -66,6 +76,11 @@ body.embedded .wrap{padding:0}
   <span class="badge" id="periodoVista">Periodo actual</span>
 </header>
 <main class="wrap">
+  <nav class="tabs" aria-label="Paneles comerciales">
+    <button type="button" data-panel="dashboardComercial" class="active" onclick="mostrarPanelComercial('dashboardComercial')">Dashboard Ejecutivo</button>
+    <button type="button" data-panel="catastroComercial" onclick="mostrarPanelComercial('catastroComercial')">Catastro Comercial</button>
+  </nav>
+  <div id="dashboardComercial">
   <section class="panel">
     <h2>Dashboard Ejecutivo</h2>
     <div class="modules">
@@ -132,11 +147,167 @@ body.embedded .wrap{padding:0}
       </div>
     </article>
   </section>
+  </div>
+
+  <section id="catastroComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Catastro Comercial</h2>
+      <p class="muted">Administra clientes, propiedades, rutas, contratos de servicio e historial comercial.</p>
+      <div class="modules">
+        <span>Registro de Usuarios</span>
+        <span>Personas fisicas</span>
+        <span>Empresas</span>
+        <span>Instituciones publicas</span>
+        <span>Datos personales</span>
+        <span>Contactos</span>
+        <span>Documentos</span>
+        <span>Registro de Inmuebles</span>
+        <span>Clasificacion Comercial</span>
+        <span>Sectores y Rutas</span>
+        <span>Contratos de Servicio</span>
+        <span>Historial del Cliente</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Usuarios catastrados</small><strong id="catastroClientesKpi">0</strong><span>Personas, empresas e instituciones</span></article>
+        <article class="panel kpi"><small>Inmuebles</small><strong id="catastroInmueblesKpi">0</strong><span>Casas, apartamentos y actividades</span></article>
+        <article class="panel kpi"><small>Contratos activos</small><strong id="catastroContratosKpi">0</strong><span>Servicios vigentes</span></article>
+        <article class="panel kpi"><small>Eventos historicos</small><strong id="catastroHistorialKpi">0</strong><span>Pagos, facturas, reclamos y cortes</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Registro de Usuarios</h3>
+        <form id="formClienteCatastro">
+          <select id="clienteTipo" required>
+            <option value="">Tipo de usuario</option>
+            <option>Persona fisica</option>
+            <option>Empresa</option>
+            <option>Institucion publica</option>
+          </select>
+          <input id="clienteDocumento" placeholder="Cedula, RNC o documento" required>
+          <input id="clienteNombre" placeholder="Nombre o razon social" required>
+          <input id="clienteContacto" placeholder="Telefono">
+          <input id="clienteCorreo" type="email" placeholder="Correo">
+          <input id="clienteDireccion" class="span-all" placeholder="Direccion personal o comercial">
+          <input id="clienteDocumentoSoporte" class="span-all" placeholder="Documentos registrados">
+          <button type="submit">Registrar usuario</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Registro de Inmuebles</h3>
+        <form id="formInmuebleCatastro">
+          <select id="inmuebleCliente" required><option value="">Usuario del inmueble</option></select>
+          <select id="inmuebleTipo" required>
+            <option value="">Tipo de inmueble</option>
+            <option>Casa</option>
+            <option>Apartamento</option>
+            <option>Solar</option>
+            <option>Comercio</option>
+            <option>Industria</option>
+          </select>
+          <select id="inmuebleClasificacion" required>
+            <option value="">Clasificacion comercial</option>
+            <option>Residencial</option>
+            <option>Comercial</option>
+            <option>Industrial</option>
+            <option>Gubernamental</option>
+            <option>Social</option>
+          </select>
+          <input id="inmuebleZona" placeholder="Zona" required>
+          <input id="inmuebleSector" placeholder="Sector" required>
+          <input id="inmuebleCalle" placeholder="Calle">
+          <input id="inmuebleRuta" placeholder="Ruta de lectura">
+          <button type="submit">Registrar inmueble</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Contratos de Servicio</h3>
+        <form id="formContratoCatastro">
+          <select id="contratoInmueble" required><option value="">Inmueble</option></select>
+          <input id="contratoNumero" placeholder="Numero de contrato" required>
+          <input id="contratoInstalacion" type="date" required>
+          <select id="contratoServicio" required>
+            <option value="">Tipo de servicio</option>
+            <option>Agua potable</option>
+            <option>Alcantarillado</option>
+            <option>Agua y alcantarillado</option>
+            <option>Servicio especial</option>
+          </select>
+          <select id="contratoEstado" required>
+            <option>Activo</option>
+            <option>Suspendido</option>
+            <option>Cortado</option>
+            <option>Cancelado</option>
+          </select>
+          <button type="submit">Guardar contrato</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Historial del Cliente</h3>
+        <form id="formHistorialCatastro">
+          <select id="historialCliente" required><option value="">Usuario</option></select>
+          <select id="historialTipo" required>
+            <option value="">Evento</option>
+            <option>Pago</option>
+            <option>Factura</option>
+            <option>Reclamo</option>
+            <option>Corte</option>
+            <option>Convenio</option>
+          </select>
+          <input id="historialFecha" type="date" required>
+          <input id="historialMonto" type="number" min="0" step="0.01" placeholder="Monto si aplica">
+          <textarea id="historialDetalle" placeholder="Detalle del evento" required></textarea>
+          <button type="submit">Agregar historial</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Usuario</th><th>Evento</th><th>Monto</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaHistorialCatastro"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Expediente Comercial</h3>
+        <div class="compact-list" id="listaClientesCatastro"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Inmuebles, Sectores y Rutas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Usuario</th><th>Inmueble</th><th>Clasificacion</th><th>Zona</th><th>Sector</th><th>Calle</th><th>Ruta</th></tr></thead>
+            <tbody id="tablaInmueblesCatastro"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Contratos Registrados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Contrato</th><th>Usuario</th><th>Instalacion</th><th>Servicio</th><th>Estado</th></tr></thead>
+            <tbody id="tablaContratosCatastro"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
 if(embeddedMode)document.body.classList.add('embedded');
 let comercialPeriodos=JSON.parse(localStorage.getItem('comercialPeriodos')||'[]');
+let catastroClientes=JSON.parse(localStorage.getItem('catastroClientesComerciales')||'[]');
+let catastroInmuebles=JSON.parse(localStorage.getItem('catastroInmueblesComerciales')||'[]');
+let catastroContratos=JSON.parse(localStorage.getItem('catastroContratosComerciales')||'[]');
+let catastroHistorial=JSON.parse(localStorage.getItem('catastroHistorialComercial')||'[]');
 let graficoComparativo=null;
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -151,6 +322,87 @@ function etiquetaPeriodo(valor){
 }
 function guardarComercial(){
   localStorage.setItem('comercialPeriodos',JSON.stringify(comercialPeriodos));
+}
+function mostrarPanelComercial(id){
+  dashboardComercial.style.display=id==='dashboardComercial'?'block':'none';
+  catastroComercial.style.display=id==='catastroComercial'?'block':'none';
+  document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
+  if(id==='catastroComercial')renderCatastroComercial();
+  if(id==='dashboardComercial')renderComercial();
+}
+function idCatastro(prefijo){
+  return `${prefijo}-${Date.now()}-${Math.random().toString(16).slice(2,6)}`;
+}
+function guardarCatastroComercial(){
+  localStorage.setItem('catastroClientesComerciales',JSON.stringify(catastroClientes));
+  localStorage.setItem('catastroInmueblesComerciales',JSON.stringify(catastroInmuebles));
+  localStorage.setItem('catastroContratosComerciales',JSON.stringify(catastroContratos));
+  localStorage.setItem('catastroHistorialComercial',JSON.stringify(catastroHistorial));
+}
+function clienteCatastroPorId(id){
+  return catastroClientes.find(item=>item.id===id);
+}
+function inmuebleCatastroPorId(id){
+  return catastroInmuebles.find(item=>item.id===id);
+}
+function nombreClienteCatastro(id){
+  const cliente=clienteCatastroPorId(id);
+  return cliente?cliente.nombre:'Usuario no disponible';
+}
+function opcionesClientesCatastro(valorInicial){
+  return `<option value="">${valorInicial}</option>`+catastroClientes.map(item=>`<option value="${safeText(item.id)}">${safeText(item.nombre)} - ${safeText(item.documento)}</option>`).join('');
+}
+function opcionesInmueblesCatastro(){
+  return '<option value="">Inmueble</option>'+catastroInmuebles.map(item=>`<option value="${safeText(item.id)}">${safeText(nombreClienteCatastro(item.clienteId))} - ${safeText(item.tipo)} - ${safeText(item.sector)}</option>`).join('');
+}
+function renderCatastroComercial(){
+  catastroClientesKpi.textContent=catastroClientes.length;
+  catastroInmueblesKpi.textContent=catastroInmuebles.length;
+  catastroContratosKpi.textContent=catastroContratos.filter(item=>item.estado==='Activo').length;
+  catastroHistorialKpi.textContent=catastroHistorial.length;
+  inmuebleCliente.innerHTML=opcionesClientesCatastro('Usuario del inmueble');
+  historialCliente.innerHTML=opcionesClientesCatastro('Usuario');
+  contratoInmueble.innerHTML=opcionesInmueblesCatastro();
+  listaClientesCatastro.innerHTML=catastroClientes.length?catastroClientes.map(item=>{
+    const inmuebles=catastroInmuebles.filter(row=>row.clienteId===item.id);
+    const contratos=catastroContratos.filter(row=>inmuebles.some(inmueble=>inmueble.id===row.inmuebleId));
+    return `<article class="record">
+      <b>${safeText(item.nombre)}</b> <span class="badge">${safeText(item.tipo)}</span>
+      <small>${safeText(item.documento)} | ${safeText(item.contacto||'Sin telefono')} | ${safeText(item.correo||'Sin correo')}</small>
+      <small>${safeText(item.direccion||'Sin direccion')} | Documentos: ${safeText(item.documentos||'Pendientes')}</small>
+      <small>${inmuebles.length} inmueble(s) | ${contratos.length} contrato(s) | ${catastroHistorial.filter(row=>row.clienteId===item.id).length} evento(s)</small>
+    </article>`;
+  }).join(''):'<div class="muted">Todavia no hay usuarios catastrados.</div>';
+  tablaInmueblesCatastro.innerHTML=catastroInmuebles.length?catastroInmuebles.map(item=>`
+    <tr>
+      <td>${safeText(nombreClienteCatastro(item.clienteId))}</td>
+      <td>${safeText(item.tipo)}</td>
+      <td>${safeText(item.clasificacion)}</td>
+      <td>${safeText(item.zona)}</td>
+      <td>${safeText(item.sector)}</td>
+      <td>${safeText(item.calle||'-')}</td>
+      <td>${safeText(item.ruta||'-')}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="7">No hay inmuebles registrados.</td></tr>';
+  tablaContratosCatastro.innerHTML=catastroContratos.length?catastroContratos.map(item=>{
+    const inmueble=inmuebleCatastroPorId(item.inmuebleId)||{};
+    return `<tr>
+      <td>${safeText(item.numero)}</td>
+      <td>${safeText(nombreClienteCatastro(inmueble.clienteId))}<br><small>${safeText(inmueble.tipo||'Sin inmueble')}</small></td>
+      <td>${safeText(item.instalacion||'-')}</td>
+      <td>${safeText(item.servicio)}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5">No hay contratos registrados.</td></tr>';
+  tablaHistorialCatastro.innerHTML=catastroHistorial.length?catastroHistorial.slice(0,80).map(item=>`
+    <tr>
+      <td>${safeText(item.fecha)}</td>
+      <td>${safeText(nombreClienteCatastro(item.clienteId))}</td>
+      <td>${safeText(item.tipo)}</td>
+      <td>${item.monto?moneda(item.monto):'-'}</td>
+      <td>${safeText(item.detalle)}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="5">No hay historial comercial registrado.</td></tr>';
 }
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
@@ -223,7 +475,83 @@ formIndicadores.addEventListener('submit',event=>{
   formIndicadores.reset();
   periodo.value=new Date().toISOString().slice(0,7);
 });
+formClienteCatastro.addEventListener('submit',event=>{
+  event.preventDefault();
+  const documento=clienteDocumento.value.trim();
+  if(catastroClientes.some(item=>item.documento.toLowerCase()===documento.toLowerCase())){
+    alert('Ya existe un usuario catastrado con ese documento.');
+    return;
+  }
+  catastroClientes.unshift({
+    id:idCatastro('CLI'),
+    tipo:clienteTipo.value,
+    documento,
+    nombre:clienteNombre.value.trim(),
+    contacto:clienteContacto.value.trim(),
+    correo:clienteCorreo.value.trim(),
+    direccion:clienteDireccion.value.trim(),
+    documentos:clienteDocumentoSoporte.value.trim(),
+    creado:new Date().toISOString()
+  });
+  guardarCatastroComercial();
+  formClienteCatastro.reset();
+  renderCatastroComercial();
+});
+formInmuebleCatastro.addEventListener('submit',event=>{
+  event.preventDefault();
+  catastroInmuebles.unshift({
+    id:idCatastro('INM'),
+    clienteId:inmuebleCliente.value,
+    tipo:inmuebleTipo.value,
+    clasificacion:inmuebleClasificacion.value,
+    zona:inmuebleZona.value.trim(),
+    sector:inmuebleSector.value.trim(),
+    calle:inmuebleCalle.value.trim(),
+    ruta:inmuebleRuta.value.trim(),
+    creado:new Date().toISOString()
+  });
+  guardarCatastroComercial();
+  formInmuebleCatastro.reset();
+  renderCatastroComercial();
+});
+formContratoCatastro.addEventListener('submit',event=>{
+  event.preventDefault();
+  const numero=contratoNumero.value.trim();
+  if(catastroContratos.some(item=>item.numero.toLowerCase()===numero.toLowerCase())){
+    alert('Ya existe ese numero de contrato.');
+    return;
+  }
+  catastroContratos.unshift({
+    id:idCatastro('CON'),
+    inmuebleId:contratoInmueble.value,
+    numero,
+    instalacion:contratoInstalacion.value,
+    servicio:contratoServicio.value,
+    estado:contratoEstado.value,
+    creado:new Date().toISOString()
+  });
+  guardarCatastroComercial();
+  formContratoCatastro.reset();
+  renderCatastroComercial();
+});
+formHistorialCatastro.addEventListener('submit',event=>{
+  event.preventDefault();
+  catastroHistorial.unshift({
+    id:idCatastro('HIS'),
+    clienteId:historialCliente.value,
+    tipo:historialTipo.value,
+    fecha:historialFecha.value,
+    monto:Number(historialMonto.value||0),
+    detalle:historialDetalle.value.trim(),
+    creado:new Date().toISOString()
+  });
+  guardarCatastroComercial();
+  formHistorialCatastro.reset();
+  historialFecha.value=new Date().toISOString().slice(0,10);
+  renderCatastroComercial();
+});
 periodo.value=new Date().toISOString().slice(0,7);
+historialFecha.value=new Date().toISOString().slice(0,10);
 renderComercial();
 </script>
 </body>
