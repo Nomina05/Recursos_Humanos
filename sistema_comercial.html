@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sistema Comercial</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{
   --bg:#eef3f8;
@@ -93,6 +96,7 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="tecnicoComercial" onclick="mostrarPanelComercial('tecnicoComercial')">Tecnico Operativo</button>
     <button type="button" data-panel="gisComercial" onclick="mostrarPanelComercial('gisComercial')">GIS</button>
     <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
+    <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -1324,6 +1328,81 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="reportesBiComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Reportes y BI</h2>
+      <p class="muted">Inteligencia de negocios para KPIs comerciales, reportes gerenciales, exportacion y estadisticas historicas.</p>
+      <div class="modules">
+        <span>KPIs Comerciales</span>
+        <span>Eficiencia de cobro</span>
+        <span>Agua no contabilizada</span>
+        <span>Facturacion promedio</span>
+        <span>Reportes Gerenciales</span>
+        <span>Exportacion PDF</span>
+        <span>Exportacion Excel</span>
+        <span>Power BI</span>
+        <span>Estadisticas Historicas</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Eficiencia de cobro</small><strong id="eficienciaCobroBiKpi">0%</strong><span>Cobrado sobre facturado</span></article>
+        <article class="panel kpi"><small>Agua no contabilizada</small><strong id="aguaNoContabilizadaBiKpi">0%</strong><span>Estimacion lectura vs facturacion</span></article>
+        <article class="panel kpi"><small>Facturacion promedio</small><strong id="facturacionPromedioBiKpi">RD$ 0</strong><span>Promedio por factura</span></article>
+        <article class="panel kpi"><small>Periodos historicos</small><strong id="periodosBiKpi">0</strong><span>Serie gerencial disponible</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Reporte Gerencial</h3>
+        <form id="formReporteBi">
+          <input id="reporteBiPeriodo" type="month" required>
+          <select id="reporteBiVista" required>
+            <option>Resumen gerencial</option>
+            <option>KPIs comerciales</option>
+            <option>Estadisticas historicas</option>
+          </select>
+          <button type="submit">Generar reporte</button>
+        </form>
+        <div class="record-actions" style="margin-top:10px">
+          <button type="button" onclick="exportarReporteBiExcel()">Excel</button>
+          <button type="button" onclick="exportarReporteBiPdf()">PDF</button>
+          <button type="button" onclick="exportarReporteBiPower()">Power BI</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Resumen BI</h3>
+        <div class="compact-list" id="resumenReporteBi"></div>
+      </article>
+
+      <article class="panel">
+        <h3>Estadisticas Historicas</h3>
+        <div class="chart-box"><canvas id="graficoHistoricoBi"></canvas></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Reporte Gerencial Visible</h3>
+        <div class="table-wrap">
+          <table>
+            <thead id="cabeceraReporteBi"></thead>
+            <tbody id="tablaReporteBi"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>KPIs Comerciales Historicos</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Periodo</th><th>Facturado</th><th>Cobrado</th><th>Eficiencia</th><th>CxC</th><th>Agua no contabilizada</th></tr></thead>
+            <tbody id="tablaHistoricoBi"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -1360,6 +1439,8 @@ let coberturasGisComerciales=JSON.parse(localStorage.getItem('coberturasGisComer
 let presupuestosFinancierosComerciales=JSON.parse(localStorage.getItem('presupuestosFinancierosComerciales')||'[]');
 let reportesFinancierosComerciales=JSON.parse(localStorage.getItem('reportesFinancierosComerciales')||'[]');
 let graficoComparativo=null;
+let graficoHistoricoBi=null;
+let reporteBiCache={titulo:'Reporte BI',headers:[],rows:[],periodo:''};
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
 }
@@ -1386,6 +1467,7 @@ function mostrarPanelComercial(id){
   tecnicoComercial.style.display=id==='tecnicoComercial'?'block':'none';
   gisComercial.style.display=id==='gisComercial'?'block':'none';
   financieroComercial.style.display=id==='financieroComercial'?'block':'none';
+  reportesBiComercial.style.display=id==='reportesBiComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
@@ -1397,6 +1479,7 @@ function mostrarPanelComercial(id){
   if(id==='tecnicoComercial')renderTecnicoComercial();
   if(id==='gisComercial')renderGisComercial();
   if(id==='financieroComercial')renderFinancieroComercial();
+  if(id==='reportesBiComercial')renderReportesBiComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -2213,6 +2296,83 @@ function renderGisComercial(){
     <tr><td>${safeText(item.tipo)}</td><td>${safeText(item.sector)}</td><td>${safeText(item.gps)}</td><td>${safeText(referenciaAveriaGis(item))}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${item.estado!=='Cerrada'?`<button type="button" onclick="cerrarAveriaGis('${safeText(item.id)}')">Cerrar</button>`:'-'}</td></tr>
   `).join(''):'<tr><td colspan="6">No hay averias geolocalizadas.</td></tr>';
 }
+function cobrosPorPeriodoFinanciero(periodo){
+  return cobrosComerciales.filter(item=>String(item.fecha||'').slice(0,7)===periodo);
+}
+function facturasPorPeriodoFinanciero(periodo){
+  return facturasComerciales.filter(item=>item.periodo===periodo);
+}
+function cuentasPorCobrarFinanciero(periodo){
+  return facturasComerciales
+    .filter(item=>(!periodo||item.periodo===periodo)&&saldoFactura(item)>0)
+    .reduce((sum,item)=>sum+saldoFactura(item),0);
+}
+function presupuestoVigenteFinanciero(){
+  const periodo=new Date().toISOString().slice(0,7);
+  const actuales=presupuestosFinancierosComerciales.filter(item=>item.periodo===periodo);
+  const lista=actuales.length?actuales:presupuestosFinancierosComerciales.filter(item=>item.periodo===presupuestosFinancierosComerciales[0]?.periodo);
+  return {
+    periodo:lista[0]?.periodo||'',
+    total:lista.reduce((sum,item)=>sum+Number(item.monto||0),0)
+  };
+}
+function resumenMediosFinancieros(){
+  const metodos=[...new Set(cobrosComerciales.map(item=>item.metodo).filter(Boolean))];
+  return metodos.map(metodo=>{
+    const cobros=cobrosComerciales.filter(item=>item.metodo===metodo);
+    const cobrado=cobros.reduce((sum,item)=>sum+Number(item.monto||0),0);
+    const conciliado=cobros.filter(item=>item.conciliacion==='Conciliado'||item.conciliacion==='No aplica').reduce((sum,item)=>sum+Number(item.monto||0),0);
+    return {metodo,cobrado,conciliado,pendiente:Math.max(0,cobrado-conciliado)};
+  });
+}
+function datosReporteFinanciero(periodo){
+  const facturas=facturasPorPeriodoFinanciero(periodo);
+  const cobros=cobrosPorPeriodoFinanciero(periodo);
+  const cxc=facturas.reduce((sum,item)=>sum+saldoFactura(item),0);
+  const ingresos=cobros.reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const pendiente=cobros.filter(item=>item.conciliacion==='Pendiente').reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const facturado=facturas.reduce((sum,item)=>sum+totalFacturaConAjustes(item),0);
+  return {facturas:facturas.length,cobros:cobros.length,cxc,ingresos,pendiente,facturado};
+}
+function renderResumenReporteFinanciero(item){
+  if(!item){
+    resumenReporteFinanciero.innerHTML='<div class="muted">Genere un reporte financiero para ver su resumen.</div>';
+    return;
+  }
+  resumenReporteFinanciero.innerHTML=`
+    <article class="record"><b>${safeText(item.tipo)}</b><small>Periodo ${safeText(etiquetaPeriodo(item.periodo))} | Facturado ${moneda(item.facturado)}</small></article>
+    <article class="record"><b>Cuentas por cobrar: ${moneda(item.cxc)}</b><small>${Number(item.facturas||0).toLocaleString('es-DO')} factura(s) consideradas</small></article>
+    <article class="record"><b>Ingresos: ${moneda(item.ingresos)}</b><small>${Number(item.cobros||0).toLocaleString('es-DO')} cobro(s) | Pendiente de conciliacion ${moneda(item.pendiente)}</small></article>
+  `;
+}
+function renderFinancieroComercial(){
+  const deuda=facturasComerciales.filter(item=>saldoFactura(item)>0);
+  const ingresos=cobrosComerciales.reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const pendientes=cobrosComerciales.filter(item=>item.conciliacion==='Pendiente');
+  const presupuesto=presupuestoVigenteFinanciero();
+  cuentasCobrarFinancieroKpi.textContent=moneda(deuda.reduce((sum,item)=>sum+saldoFactura(item),0));
+  facturasCobrarFinancieroKpi.textContent=`${deuda.length.toLocaleString('es-DO')} facturas con saldo`;
+  ingresosFinancieroKpi.textContent=moneda(ingresos);
+  conciliacionesFinancieroKpi.textContent=pendientes.length;
+  presupuestoFinancieroKpi.textContent=moneda(presupuesto.total);
+  periodoPresupuestoFinancieroKpi.textContent=presupuesto.periodo?`Periodo ${etiquetaPeriodo(presupuesto.periodo)}`:'Sin presupuesto';
+  tablaMediosFinancieros.innerHTML=resumenMediosFinancieros().length?resumenMediosFinancieros().map(item=>`
+    <tr><td>${safeText(item.metodo)}</td><td>${moneda(item.cobrado)}</td><td>${moneda(item.conciliado)}</td><td>${moneda(item.pendiente)}</td></tr>
+  `).join(''):'<tr><td colspan="4">No hay ingresos comerciales registrados.</td></tr>';
+  tablaCuentasFinancieras.innerHTML=deuda.length?deuda.slice(0,160).map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(item.periodo)}</td><td>${safeText(contratoCatastroPorId(item.contratoId)?.numero||'-')}</td><td>${moneda(totalFacturaConAjustes(item))}</td><td>${moneda(cobrosFactura(item.id))}</td><td>${moneda(saldoFactura(item))}</td></tr>
+  `).join(''):'<tr><td colspan="6">No hay cuentas por cobrar.</td></tr>';
+  tablaConciliacionesFinancieras.innerHTML=cobrosComerciales.length?cobrosComerciales.slice(0,160).map(item=>`
+    <tr><td>${safeText(item.fecha)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${safeText(item.metodo)}</td><td>${safeText(item.referencia||'-')}</td><td>${moneda(item.monto)}</td><td><span class="badge">${safeText(item.conciliacion)}</span></td></tr>
+  `).join(''):'<tr><td colspan="6">No hay cobros para conciliar.</td></tr>';
+  tablaPresupuestosFinancieros.innerHTML=presupuestosFinancierosComerciales.length?presupuestosFinancierosComerciales.slice(0,120).map(item=>`
+    <tr><td>${safeText(etiquetaPeriodo(item.periodo))}</td><td>${safeText(item.renglon)}</td><td>${moneda(item.monto)}</td><td>${safeText(item.nota||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="4">No hay presupuestos financieros registrados.</td></tr>';
+  tablaReportesFinancieros.innerHTML=reportesFinancierosComerciales.length?reportesFinancierosComerciales.slice(0,120).map(item=>`
+    <tr><td>${safeText(new Date(item.creado).toLocaleDateString('es-DO'))}</td><td>${safeText(etiquetaPeriodo(item.periodo))}</td><td>${safeText(item.tipo)}</td><td>${moneda(item.cxc)}</td><td>${moneda(item.ingresos)}</td><td>${moneda(item.pendiente)}</td></tr>
+  `).join(''):'<tr><td colspan="6">No hay reportes financieros generados.</td></tr>';
+  renderResumenReporteFinanciero(reportesFinancierosComerciales[0]);
+}
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
   const facturacion=Number(actual.facturacion||0);
@@ -2852,6 +3012,34 @@ formCoberturaGis.addEventListener('submit',event=>{
   formCoberturaGis.reset();
   renderGisComercial();
 });
+formPresupuestoFinanciero.addEventListener('submit',event=>{
+  event.preventDefault();
+  presupuestosFinancierosComerciales.unshift({
+    id:idCatastro('PFC'),
+    periodo:presupuestoFinancieroPeriodo.value,
+    renglon:presupuestoFinancieroRenglon.value,
+    monto:Number(presupuestoFinancieroMonto.value||0),
+    nota:presupuestoFinancieroNota.value.trim(),
+    creado:new Date().toISOString()
+  });
+  guardarFinancieroComercial();
+  formPresupuestoFinanciero.reset();
+  presupuestoFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
+  renderFinancieroComercial();
+});
+formReporteFinanciero.addEventListener('submit',event=>{
+  event.preventDefault();
+  const datos=datosReporteFinanciero(reporteFinancieroPeriodo.value);
+  reportesFinancierosComerciales.unshift({
+    id:idCatastro('RFC'),
+    periodo:reporteFinancieroPeriodo.value,
+    tipo:reporteFinancieroTipo.value,
+    ...datos,
+    creado:new Date().toISOString()
+  });
+  guardarFinancieroComercial();
+  renderFinancieroComercial();
+});
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
 });
@@ -2867,6 +3055,8 @@ masivaPeriodo.value=new Date().toISOString().slice(0,7);
 convenioPrimerVencimiento.value=new Date().toISOString().slice(0,10);
 corteFecha.value=new Date().toISOString().slice(0,10);
 ordenTecnicaFecha.value=new Date().toISOString().slice(0,10);
+presupuestoFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
+reporteFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
 renderComercial();
 </script>
 </body>
