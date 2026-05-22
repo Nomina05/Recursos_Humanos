@@ -80,6 +80,7 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="dashboardComercial" class="active" onclick="mostrarPanelComercial('dashboardComercial')">Dashboard Ejecutivo</button>
     <button type="button" data-panel="catastroComercial" onclick="mostrarPanelComercial('catastroComercial')">Catastro Comercial</button>
     <button type="button" data-panel="medidoresComerciales" onclick="mostrarPanelComercial('medidoresComerciales')">Medidores</button>
+    <button type="button" data-panel="lecturaComercial" onclick="mostrarPanelComercial('lecturaComercial')">Lectura</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -426,6 +427,94 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="lecturaComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Lectura</h2>
+      <p class="muted">Operacion de lectura de consumo por ruta, medidor y lecturista.</p>
+      <div class="modules">
+        <span>Asignacion de Rutas</span>
+        <span>Lecturistas</span>
+        <span>Sectores</span>
+        <span>Calendario</span>
+        <span>Captura de Lecturas</span>
+        <span>Foto del medidor</span>
+        <span>GPS</span>
+        <span>Observaciones</span>
+        <span>Lecturas Anomalas</span>
+        <span>App Movil</span>
+        <span>Trabajo offline</span>
+        <span>Sincronizacion automatica</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Rutas asignadas</small><strong id="lecturaRutasKpi">0</strong><span>Calendario operativo</span></article>
+        <article class="panel kpi"><small>Capturas del dia</small><strong id="lecturaCapturasKpi">0</strong><span>Lecturas ingresadas</span></article>
+        <article class="panel kpi"><small>Anomalias</small><strong id="lecturaAnomaliasKpi">0</strong><span>Consumo excesivo o lectura menor</span></article>
+        <article class="panel kpi"><small>Pendientes offline</small><strong id="lecturaOfflineKpi">0</strong><span>Por sincronizar</span></article>
+      </section>
+    </article>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Asignacion de Rutas</h3>
+        <form id="formRutaLectura">
+          <input id="rutaLecturista" placeholder="Lecturista" required>
+          <input id="rutaZona" placeholder="Zona">
+          <input id="rutaSector" placeholder="Sector" required>
+          <input id="rutaCodigo" placeholder="Ruta de lectura" required>
+          <input id="rutaCalendario" type="date" required>
+          <button type="submit">Asignar ruta</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Lecturista</th><th>Zona</th><th>Sector</th><th>Ruta</th></tr></thead>
+            <tbody id="tablaRutasLectura"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Captura de Lecturas</h3>
+        <form id="formCapturaLectura">
+          <select id="capturaRuta" required><option value="">Ruta asignada</option></select>
+          <select id="capturaMedidor" required><option value="">Medidor instalado</option></select>
+          <input id="capturaFecha" type="date" required>
+          <input id="capturaActual" type="number" min="0" step="0.01" placeholder="Lectura actual m3" required>
+          <input id="capturaFoto" type="file" accept="image/*" title="Foto del medidor">
+          <input id="capturaGps" placeholder="GPS latitud,longitud">
+          <button type="button" class="secondary" onclick="capturarGpsLectura()">Usar GPS</button>
+          <select id="capturaModo">
+            <option value="Sincronizada">Captura sincronizada</option>
+            <option value="Pendiente">Guardar offline</option>
+          </select>
+          <textarea id="capturaObservacion" placeholder="Observaciones"></textarea>
+          <button type="submit">Guardar lectura</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Lecturas Anomalas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Medidor</th><th>Ruta</th><th>Anomalia</th><th>Observacion</th></tr></thead>
+            <tbody id="tablaAnomaliasLectura"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>App Movil y Sincronizacion</h3>
+        <p class="muted">Las capturas offline se conservan localmente hasta marcarse como sincronizadas.</p>
+        <button type="button" onclick="sincronizarLecturasPendientes()">Sincronizar pendientes</button>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Medidor</th><th>Foto</th><th>GPS</th><th>Estado</th></tr></thead>
+            <tbody id="tablaCapturasLectura"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -439,6 +528,8 @@ let medidoresInventario=JSON.parse(localStorage.getItem('medidoresInventarioCome
 let medidoresInstalaciones=JSON.parse(localStorage.getItem('medidoresInstalacionesComercial')||'[]');
 let medidoresReemplazos=JSON.parse(localStorage.getItem('medidoresReemplazosComercial')||'[]');
 let medidoresLecturas=JSON.parse(localStorage.getItem('medidoresLecturasComercial')||'[]');
+let rutasLectura=JSON.parse(localStorage.getItem('rutasLecturaComercial')||'[]');
+let capturasLectura=JSON.parse(localStorage.getItem('capturasLecturaComercial')||'[]');
 let graficoComparativo=null;
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -458,9 +549,11 @@ function mostrarPanelComercial(id){
   dashboardComercial.style.display=id==='dashboardComercial'?'block':'none';
   catastroComercial.style.display=id==='catastroComercial'?'block':'none';
   medidoresComerciales.style.display=id==='medidoresComerciales'?'block':'none';
+  lecturaComercial.style.display=id==='lecturaComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
+  if(id==='lecturaComercial')renderLecturaComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -477,6 +570,10 @@ function guardarMedidoresComerciales(){
   localStorage.setItem('medidoresInstalacionesComercial',JSON.stringify(medidoresInstalaciones));
   localStorage.setItem('medidoresReemplazosComercial',JSON.stringify(medidoresReemplazos));
   localStorage.setItem('medidoresLecturasComercial',JSON.stringify(medidoresLecturas));
+}
+function guardarLecturaComercial(){
+  localStorage.setItem('rutasLecturaComercial',JSON.stringify(rutasLectura));
+  localStorage.setItem('capturasLecturaComercial',JSON.stringify(capturasLectura));
 }
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
@@ -639,6 +736,88 @@ function renderMedidoresComerciales(){
       <small>${safeText(item.fecha)} | ${safeText(item.detalle)}</small>
     </article>
   `).join(''):'<div class="muted">Las instalaciones y reemplazos apareceran aqui.</div>';
+}
+function rutaLecturaPorId(id){
+  return rutasLectura.find(item=>item.id===id);
+}
+function etiquetaRutaLectura(id){
+  const ruta=rutaLecturaPorId(id);
+  return ruta?`${ruta.ruta} - ${ruta.sector}`:'Ruta no disponible';
+}
+function ultimaLecturaMedidor(id){
+  return [...medidoresLecturas]
+    .filter(item=>item.medidorId===id)
+    .sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)))[0];
+}
+function consumoPromedioMedidor(id){
+  const consumos=medidoresLecturas.filter(item=>item.medidorId===id).map(item=>Number(item.consumo||0)).filter(item=>item>=0);
+  return consumos.length?consumos.reduce((sum,item)=>sum+item,0)/consumos.length:0;
+}
+function detectarAnomaliaLectura(medidorId, lecturaActual, consumo){
+  const anterior=ultimaLecturaMedidor(medidorId);
+  if(anterior&&lecturaActual<Number(anterior.lectura||0))return 'Lectura menor';
+  if(anterior&&consumo===0)return 'Medidor detenido';
+  const promedio=consumoPromedioMedidor(medidorId);
+  if(promedio&&consumo>promedio*2)return 'Consumo excesivo';
+  return '';
+}
+function renderLecturaComercial(){
+  const hoy=new Date().toISOString().slice(0,10);
+  const pendientes=capturasLectura.filter(item=>item.estado==='Pendiente');
+  const anomalias=capturasLectura.filter(item=>item.anomalia);
+  lecturaRutasKpi.textContent=rutasLectura.length;
+  lecturaCapturasKpi.textContent=capturasLectura.filter(item=>item.fecha===hoy).length;
+  lecturaAnomaliasKpi.textContent=anomalias.length;
+  lecturaOfflineKpi.textContent=pendientes.length;
+  capturaRuta.innerHTML='<option value="">Ruta asignada</option>'+rutasLectura.map(item=>`<option value="${safeText(item.id)}">${safeText(item.fecha)} - ${safeText(item.lecturista)} - ${safeText(item.ruta)} - ${safeText(item.sector)}</option>`).join('');
+  capturaMedidor.innerHTML=opcionesMedidores('Medidor instalado',item=>item.estado==='Instalado');
+  tablaRutasLectura.innerHTML=rutasLectura.length?rutasLectura.map(item=>`
+    <tr><td>${safeText(item.fecha)}</td><td>${safeText(item.lecturista)}</td><td>${safeText(item.zona||'-')}</td><td>${safeText(item.sector)}</td><td>${safeText(item.ruta)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay rutas asignadas.</td></tr>';
+  tablaAnomaliasLectura.innerHTML=anomalias.length?anomalias.map(item=>`
+    <tr>
+      <td>${safeText(item.fecha)}</td>
+      <td>${safeText(etiquetaMedidor(item.medidorId))}</td>
+      <td>${safeText(etiquetaRutaLectura(item.rutaId))}</td>
+      <td><span class="badge">${safeText(item.anomalia)}</span></td>
+      <td>${safeText(item.observacion||'-')}</td>
+    </tr>
+  `).join(''):'<tr><td colspan="5">No hay lecturas anomalas.</td></tr>';
+  tablaCapturasLectura.innerHTML=capturasLectura.length?capturasLectura.slice(0,100).map(item=>`
+    <tr>
+      <td>${safeText(item.fecha)}</td>
+      <td>${safeText(etiquetaMedidor(item.medidorId))}<br><small>${safeText(etiquetaRutaLectura(item.rutaId))}</small></td>
+      <td>${safeText(item.foto||'Sin foto')}</td>
+      <td>${safeText(item.gps||'-')}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+    </tr>
+  `).join(''):'<tr><td colspan="5">No hay capturas de lectura.</td></tr>';
+}
+function capturarGpsLectura(){
+  if(!navigator.geolocation){
+    alert('Este navegador no permite obtener GPS.');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    capturaGps.value=`${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+  },()=>alert('No se pudo obtener la ubicacion GPS.'));
+}
+function sincronizarLecturasPendientes(){
+  if(!navigator.onLine){
+    alert('Sin conexion. Las lecturas siguen pendientes.');
+    return;
+  }
+  let total=0;
+  capturasLectura.forEach(item=>{
+    if(item.estado==='Pendiente'){
+      item.estado='Sincronizada';
+      item.sincronizada=new Date().toISOString();
+      total++;
+    }
+  });
+  guardarLecturaComercial();
+  renderLecturaComercial();
+  alert(total?`${total} lectura(s) sincronizada(s).`:'No hay lecturas pendientes.');
 }
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
@@ -871,11 +1050,70 @@ formLecturaMedidor.addEventListener('submit',event=>{
   lecturaFecha.value=new Date().toISOString().slice(0,10);
   renderMedidoresComerciales();
 });
+formRutaLectura.addEventListener('submit',event=>{
+  event.preventDefault();
+  rutasLectura.unshift({
+    id:idCatastro('RUT'),
+    lecturista:rutaLecturista.value.trim(),
+    zona:rutaZona.value.trim(),
+    sector:rutaSector.value.trim(),
+    ruta:rutaCodigo.value.trim(),
+    fecha:rutaCalendario.value,
+    creado:new Date().toISOString()
+  });
+  guardarLecturaComercial();
+  formRutaLectura.reset();
+  rutaCalendario.value=new Date().toISOString().slice(0,10);
+  renderLecturaComercial();
+});
+formCapturaLectura.addEventListener('submit',event=>{
+  event.preventDefault();
+  const previa=ultimaLecturaMedidor(capturaMedidor.value);
+  const lecturaActual=Number(capturaActual.value||0);
+  const consumo=previa?Math.max(0,lecturaActual-Number(previa.lectura||0)):0;
+  const anomalia=detectarAnomaliaLectura(capturaMedidor.value,lecturaActual,consumo);
+  const foto=capturaFoto.files[0]?.name||'';
+  const lectura={
+    id:idCatastro('CAP'),
+    rutaId:capturaRuta.value,
+    medidorId:capturaMedidor.value,
+    fecha:capturaFecha.value,
+    lectura:lecturaActual,
+    consumo,
+    foto,
+    gps:capturaGps.value.trim(),
+    observacion:capturaObservacion.value.trim(),
+    anomalia,
+    estado:capturaModo.value,
+    creado:new Date().toISOString()
+  };
+  capturasLectura.unshift(lectura);
+  medidoresLecturas.unshift({
+    id:idCatastro('LEC'),
+    medidorId:lectura.medidorId,
+    fecha:lectura.fecha,
+    lectura:lectura.lectura,
+    consumo:lectura.consumo,
+    origen:'Panel de Lectura',
+    capturaId:lectura.id,
+    creado:lectura.creado
+  });
+  guardarLecturaComercial();
+  guardarMedidoresComerciales();
+  formCapturaLectura.reset();
+  capturaFecha.value=new Date().toISOString().slice(0,10);
+  renderLecturaComercial();
+});
+window.addEventListener('online',()=>{
+  if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
+});
 periodo.value=new Date().toISOString().slice(0,7);
 historialFecha.value=new Date().toISOString().slice(0,10);
 instalacionFecha.value=new Date().toISOString().slice(0,10);
 reemplazoFecha.value=new Date().toISOString().slice(0,10);
 lecturaFecha.value=new Date().toISOString().slice(0,10);
+rutaCalendario.value=new Date().toISOString().slice(0,10);
+capturaFecha.value=new Date().toISOString().slice(0,10);
 renderComercial();
 </script>
 </body>
