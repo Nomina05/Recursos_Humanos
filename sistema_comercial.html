@@ -98,6 +98,7 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
     <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
     <button type="button" data-panel="iaComercial" onclick="mostrarPanelComercial('iaComercial')">IA</button>
+    <button type="button" data-panel="gestorCobrosComercial" onclick="mostrarPanelComercial('gestorCobrosComercial')">Gestor de Cobros</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -1467,6 +1468,163 @@ body.embedded .wrap{padding:0}
       <p class="muted">Esta fase usa puntuaciones explicables con señales del sistema. Puede evolucionar luego a modelos entrenados con historial real.</p>
     </article>
   </section>
+
+  <section id="gestorCobrosComercial" style="display:none">
+    <article class="panel">
+      <h2>Panel de Gestor de Cobros</h2>
+      <p class="muted">Gestiona cartera morosa, contactos, convenios, notificaciones, suspensiones, reconexiones, geolocalizacion, reportes y auditoria.</p>
+      <div class="modules">
+        <span>Dashboard de Cobros</span>
+        <span>Cartera de Clientes Morosos</span>
+        <span>Gestion de Cobranza</span>
+        <span>Convenios de Pago</span>
+        <span>Notificaciones</span>
+        <span>Ordenes de Suspension</span>
+        <span>Reconexiones</span>
+        <span>Geolocalizacion de Morosos</span>
+        <span>Reportes de Cobranza</span>
+        <span>Auditoria</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Total deuda vencida</small><strong id="deudaGestorKpi">RD$ 0</strong><span id="clientesMorososGestorKpi">0 clientes morosos</span></article>
+        <article class="panel kpi"><small>Recuperacion mensual</small><strong id="recuperacionGestorKpi">RD$ 0</strong><span>Cobros del mes</span></article>
+        <article class="panel kpi"><small>Convenios activos</small><strong id="conveniosGestorKpi">0</strong><span>Acuerdos en seguimiento</span></article>
+        <article class="panel kpi"><small>Clientes criticos</small><strong id="criticosGestorKpi">0</strong><span>Riesgo alto o judicial</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Filtros de Cartera</h3>
+        <form id="formFiltroGestor">
+          <input id="gestorBuscar" placeholder="Buscar cliente, contrato o factura">
+          <input id="gestorSector" placeholder="Sector">
+          <input id="gestorRuta" placeholder="Ruta">
+          <select id="gestorEstadoFiltro">
+            <option value="">Todos los estados</option>
+            <option>Pendiente</option>
+            <option>En gestion</option>
+            <option>Convenio activo</option>
+            <option>Suspendido</option>
+            <option>Judicial</option>
+            <option>Incobrable</option>
+          </select>
+          <input id="gestorMontoMinimo" type="number" min="0" step="0.01" placeholder="Monto minimo">
+          <button type="submit">Aplicar filtros</button>
+          <button type="button" class="secondary" onclick="limpiarFiltrosGestor()">Limpiar</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Gestion de Cobranza</h3>
+        <form id="formGestionCobro">
+          <select id="gestionFactura" required><option value="">Factura morosa</option></select>
+          <select id="gestionAccion" required>
+            <option>Llamada realizada</option>
+            <option>Visita realizada</option>
+            <option>Seguimiento pendiente</option>
+            <option>Promesa de pago</option>
+            <option>Escalado a supervisor</option>
+          </select>
+          <input id="gestionGestor" placeholder="Gestor responsable" required>
+          <input id="gestionPromesa" type="date">
+          <textarea id="gestionObservacion" placeholder="Observaciones e historial de contacto" required></textarea>
+          <button type="submit">Registrar gestion</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Convenio de Pago</h3>
+        <form id="formConvenioGestor">
+          <select id="convenioGestorFactura" required><option value="">Factura morosa</option></select>
+          <input id="convenioGestorInicial" type="number" min="0" step="0.01" placeholder="Inicial">
+          <input id="convenioGestorCuotas" type="number" min="1" step="1" placeholder="Cantidad de cuotas" required>
+          <input id="convenioGestorInteres" type="number" min="0" step="0.01" placeholder="Interes">
+          <input id="convenioGestorLimite" type="date" required>
+          <button type="submit">Crear convenio</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Notificaciones</h3>
+        <form id="formNotificacionGestor">
+          <select id="notificacionGestorFactura" required><option value="">Factura morosa</option></select>
+          <select id="notificacionGestorCanal" required>
+            <option>SMS</option>
+            <option>Email</option>
+            <option>WhatsApp</option>
+            <option>Carta impresa</option>
+          </select>
+          <select id="notificacionGestorTipo" required>
+            <option>Aviso de vencimiento</option>
+            <option>Aviso de suspension</option>
+            <option>Recordatorio de cuota</option>
+          </select>
+          <textarea id="notificacionGestorMensaje" placeholder="Mensaje o nota de envio"></textarea>
+          <button type="submit">Registrar notificacion</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Orden de Suspension</h3>
+        <form id="formSuspensionGestor">
+          <select id="suspensionGestorFactura" required><option value="">Factura morosa</option></select>
+          <input id="suspensionGestorDetalle" placeholder="Detalle para aprobacion">
+          <button type="submit">Solicitar suspension</button>
+        </form>
+        <p class="muted">El gestor solicita la suspension; la ejecucion queda en el panel operativo de suspensiones.</p>
+      </article>
+
+      <article class="panel">
+        <h3>Reconexiones</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Orden</th><th>Factura</th><th>Pago</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaReconexionesGestor"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Cartera de Clientes Morosos</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Contrato</th><th>Sector/Ruta</th><th>Factura</th><th>Saldo</th><th>Estado</th><th>Accion</th></tr></thead>
+            <tbody id="tablaCarteraGestor"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Geolocalizacion de Morosos</h3>
+        <div class="gis-map" id="mapaMorososGestor"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Reportes de Cobranza</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Indicador</th><th>Resultado</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaReportesGestor"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Auditoria</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Gestor</th><th>Accion</th><th>Factura</th><th>Detalle</th></tr></thead>
+            <tbody id="tablaAuditoriaGestor"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -1502,6 +1660,10 @@ let averiasGisComerciales=JSON.parse(localStorage.getItem('averiasGisComerciales
 let coberturasGisComerciales=JSON.parse(localStorage.getItem('coberturasGisComerciales')||'[]');
 let presupuestosFinancierosComerciales=JSON.parse(localStorage.getItem('presupuestosFinancierosComerciales')||'[]');
 let reportesFinancierosComerciales=JSON.parse(localStorage.getItem('reportesFinancierosComerciales')||'[]');
+let gestionesCobrosComerciales=JSON.parse(localStorage.getItem('gestionesCobrosComerciales')||'[]');
+let notificacionesCobrosComerciales=JSON.parse(localStorage.getItem('notificacionesCobrosComerciales')||'[]');
+let estadosCarteraCobrosComerciales=JSON.parse(localStorage.getItem('estadosCarteraCobrosComerciales')||'{}');
+let auditoriaCobrosComerciales=JSON.parse(localStorage.getItem('auditoriaCobrosComerciales')||'[]');
 let graficoComparativo=null;
 let graficoHistoricoBi=null;
 let reporteBiCache={titulo:'Reporte BI',headers:[],rows:[],periodo:''};
@@ -1533,6 +1695,7 @@ function mostrarPanelComercial(id){
   financieroComercial.style.display=id==='financieroComercial'?'block':'none';
   reportesBiComercial.style.display=id==='reportesBiComercial'?'block':'none';
   iaComercial.style.display=id==='iaComercial'?'block':'none';
+  gestorCobrosComercial.style.display=id==='gestorCobrosComercial'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
@@ -1546,6 +1709,7 @@ function mostrarPanelComercial(id){
   if(id==='financieroComercial')renderFinancieroComercial();
   if(id==='reportesBiComercial')renderReportesBiComercial();
   if(id==='iaComercial')renderIaComercial();
+  if(id==='gestorCobrosComercial')renderGestorCobrosComercial();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -1601,6 +1765,12 @@ function guardarGisComercial(){
 function guardarFinancieroComercial(){
   localStorage.setItem('presupuestosFinancierosComerciales',JSON.stringify(presupuestosFinancierosComerciales));
   localStorage.setItem('reportesFinancierosComerciales',JSON.stringify(reportesFinancierosComerciales));
+}
+function guardarGestorCobrosComercial(){
+  localStorage.setItem('gestionesCobrosComerciales',JSON.stringify(gestionesCobrosComerciales));
+  localStorage.setItem('notificacionesCobrosComerciales',JSON.stringify(notificacionesCobrosComerciales));
+  localStorage.setItem('estadosCarteraCobrosComerciales',JSON.stringify(estadosCarteraCobrosComerciales));
+  localStorage.setItem('auditoriaCobrosComerciales',JSON.stringify(auditoriaCobrosComerciales));
 }
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
@@ -2729,6 +2899,151 @@ function renderIaComercial(){
     <tr><td>${safeText(item.contrato.numero)}</td><td>${safeText(clienteContratoIa(item.contrato.id))}</td><td>${moneda(item.saldo)}</td><td>${item.facturas.toLocaleString('es-DO')}</td><td>${safeText(item.senales.join(' | '))}</td><td><span class="badge">${safeText(item.riesgo)}</span></td></tr>
   `).join(''):'<tr><td colspan="6">No hay contratos con riesgo de morosidad.</td></tr>';
 }
+function facturaGestorDatos(factura){
+  const contrato=contratoCatastroPorId(factura.contratoId)||{};
+  const inmueble=inmuebleContrato(factura.contratoId)||{};
+  const cliente=clienteCatastroPorId(inmueble.clienteId)||{};
+  const saldo=saldoFactura(factura);
+  const estado=estadosCarteraCobrosComerciales[factura.id]||estadoCarteraSugerido(factura);
+  const ruta=inmueble.ruta||'Sin ruta';
+  const sector=inmueble.sector||'Sin sector';
+  const gestiones=gestionesCobrosComerciales.filter(item=>item.facturaId===factura.id);
+  return {factura,contrato,inmueble,cliente,saldo,estado,ruta,sector,gestiones};
+}
+function estadoCarteraSugerido(factura){
+  if(conveniosComerciales.some(item=>item.facturaId===factura.id&&item.estado==='Activo'))return 'Convenio activo';
+  if(ordenesCorteComerciales.some(item=>item.contratoId===factura.contratoId&&item.estado==='Corte ejecutado'))return 'Suspendido';
+  if(gestionesCobrosComerciales.some(item=>item.facturaId===factura.id))return 'En gestion';
+  return 'Pendiente';
+}
+function carteraMorosaGestor(){
+  return facturasComerciales.filter(item=>saldoFactura(item)>0).map(facturaGestorDatos);
+}
+function carteraFiltradaGestor(){
+  const q=String(gestorBuscar?.value||'').toLowerCase().trim();
+  const sector=String(gestorSector?.value||'').toLowerCase().trim();
+  const ruta=String(gestorRuta?.value||'').toLowerCase().trim();
+  const estado=gestorEstadoFiltro?.value||'';
+  const monto=Number(gestorMontoMinimo?.value||0);
+  return carteraMorosaGestor().filter(item=>{
+    const texto=`${item.cliente.nombre||''} ${item.contrato.numero||''} ${item.factura.numero||''}`.toLowerCase();
+    return (!q||texto.includes(q))&&(!sector||String(item.sector).toLowerCase().includes(sector))&&(!ruta||String(item.ruta).toLowerCase().includes(ruta))&&(!estado||item.estado===estado)&&(!monto||item.saldo>=monto);
+  });
+}
+function registrarAuditoriaCobros(gestor, accion, facturaId, detalle){
+  auditoriaCobrosComerciales.unshift({
+    id:idCatastro('AUDCOB'),
+    gestor:gestor||'Sistema',
+    accion,
+    facturaId,
+    detalle,
+    fecha:new Date().toISOString()
+  });
+}
+function cambiarEstadoCartera(facturaId, estado){
+  estadosCarteraCobrosComerciales[facturaId]=estado;
+  registrarAuditoriaCobros('Sistema',`Estado cartera: ${estado}`,facturaId,'Cambio manual desde cartera morosa');
+  guardarGestorCobrosComercial();
+  renderGestorCobrosComercial();
+}
+function opcionesFacturasGestor(etiqueta){
+  return `<option value="">${etiqueta}</option>`+carteraMorosaGestor().map(item=>`<option value="${safeText(item.factura.id)}">${safeText(item.factura.numero)} - ${safeText(item.cliente.nombre||'Cliente')} - ${moneda(item.saldo)}</option>`).join('');
+}
+function reporteSectoresGestor(){
+  const mapa=new Map();
+  carteraMorosaGestor().forEach(item=>{
+    const key=normalizarSectorGis(item.sector);
+    if(!mapa.has(key))mapa.set(key,{sector:item.sector,total:0,clientes:new Set(),facturas:0});
+    const row=mapa.get(key);
+    row.total+=item.saldo;
+    row.clientes.add(item.cliente.id||item.cliente.nombre||item.contrato.numero);
+    row.facturas++;
+  });
+  return [...mapa.values()].sort((a,b)=>b.total-a.total);
+}
+function recuperacionMensualGestor(){
+  const periodo=new Date().toISOString().slice(0,7);
+  return cobrosComerciales.filter(item=>String(item.fecha||'').slice(0,7)===periodo).reduce((sum,item)=>sum+Number(item.monto||0),0);
+}
+function efectividadGestores(){
+  const mapa=new Map();
+  gestionesCobrosComerciales.forEach(item=>{
+    const gestor=item.gestor||'Sin gestor';
+    if(!mapa.has(gestor))mapa.set(gestor,{gestor,gestiones:0,promesas:0});
+    const row=mapa.get(gestor);
+    row.gestiones++;
+    if(item.promesa)row.promesas++;
+  });
+  return [...mapa.values()].sort((a,b)=>b.gestiones-a.gestiones);
+}
+function limpiarFiltrosGestor(){
+  formFiltroGestor.reset();
+  renderGestorCobrosComercial();
+}
+function generarCronogramaConvenio(total, inicial, cuotas, interes, limite){
+  const saldo=Math.max(0,Number(total||0)-Number(inicial||0))+Number(interes||0);
+  const cuota=cuotas?saldo/cuotas:0;
+  const inicio=limite?new Date(limite):new Date();
+  return Array.from({length:Number(cuotas||0)},(_,idx)=>{
+    const fecha=new Date(inicio);
+    fecha.setMonth(fecha.getMonth()+idx);
+    return {cuota:idx+1,fecha:fecha.toISOString().slice(0,10),monto:cuota,estado:'Pendiente'};
+  });
+}
+function renderGestorCobrosComercial(){
+  const cartera=carteraMorosaGestor();
+  const filtrada=carteraFiltradaGestor();
+  const sectores=reporteSectoresGestor();
+  const clientes=new Set(cartera.map(item=>item.cliente.id||item.cliente.nombre||item.contrato.numero));
+  const criticos=cartera.filter(item=>item.saldo>=10000||['Judicial','Incobrable','Suspendido'].includes(item.estado));
+  deudaGestorKpi.textContent=moneda(cartera.reduce((sum,item)=>sum+item.saldo,0));
+  clientesMorososGestorKpi.textContent=`${clientes.size.toLocaleString('es-DO')} clientes morosos`;
+  recuperacionGestorKpi.textContent=moneda(recuperacionMensualGestor());
+  conveniosGestorKpi.textContent=conveniosComerciales.filter(item=>item.estado==='Activo').length;
+  criticosGestorKpi.textContent=criticos.length;
+  gestionFactura.innerHTML=opcionesFacturasGestor('Factura morosa');
+  convenioGestorFactura.innerHTML=opcionesFacturasGestor('Factura morosa');
+  notificacionGestorFactura.innerHTML=opcionesFacturasGestor('Factura morosa');
+  suspensionGestorFactura.innerHTML=opcionesFacturasGestor('Factura morosa');
+  tablaCarteraGestor.innerHTML=filtrada.length?filtrada.slice(0,180).map(item=>`
+    <tr>
+      <td>${safeText(item.cliente.nombre||'Cliente no disponible')}</td>
+      <td>${safeText(item.contrato.numero||'-')}</td>
+      <td>${safeText(item.sector)}<br><small>${safeText(item.ruta)}</small></td>
+      <td>${safeText(item.factura.numero)}<br><small>${safeText(item.factura.periodo)}</small></td>
+      <td>${moneda(item.saldo)}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+      <td>
+        <button type="button" onclick="cambiarEstadoCartera('${safeText(item.factura.id)}','En gestion')">Gestion</button>
+        <button type="button" onclick="cambiarEstadoCartera('${safeText(item.factura.id)}','Judicial')">Judicial</button>
+      </td>
+    </tr>
+  `).join(''):'<tr><td colspan="7">No hay clientes morosos con esos filtros.</td></tr>';
+  mapaMorososGestor.innerHTML=sectores.length?sectores.slice(0,18).map(item=>`
+    <article class="gis-zone">
+      <strong>${safeText(item.sector)}</strong>
+      <div class="gis-layer">
+        <span>${moneda(item.total)}</span>
+        <span>${item.clientes.size.toLocaleString('es-DO')} clientes</span>
+        <span>${item.facturas.toLocaleString('es-DO')} facturas</span>
+      </div>
+    </article>
+  `).join(''):'<div class="muted">La geolocalizacion se activa con deuda por sector.</div>';
+  tablaReconexionesGestor.innerHTML=reconexionesComerciales.length?reconexionesComerciales.slice(0,80).map(item=>`
+    <tr><td>${safeText(item.numero)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${pagoValidadoReconexion(item)?'Validable':'Pendiente'}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${item.estado==='Pago validado'?`<button type="button" onclick="restablecerServicio('${safeText(item.id)}')">Restablecer</button>`:item.estado!=='Restablecido'?`<button type="button" onclick="validarPagoReconexion('${safeText(item.id)}')">Validar</button>`:'-'}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay reconexiones pendientes.</td></tr>';
+  const efectividad=efectividadGestores();
+  tablaReportesGestor.innerHTML=[
+    ['Recuperacion mensual',moneda(recuperacionMensualGestor()),'Cobros registrados en el mes actual'],
+    ['Sectores con mas deuda',sectores[0]?`${safeText(sectores[0].sector)} - ${moneda(sectores[0].total)}`:'-',`${sectores.length} sector(es) con deuda`],
+    ['Convenios incumplidos',conveniosComerciales.filter(item=>item.estado==='Incumplido').length,'Acuerdos marcados como incumplidos'],
+    ['Clientes reincidentes',cartera.filter(item=>item.gestiones.length>=2).length,'Clientes/facturas con varias gestiones'],
+    ['Efectividad por gestor',efectividad[0]?`${safeText(efectividad[0].gestor)} - ${efectividad[0].gestiones} gestion(es)`:'-','Basado en gestiones registradas']
+  ].map(row=>`<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join('');
+  tablaAuditoriaGestor.innerHTML=auditoriaCobrosComerciales.length?auditoriaCobrosComerciales.slice(0,160).map(item=>`
+    <tr><td>${safeText(new Date(item.fecha).toLocaleString('es-DO'))}</td><td>${safeText(item.gestor)}</td><td>${safeText(item.accion)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${safeText(item.detalle)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay auditoria de cobranza.</td></tr>';
+}
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
   const facturacion=Number(actual.facturacion||0);
@@ -3399,6 +3714,91 @@ formReporteFinanciero.addEventListener('submit',event=>{
 formReporteBi.addEventListener('submit',event=>{
   event.preventDefault();
   renderReportesBiComercial();
+});
+formFiltroGestor.addEventListener('submit',event=>{
+  event.preventDefault();
+  renderGestorCobrosComercial();
+});
+formGestionCobro.addEventListener('submit',event=>{
+  event.preventDefault();
+  gestionesCobrosComerciales.unshift({
+    id:idCatastro('GES'),
+    facturaId:gestionFactura.value,
+    accion:gestionAccion.value,
+    gestor:gestionGestor.value.trim(),
+    promesa:gestionPromesa.value,
+    observacion:gestionObservacion.value.trim(),
+    fecha:new Date().toISOString()
+  });
+  estadosCarteraCobrosComerciales[gestionFactura.value]='En gestion';
+  registrarAuditoriaCobros(gestionGestor.value.trim(),gestionAccion.value,gestionFactura.value,gestionObservacion.value.trim());
+  guardarGestorCobrosComercial();
+  formGestionCobro.reset();
+  renderGestorCobrosComercial();
+});
+formConvenioGestor.addEventListener('submit',event=>{
+  event.preventDefault();
+  const factura=facturaPorId(convenioGestorFactura.value);
+  if(!factura)return;
+  const inicial=Number(convenioGestorInicial.value||0);
+  const cuotas=Number(convenioGestorCuotas.value||0);
+  const interes=Number(convenioGestorInteres.value||0);
+  const total=saldoFactura(factura)+interes;
+  conveniosComerciales.unshift({
+    id:idCatastro('CVN'),
+    facturaId:factura.id,
+    cuotas,
+    cuotaMonto:cuotas?Math.max(0,total-inicial)/cuotas:0,
+    penalidad:interes,
+    inicial,
+    cronograma:generarCronogramaConvenio(saldoFactura(factura),inicial,cuotas,interes,convenioGestorLimite.value),
+    primerVencimiento:convenioGestorLimite.value,
+    estado:'Activo',
+    creado:new Date().toISOString()
+  });
+  estadosCarteraCobrosComerciales[factura.id]='Convenio activo';
+  registrarAuditoriaCobros('Gestor de Cobros','Convenio aprobado',factura.id,`${cuotas} cuota(s), inicial ${moneda(inicial)}, interes ${moneda(interes)}`);
+  guardarCobrosComercial();
+  guardarGestorCobrosComercial();
+  formConvenioGestor.reset();
+  renderGestorCobrosComercial();
+});
+formNotificacionGestor.addEventListener('submit',event=>{
+  event.preventDefault();
+  notificacionesCobrosComerciales.unshift({
+    id:idCatastro('NOTCOB'),
+    facturaId:notificacionGestorFactura.value,
+    canal:notificacionGestorCanal.value,
+    tipo:notificacionGestorTipo.value,
+    mensaje:notificacionGestorMensaje.value.trim(),
+    fecha:new Date().toISOString()
+  });
+  registrarAuditoriaCobros('Gestor de Cobros',`${notificacionGestorCanal.value}: ${notificacionGestorTipo.value}`,notificacionGestorFactura.value,notificacionGestorMensaje.value.trim()||'Notificacion registrada');
+  guardarGestorCobrosComercial();
+  formNotificacionGestor.reset();
+  renderGestorCobrosComercial();
+});
+formSuspensionGestor.addEventListener('submit',event=>{
+  event.preventDefault();
+  const factura=facturaPorId(suspensionGestorFactura.value);
+  if(!factura)return;
+  ordenesCorteComerciales.unshift({
+    id:idCatastro('COR'),
+    numero:`CT-${new Date().getFullYear()}-${String(ordenesCorteComerciales.length+1).padStart(5,'0')}`,
+    contratoId:factura.contratoId,
+    causa:'Mora',
+    referencia:factura.numero,
+    fecha:new Date().toISOString().slice(0,10),
+    detalle:suspensionGestorDetalle.value.trim()||'Solicitud generada por Gestor de Cobros',
+    estado:'Pendiente aprobacion',
+    creado:new Date().toISOString()
+  });
+  estadosCarteraCobrosComerciales[factura.id]='Suspendido';
+  registrarAuditoriaCobros('Gestor de Cobros','Solicitud de suspension',factura.id,suspensionGestorDetalle.value.trim()||'Morosidad sin pago');
+  guardarSuspensionesComercial();
+  guardarGestorCobrosComercial();
+  formSuspensionGestor.reset();
+  renderGestorCobrosComercial();
 });
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
