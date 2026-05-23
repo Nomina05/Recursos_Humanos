@@ -40,8 +40,11 @@ header small{display:block;color:#dbeafe;margin-top:4px}
 .kpi span{color:var(--muted);font-size:13px}
 .modules{display:flex;gap:6px;flex-wrap:wrap}
 .modules span,.badge{background:#e5eefb;border-radius:999px;color:#163d70;display:inline-flex;font-size:12px;font-weight:700;padding:5px 8px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.tabs button{background:#e8eef6;color:var(--ink);margin:0}
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px}
+.tab-group{border:1px solid var(--line);border-radius:10px;background:#f7f9fc;padding:10px}
+.tab-group-title{display:block;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:0 0 8px}
+.tab-actions{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{background:#e8eef6;color:var(--ink);margin:0;min-height:34px;padding:7px 9px;font-size:12px}
 .tabs button.active{background:var(--blue);color:#fff}
 h2,h3{margin:0 0 10px}
 form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
@@ -86,20 +89,40 @@ body.embedded .wrap{padding:0}
 </header>
 <main class="wrap">
   <nav class="tabs" aria-label="Paneles comerciales">
-    <button type="button" data-panel="dashboardComercial" class="active" onclick="mostrarPanelComercial('dashboardComercial')">Dashboard Ejecutivo</button>
-    <button type="button" data-panel="catastroComercial" onclick="mostrarPanelComercial('catastroComercial')">Catastro Comercial</button>
-    <button type="button" data-panel="medidoresComerciales" onclick="mostrarPanelComercial('medidoresComerciales')">Medidores</button>
-    <button type="button" data-panel="lecturaComercial" onclick="mostrarPanelComercial('lecturaComercial')">Lectura</button>
-    <button type="button" data-panel="facturacionComercial" onclick="mostrarPanelComercial('facturacionComercial')">Facturacion</button>
-    <button type="button" data-panel="cobrosComercial" onclick="mostrarPanelComercial('cobrosComercial')">Cobros y Caja</button>
-    <button type="button" data-panel="suspensionesComercial" onclick="mostrarPanelComercial('suspensionesComercial')">Suspensiones</button>
-    <button type="button" data-panel="atencionComercial" onclick="mostrarPanelComercial('atencionComercial')">Atencion</button>
-    <button type="button" data-panel="tecnicoComercial" onclick="mostrarPanelComercial('tecnicoComercial')">Tecnico Operativo</button>
-    <button type="button" data-panel="gisComercial" onclick="mostrarPanelComercial('gisComercial')">GIS</button>
-    <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
-    <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
-    <button type="button" data-panel="iaComercial" onclick="mostrarPanelComercial('iaComercial')">IA</button>
-    <button type="button" data-panel="gestorCobrosComercial" onclick="mostrarPanelComercial('gestorCobrosComercial')">Gestor de Cobros</button>
+    <div class="tab-group">
+      <span class="tab-group-title">Direccion y analitica</span>
+      <div class="tab-actions">
+        <button type="button" data-panel="dashboardComercial" class="active" onclick="mostrarPanelComercial('dashboardComercial')">Dashboard Ejecutivo</button>
+        <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
+        <button type="button" data-panel="iaComercial" onclick="mostrarPanelComercial('iaComercial')">IA</button>
+      </div>
+    </div>
+    <div class="tab-group">
+      <span class="tab-group-title">Catastro y medicion</span>
+      <div class="tab-actions">
+        <button type="button" data-panel="catastroComercial" onclick="mostrarPanelComercial('catastroComercial')">Catastro</button>
+        <button type="button" data-panel="medidoresComerciales" onclick="mostrarPanelComercial('medidoresComerciales')">Medidores</button>
+        <button type="button" data-panel="lecturaComercial" onclick="mostrarPanelComercial('lecturaComercial')">Lectura</button>
+        <button type="button" data-panel="gisComercial" onclick="mostrarPanelComercial('gisComercial')">GIS</button>
+      </div>
+    </div>
+    <div class="tab-group">
+      <span class="tab-group-title">Facturacion y cobros</span>
+      <div class="tab-actions">
+        <button type="button" data-panel="facturacionComercial" onclick="mostrarPanelComercial('facturacionComercial')">Facturacion</button>
+        <button type="button" data-panel="cobrosComercial" onclick="mostrarPanelComercial('cobrosComercial')">Cobros y Caja</button>
+        <button type="button" data-panel="gestorCobrosComercial" onclick="mostrarPanelComercial('gestorCobrosComercial')">Gestor de Cobros</button>
+        <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
+      </div>
+    </div>
+    <div class="tab-group">
+      <span class="tab-group-title">Operacion y atencion</span>
+      <div class="tab-actions">
+        <button type="button" data-panel="suspensionesComercial" onclick="mostrarPanelComercial('suspensionesComercial')">Suspensiones</button>
+        <button type="button" data-panel="atencionComercial" onclick="mostrarPanelComercial('atencionComercial')">Atencion</button>
+        <button type="button" data-panel="tecnicoComercial" onclick="mostrarPanelComercial('tecnicoComercial')">Tecnico Operativo</button>
+      </div>
+    </div>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -1903,6 +1926,10 @@ function aplicarPermisosComerciales(){
   permisosComercialesActivos=usuarioComercialSesion();
   document.querySelectorAll('.tabs button[data-panel]').forEach(btn=>{
     btn.style.display=usuarioPuedeVerPanelComercial(btn.dataset.panel)?'':'none';
+  });
+  document.querySelectorAll('.tab-group').forEach(grupo=>{
+    const visible=Array.from(grupo.querySelectorAll('button[data-panel]')).some(btn=>btn.style.display!=='none');
+    grupo.style.display=visible?'':'none';
   });
   const primero=primerPanelComercialPermitido();
   let aviso=document.getElementById('sinPermisosComerciales');

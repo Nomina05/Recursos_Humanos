@@ -174,6 +174,12 @@
   .employee-tabs{gap:6px;background:#e8eef5;border:1px solid #d5e0eb;border-radius:10px;padding:6px;margin:14px 0 18px}
   .employee-tabs button{box-shadow:none;border-color:transparent;background:transparent;color:#24415c;min-height:36px}
   .employee-tabs button.active{background:#fff;color:#17324d;border-color:#cdd9e6;box-shadow:var(--shadow-sm)}
+  .module-nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;background:transparent;border:0;padding:0;margin:14px 0 18px}
+  .module-nav-group{border:1px solid #d5e0eb;border-radius:10px;background:#f6f9fc;padding:10px}
+  .module-nav-title{display:block;color:#52677f;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px}
+  .module-nav-actions{display:flex;gap:6px;flex-wrap:wrap}
+  .module-nav-actions .btn{min-height:34px;padding:7px 9px;font-size:12px;background:#e8eef5;color:#24415c;box-shadow:none;border:1px solid transparent}
+  .module-nav-actions .btn.active{background:#fff;color:#17324d;border-color:#cdd9e6;box-shadow:var(--shadow-sm)}
   .architecture-card,.profile-item,.module-permission-card,.phase-card,.workflow-step{background:#fff;border-color:#dce6ef;border-radius:9px;box-shadow:var(--shadow-sm)}
   .architecture-card h3,.profile-item strong,.module-permission-card h4{color:#172b47}
   .role-chip{border-color:#cdd9e6;background:#f3f7fb;color:#17324d;border-radius:8px}
@@ -236,16 +242,16 @@
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="compras">
-        <summary>Compras y Almacen</summary>
+        <summary>Adm. Financiero</summary>
         <div class="sidebar-group-links">
-          <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Compras y Contrataciones</a>
-          <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
+          <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Compras</a>
+          <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Almacen</a>
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="comercial">
         <summary>Comercial</summary>
         <div class="sidebar-group-links">
-          <a id="menu-comercial" onclick="showSection('comercial')"><i class="fa-solid fa-chart-pie"></i>Sistema Comercial</a>
+          <a id="menu-comercial" onclick="showSection('comercial')"><i class="fa-solid fa-chart-pie"></i>Panel Comercial</a>
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="ecosistema">
@@ -950,21 +956,41 @@
         <div class="card presupuesto-total"><h3>Solicitudes atrasadas</h3><p id="comprasSolicitudesAtrasadasKpi">0</p></div>
       </div>
 
-      <div class="employee-tabs" id="comprasTabs">
-        <button class="btn active" type="button" onclick="activarCompraModulo('comprasAdmin')">Administrativo</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasPlanificacion')">Planificacion</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasSolicitudes')">Solicitudes</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasPresupuesto')">Presupuesto</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasProcesos')">Procesos</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasProveedores')">Proveedores</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasContratos')">Contratos</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasInventario')">Inventario</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasRecepcion')">Recepcion</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasJuridico')">Juridico</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasAuditoria')">Auditoria</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasReportes')">Reportes</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasComunicaciones')">Notificaciones</button>
-        <button class="btn" type="button" onclick="activarCompraModulo('comprasIntegraciones')">Integraciones</button>
+      <div class="module-nav" id="comprasTabs">
+        <div class="module-nav-group">
+          <span class="module-nav-title">Gobierno y planificacion</span>
+          <div class="module-nav-actions">
+            <button class="btn active" type="button" onclick="activarCompraModulo('comprasAdmin')">Administrativo</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasPlanificacion')">Planificacion</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasPresupuesto')">Presupuesto</button>
+          </div>
+        </div>
+        <div class="module-nav-group">
+          <span class="module-nav-title">Operacion de compras</span>
+          <div class="module-nav-actions">
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasSolicitudes')">Solicitudes</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasProcesos')">Procesos</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasProveedores')">Proveedores</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasContratos')">Contratos</button>
+          </div>
+        </div>
+        <div class="module-nav-group">
+          <span class="module-nav-title">Logistica y recepcion</span>
+          <div class="module-nav-actions">
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasInventario')">Inventario</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasRecepcion')">Recepcion</button>
+          </div>
+        </div>
+        <div class="module-nav-group">
+          <span class="module-nav-title">Control y trazabilidad</span>
+          <div class="module-nav-actions">
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasJuridico')">Juridico</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasAuditoria')">Auditoria</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasReportes')">Reportes</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasComunicaciones')">Notificaciones</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasIntegraciones')">Integraciones</button>
+          </div>
+        </div>
       </div>
 
       <div id="comprasAdmin" class="employee-module active">
@@ -3809,6 +3835,10 @@ function aplicarPermisosComprasPanel(){
     const match=btn.getAttribute('onclick')?.match(/'([^']+)'/);
     const panel=match?.[1]||'';
     btn.classList.toggle('hidden',!usuarioPuedeVerPanelCompra(panel));
+  });
+  document.querySelectorAll('#comprasTabs .module-nav-group').forEach(grupo=>{
+    const visible=Array.from(grupo.querySelectorAll('button')).some(btn=>!btn.classList.contains('hidden'));
+    grupo.classList.toggle('hidden',!visible);
   });
   const activo=document.querySelector('#compras .employee-module.active')?.id;
   const primero=primerPanelCompraPermitido();
