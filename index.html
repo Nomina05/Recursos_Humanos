@@ -70,6 +70,8 @@
   .module-check input{margin:0;padding:0}
   .module-check span{line-height:1.25}
   .module-check.disabled{color:#94a3b8}
+  .mobile-permissions{grid-column:1/-1;border:1px solid #dbe4f0;border-radius:8px;padding:12px;background:#f8fafc}
+  .mobile-permission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px 12px}
   .module-frame{width:100%;height:min(860px,calc(100vh - 150px));min-height:680px;border:1px solid #dbe4f0;border-radius:8px;background:#fff}
   .architecture-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
   .architecture-card{border:1px solid #dbe4f0;border-radius:8px;background:#f8fafc;padding:12px}
@@ -650,6 +652,16 @@
           </div>
           <div id="usuarioModulos"></div>
         </div>
+        <div class="mobile-permissions">
+          <div class="module-permissions-head">
+            <h3>Permisos para aplicacion movil</h3>
+            <div class="quick-actions">
+              <button type="button" class="btn btn-secondary" onclick="aplicarPlantillaMovil()"><i class="fa-solid fa-mobile-screen"></i> Plantilla movil</button>
+              <button type="button" class="btn" onclick="marcarPermisosMoviles(false)">Limpiar movil</button>
+            </div>
+          </div>
+          <div id="usuarioPermisosMoviles" class="mobile-permission-grid"></div>
+        </div>
         <div style="grid-column:1/-1;display:flex;gap:8px">
           <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Usuario</button>
           <button type="button" class="btn" onclick="limpiarUsuarioFormulario()">Nuevo</button>
@@ -669,7 +681,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Nombre</th><th>Empleado RRHH</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Rol Comercial</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Modulos</th><th>Nota</th><th>Accion</th></tr>
+            <tr><th>Nombre</th><th>Empleado RRHH</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Rol Comercial</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Modulos</th><th>Movil</th><th>Nota</th><th>Accion</th></tr>
           </thead>
           <tbody id="tablaUsuarios"></tbody>
         </table>
@@ -3051,7 +3063,7 @@
     </section>
 
     <section id="notificaciones" class="hidden">
-      <h1>Notificaciones de Correccion</h1>
+      <h1>Centro de Notificaciones</h1>
       <div class="dashboard-cards">
         <div class="card presupuesto-total"><h3>Empleados con revision</h3><p id="notificacionTotal">0</p></div>
         <div class="card presupuesto-consumido"><h3>Campos pendientes</h3><p id="notificacionCampos">0</p></div>
@@ -3061,11 +3073,23 @@
         <button class="btn btn-primary" onclick="cargarNominaValidadaInicial(true)"><i class="fa-solid fa-file-import"></i> Recargar nomina validada</button>
         <button class="btn btn-secondary" onclick="renderNotificacionesCorreccion()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
       </div>
+      <div class="dashboard-section">
+        <h2>Alertas del ecosistema</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Area</th><th>Titulo</th><th>Estado</th><th>Referencia</th><th>Usuario</th></tr></thead>
+            <tbody id="tablaNotificacionesSistema"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="dashboard-section">
+        <h2>Correcciones de datos de empleados</h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Codigo</th><th>Empleado</th><th>Cedula</th><th>Campos a corregir</th><th>Cargo</th><th>Direccion</th><th>Departamento</th><th>Division</th><th>Seccion</th><th>Centro Servicio</th><th>Accion</th></tr></thead>
           <tbody id="tablaNotificacionesCorreccion"></tbody>
         </table>
+      </div>
       </div>
     </section>
   </div>
@@ -3201,6 +3225,20 @@ const MODULOS_USUARIO=[
   ]},
   {grupo:'Compras y Almacen',modulos:[
     {id:'compras',nombre:'Compras y Contrataciones'},
+    {id:'compras_admin',nombre:'Compras - Administrativo'},
+    {id:'compras_planificacion',nombre:'Compras - Planificacion PAC/PACC'},
+    {id:'compras_solicitudes',nombre:'Compras - Solicitudes internas'},
+    {id:'compras_presupuesto',nombre:'Compras - Presupuesto y finanzas'},
+    {id:'compras_procesos',nombre:'Compras - Procesos'},
+    {id:'compras_proveedores',nombre:'Compras - Proveedores'},
+    {id:'compras_contratos',nombre:'Compras - Contratos'},
+    {id:'compras_inventario',nombre:'Compras - Inventario'},
+    {id:'compras_recepcion',nombre:'Compras - Recepcion'},
+    {id:'compras_juridico',nombre:'Compras - Juridico'},
+    {id:'compras_auditoria',nombre:'Compras - Auditoria'},
+    {id:'compras_reportes',nombre:'Compras - Reportes'},
+    {id:'compras_comunicaciones',nombre:'Compras - Notificaciones'},
+    {id:'compras_integraciones',nombre:'Compras - Integraciones'},
     {id:'almacen',nombre:'Solicitudes a Almacen'}
   ]},
   {grupo:'Comercial',modulos:[
@@ -3222,7 +3260,18 @@ const MODULOS_USUARIO=[
   ]},
   {grupo:'Ecosistema Institucional',modulos:[
     {id:'ecosistema',nombre:'Arquitectura General'},
-    {id:'snip',nombre:'Sistema de Proyectos SNIP'}
+    {id:'snip',nombre:'Sistema de Proyectos SNIP'},
+    {id:'snip_admin',nombre:'SNIP - Administrativo'},
+    {id:'snip_formulacion',nombre:'SNIP - Formulacion'},
+    {id:'snip_evaluacion',nombre:'SNIP - Evaluacion'},
+    {id:'snip_presupuesto',nombre:'SNIP - Programacion y presupuesto'},
+    {id:'snip_ejecucion',nombre:'SNIP - Ejecucion'},
+    {id:'snip_monitoreo',nombre:'SNIP - Monitoreo'},
+    {id:'snip_reportes',nombre:'SNIP - Reportes'},
+    {id:'snip_transparencia',nombre:'SNIP - Transparencia'},
+    {id:'snip_gis',nombre:'SNIP - GIS'},
+    {id:'snip_documental',nombre:'SNIP - Documental'},
+    {id:'snip_auditoria',nombre:'SNIP - Auditoria'}
   ]},
   {grupo:'Colaboracion',modulos:[
     {id:'comunicacion',nombre:'Comunicacion interna'},
@@ -3237,11 +3286,50 @@ const MODULOS_USUARIO=[
   ]}
 ];
 const MODULOS_ADMIN=new Set(['estructura','usuarios','configuracion']);
+const MODULOS_COMPRAS=new Set([
+  'compras_admin','compras_planificacion','compras_solicitudes','compras_presupuesto','compras_procesos','compras_proveedores',
+  'compras_contratos','compras_inventario','compras_recepcion','compras_juridico','compras_auditoria','compras_reportes',
+  'compras_comunicaciones','compras_integraciones'
+]);
 const MODULOS_COMERCIALES=new Set([
   'comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros',
   'comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi',
   'comercial_ia','comercial_gestor_cobros'
 ]);
+const MODULOS_SNIP=new Set([
+  'snip_admin','snip_formulacion','snip_evaluacion','snip_presupuesto','snip_ejecucion','snip_monitoreo',
+  'snip_reportes','snip_transparencia','snip_gis','snip_documental','snip_auditoria'
+]);
+const PERMISOS_MOVILES=[
+  {id:'movil_ess',nombre:'Autoservicio del empleado'},
+  {id:'movil_asistencia',nombre:'Registrar asistencia / geolocalizacion'},
+  {id:'movil_supervisor',nombre:'Aprobaciones del supervisor'},
+  {id:'movil_lectura',nombre:'Lectura de medidores'},
+  {id:'movil_cobros',nombre:'Gestion de cobros en campo'},
+  {id:'movil_caja',nombre:'Cobros y caja movil'},
+  {id:'movil_brigadas',nombre:'Ordenes tecnicas y brigadas'},
+  {id:'movil_inventario',nombre:'Almacen e inventario movil'},
+  {id:'movil_compras_aprobaciones',nombre:'Aprobaciones de compras'},
+  {id:'movil_snip_supervision',nombre:'Supervision de proyectos SNIP'},
+  {id:'movil_gis',nombre:'GIS y evidencias fotograficas'},
+  {id:'movil_dashboard',nombre:'Dashboard ejecutivo movil'}
+];
+const PANEL_COMPRAS_PERMISOS={
+  comprasAdmin:'compras_admin',
+  comprasPlanificacion:'compras_planificacion',
+  comprasSolicitudes:'compras_solicitudes',
+  comprasPresupuesto:'compras_presupuesto',
+  comprasProcesos:'compras_procesos',
+  comprasProveedores:'compras_proveedores',
+  comprasContratos:'compras_contratos',
+  comprasInventario:'compras_inventario',
+  comprasRecepcion:'compras_recepcion',
+  comprasJuridico:'compras_juridico',
+  comprasAuditoria:'compras_auditoria',
+  comprasReportes:'compras_reportes',
+  comprasComunicaciones:'compras_comunicaciones',
+  comprasIntegraciones:'compras_integraciones'
+};
 const MODULOS_POR_ROL_COMERCIAL={
   'Director Comercial':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros','comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi','comercial_ia','comercial_gestor_cobros'],
   'Supervisor Comercial':['comercial_dashboard','comercial_lectura','comercial_cobros','comercial_suspensiones','comercial_tecnico','comercial_gestor_cobros','comercial_reportes_bi'],
@@ -3282,6 +3370,7 @@ const presupuestoNomina2026=[
 ];
 const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
 let comprasRegistros=JSON.parse(localStorage.getItem('comprasRegistros')||'[]');
+let notificacionesSistema=JSON.parse(localStorage.getItem('notificacionesSistema')||'[]');
 const COMPRAS_MODULOS={
   admin:{tabla:'tablaComprasAdmin',campos:['parametro','valor','responsable','estado','nota']},
   planificacion:{tabla:'tablaComprasPlanificacion',campos:['codigo','periodo','descripcion','costo','prioridad','fecha','estado']},
@@ -3316,8 +3405,10 @@ function normalizarModulosUsuario(usuario={}){
   const permitidos=new Set(modulosDisponibles().map(modulo=>modulo.id));
   const base=Array.isArray(usuario.modulos)?usuario.modulos:modulosPlantillaRol(usuario.rol);
   const administrativos=usuario.rol==='Administrador'?[...MODULOS_ADMIN]:[];
+  const compras=base.some(id=>MODULOS_COMPRAS.has(id))?['compras']:[];
   const comerciales=base.some(id=>MODULOS_COMERCIALES.has(id))?['comercial']:[];
-  const modulos=[...new Set(['dashboard',...base,...comerciales,...administrativos])]
+  const snip=base.some(id=>MODULOS_SNIP.has(id))?['snip']:[];
+  const modulos=[...new Set(['dashboard',...base,...compras,...comerciales,...snip,...administrativos])]
     .filter(id=>permitidos.has(id))
     .filter(id=>usuario.rol==='Administrador'||!MODULOS_ADMIN.has(id));
   return modulos;
@@ -3327,7 +3418,9 @@ function usuarioPuedeVerModulo(usuario,id){
   if(!usuario||!id)return false;
   if(id==='dashboard')return true;
   if(MODULOS_ADMIN.has(id)&&usuario.rol!=='Administrador')return false;
+  if(id==='compras'&&normalizarModulosUsuario(usuario).some(modulo=>MODULOS_COMPRAS.has(modulo)))return true;
   if(id==='comercial'&&normalizarModulosUsuario(usuario).some(modulo=>MODULOS_COMERCIALES.has(modulo)))return true;
+  if(id==='snip'&&normalizarModulosUsuario(usuario).some(modulo=>MODULOS_SNIP.has(modulo)))return true;
   return normalizarModulosUsuario(usuario).includes(id);
 }
 
@@ -3477,6 +3570,7 @@ function guardarStorage(){
   localStorage.setItem('ticketsSoporteRRHH',JSON.stringify(ticketsSoporteRRHH));
   localStorage.setItem('configuracionSistema',JSON.stringify(configuracionSistema));
   localStorage.setItem('comprasRegistros',JSON.stringify(comprasRegistros));
+  localStorage.setItem('notificacionesSistema',JSON.stringify(notificacionesSistema));
 }
 
 function guardarPresupuesto(){
@@ -3532,13 +3626,16 @@ function guardarCompraRegistro(event){
   modulo.campos.forEach(campo=>{
     datos[campo]=(form.elements[campo]?.value||'').trim();
   });
-  comprasRegistros.unshift({
+  const registro={
     id:compraRegistroId(),
     tipo,
     datos,
     creadoPor:usuarioSesionActual()?.nombre||'',
     creadoEn:new Date().toISOString()
-  });
+  };
+  comprasRegistros.unshift(registro);
+  registrarNotificacionSistema('Compras y Contrataciones',`Nuevo registro en ${tipo}`,datos.estado||'Registrado',tipo);
+  registrarLogSistema('Crear registro','Compras y Contrataciones',`${tipo}: ${Object.values(datos).filter(Boolean).slice(0,2).join(' | ')}`);
   guardarStorage();
   form.reset();
   renderComprasPanel();
@@ -3546,18 +3643,67 @@ function guardarCompraRegistro(event){
 
 function eliminarCompraRegistro(id){
   if(!confirm('Desea eliminar este registro?'))return;
+  const registro=comprasRegistros.find(item=>item.id===id);
   comprasRegistros=comprasRegistros.filter(item=>item.id!==id);
+  registrarLogSistema('Eliminar registro','Compras y Contrataciones',registro?`${registro.tipo}: ${Object.values(registro.datos||{}).filter(Boolean).slice(0,2).join(' | ')}`:id);
   guardarStorage();
   renderComprasPanel();
 }
 
+function registrarNotificacionSistema(area,titulo,estado='Pendiente',referencia=''){
+  notificacionesSistema.unshift({id:crearIdConfig('NOT'),fecha:new Date().toISOString(),area,titulo,estado,referencia,usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  notificacionesSistema=notificacionesSistema.slice(0,300);
+}
+
 function activarCompraModulo(id){
+  if(!usuarioPuedeVerPanelCompra(id)){
+    const primero=primerPanelCompraPermitido();
+    if(primero&&primero!==id)activarCompraModulo(primero);
+    return;
+  }
   document.querySelectorAll('#compras .employee-module').forEach(modulo=>modulo.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
   document.querySelectorAll('#comprasTabs button').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('onclick')?.includes(`'${id}'`)));
 }
 
+function usuarioPuedeVerPanelCompra(id){
+  const usuario=usuarioSesionActual();
+  if(!usuario)return true;
+  if(usuario.rol==='Administrador')return true;
+  const permiso=PANEL_COMPRAS_PERMISOS[id];
+  return Boolean(permiso&&normalizarModulosUsuario(usuario).includes(permiso));
+}
+
+function primerPanelCompraPermitido(){
+  return Object.keys(PANEL_COMPRAS_PERMISOS).find(id=>usuarioPuedeVerPanelCompra(id))||'';
+}
+
+function aplicarPermisosComprasPanel(){
+  document.querySelectorAll('#comprasTabs button').forEach(btn=>{
+    const match=btn.getAttribute('onclick')?.match(/'([^']+)'/);
+    const panel=match?.[1]||'';
+    btn.classList.toggle('hidden',!usuarioPuedeVerPanelCompra(panel));
+  });
+  const activo=document.querySelector('#compras .employee-module.active')?.id;
+  const primero=primerPanelCompraPermitido();
+  let aviso=document.getElementById('comprasSinPermisos');
+  if(!primero){
+    if(!aviso){
+      aviso=document.createElement('div');
+      aviso.id='comprasSinPermisos';
+      aviso.className='dashboard-section';
+      aviso.innerHTML='<h2>Permisos de Compras no asignados</h2><p class="small">Este usuario tiene acceso al area de Compras, pero no tiene submodulos internos habilitados.</p>';
+      document.getElementById('comprasTabs')?.insertAdjacentElement('afterend',aviso);
+    }
+    document.querySelectorAll('#compras .employee-module').forEach(modulo=>modulo.classList.remove('active'));
+    return;
+  }
+  if(aviso)aviso.remove();
+  if(!activo||!usuarioPuedeVerPanelCompra(activo))activarCompraModulo(primero);
+}
+
 function renderComprasPanel(){
+  aplicarPermisosComprasPanel();
   Object.entries(COMPRAS_MODULOS).forEach(([tipo,config])=>{
     const tbody=document.getElementById(config.tabla);
     if(!tbody)return;
@@ -3623,6 +3769,7 @@ async function crearUsuarioAuthSupabase({nombre,login,correo,password,rol,estado
         organization_unit_local_id:unidadId||'',
         scope:alcance,
         modules:modulos||[],
+        mobile_permissions:permisosMovilesSeleccionadosUsuario(),
         access_note:claveTemporal||''
       }
     }
@@ -3790,6 +3937,7 @@ formUsuario.addEventListener('submit',async event=>{
   const unidadId=document.getElementById('usuarioUnidad').value;
   const alcance=document.getElementById('usuarioAlcance').value;
   const modulos=modulosSeleccionadosUsuario();
+  const permisosMoviles=permisosMovilesSeleccionadosUsuario();
   const password=document.getElementById('usuarioPassword').value;
   const claveTemporal=document.getElementById('usuarioClaveTemporal').value.trim();
   if(!nombre||!login||!rol){alert('Complete nombre, usuario y rol.');return;}
@@ -3811,7 +3959,7 @@ formUsuario.addEventListener('submit',async event=>{
     if(!authUser)return;
   }
   const passwordHash=password?await hashClave(password):actual?.passwordHash;
-  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',empleadoCodigo,nombre,login,correo,rol,rolComercial,estado,unidadId,alcance,modulos:normalizarModulosUsuario({rol,modulos}),passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
+  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',empleadoCodigo,nombre,login,correo,rol,rolComercial,estado,unidadId,alcance,modulos:normalizarModulosUsuario({rol,modulos}),permisosMoviles,passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
   const idx=usuarios.findIndex(item=>item.id===usuario.id);
   if(idx>=0)usuarios[idx]={...usuarios[idx],...usuario};else usuarios.push({...usuario,creadoEn:new Date().toISOString()});
   guardarStorage();
@@ -3831,6 +3979,7 @@ function limpiarUsuarioFormulario(){
   document.getElementById('usuarioPassword').value='';
   renderUsuariosPermisos();
   renderUsuarioModulos(modulosPlantillaRol(''));
+  renderPermisosMoviles();
 }
 
 function cargarUsuarioParaEditar(id){
@@ -3850,6 +3999,7 @@ function cargarUsuarioParaEditar(id){
   document.getElementById('usuarioPassword').value='';
   document.getElementById('usuarioClaveTemporal').value=usuario.claveTemporal||'';
   renderUsuarioModulos(normalizarModulosUsuario(usuario));
+  renderPermisosMoviles(usuario.permisosMoviles||[]);
   showSection('usuarios');
 }
 
@@ -3886,7 +4036,7 @@ function renderUsuarios(){
   const filtrados=usuarios.filter(usuario=>[usuario.nombre,usuario.login,usuario.correo,usuario.rol,usuario.rolComercial,usuario.estado].join(' ').toLowerCase().includes(q));
   tbody.innerHTML=filtrados.map(usuario=>{
     const empleado=empleados.find(item=>item.codigo===usuario.empleadoCodigo);
-    return `<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(empleado?`${empleado.codigo} - ${empleado.nombre} ${empleado.apellido}`:'Sin vincular')}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.rolComercial||'-')}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(resumenModulosUsuario(usuario))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+    return `<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(empleado?`${empleado.codigo} - ${empleado.nombre} ${empleado.apellido}`:'Sin vincular')}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.rolComercial||'-')}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(resumenModulosUsuario(usuario))}</td><td>${safeText(resumenPermisosMoviles(usuario))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
   }).join('');
   document.getElementById('totalUsuarios').innerText=usuarios.length;
   document.getElementById('usuariosActivos').innerText=usuarios.filter(usuario=>usuario.estado==='Activo').length;
@@ -5705,6 +5855,7 @@ document.getElementById('formCorreccion').addEventListener('submit',event=>{
 });
 
 function renderNotificacionesCorreccion(){
+  renderNotificacionesSistema();
   const tbody=document.getElementById('tablaNotificacionesCorreccion');
   if(!tbody)return;
   const pendientes=empleadosConCorreccionPendiente();
@@ -5716,6 +5867,12 @@ function renderNotificacionesCorreccion(){
     const campos=camposCorreccionEmpleado(emp).map(textoCampoCorreccion).join(', ');
     return `<tr><td>${safeText(emp.codigo)}</td><td>${safeText(emp.nombre+' '+emp.apellido)}</td><td>${safeText(emp.cedula)}</td><td>${safeText(campos)}</td><td>${safeText(emp.cargo)}</td><td>${safeText(emp.direccion)}</td><td>${safeText(emp.departamento)}</td><td>${safeText(emp.division)}</td><td>${safeText(emp.seccion)}</td><td>${safeText(emp.centroServicio)}</td><td><button class="btn btn-warning" onclick="abrirFichaCorreccion('${safeText(emp.codigo)}')"><i class="fa-solid fa-pen"></i> Corregir</button></td></tr>`;
   }).join('');
+}
+
+function renderNotificacionesSistema(){
+  const tbody=document.getElementById('tablaNotificacionesSistema');
+  if(!tbody)return;
+  tbody.innerHTML=(notificacionesSistema||[]).slice(0,80).map(item=>`<tr><td>${safeText(new Date(item.fecha).toLocaleString())}</td><td>${safeText(item.area)}</td><td>${safeText(item.titulo)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.referencia)}</td><td>${safeText(item.usuario)}</td></tr>`).join('');
 }
 
 function calcularNominaActualTotal(){
@@ -5883,6 +6040,7 @@ function calcularAnaliticaReportes(){
 }
 
 function renderAnaliticaReportes(){
+  renderOpcionesReportePorPermisos();
   const a=calcularAnaliticaReportes();
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   set('repRotacion',a.rotacion.toFixed(1)+'%');
@@ -5915,6 +6073,36 @@ function renderAnaliticaReportes(){
       options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
     });
   }
+}
+
+function renderOpcionesReportePorPermisos(){
+  const sel=document.getElementById('tipoReporte');
+  if(!sel)return;
+  const actual=sel.value;
+  const usuario=usuarioSesionActual();
+  const puede=id=>!usuario||usuarioPuedeVerModulo(usuario,id);
+  const opciones=[
+    {value:'analitica',label:'Indicadores Analiticos RRHH',visible:puede('dashboard')},
+    {value:'entradas',label:'Entradas',visible:puede('empleados')||puede('registro')},
+    {value:'salidas',label:'Salidas',visible:puede('empleados')},
+    {value:'sustituciones',label:'Comparativo Sustitucion/Interinato',visible:puede('empleados')||puede('nomina')},
+    {value:'vacantes',label:'Vacantes',visible:puede('empleados')||puede('reclutamiento')},
+    {value:'estructura',label:'Empleados por Estructura',visible:puede('estructura')||puede('empleados')},
+    {value:'asistencia',label:'Asistencia y Tiempo',visible:puede('asistencia')},
+    {value:'nomina_procesada',label:'Nomina Procesada',visible:puede('nomina')},
+    {value:'vacaciones',label:'Vacaciones y Licencias',visible:puede('vacaciones')},
+    {value:'desempeno',label:'Evaluacion de Desempeno',visible:puede('desempeno')},
+    {value:'capacitacion',label:'Capacitacion y Desarrollo',visible:puede('capacitacion')},
+    {value:'beneficios',label:'Beneficios y Compensaciones',visible:puede('beneficios')},
+    {value:'disciplinario',label:'Disciplinario y Legal',visible:puede('disciplinario')},
+    {value:'compras',label:'Compras y Contrataciones',visible:puede('compras')},
+    {value:'comercial',label:'Sistema Comercial',visible:puede('comercial')},
+    {value:'snip',label:'Proyectos SNIP',visible:puede('snip')},
+    {value:'configuracion',label:'Configuracion y Seguridad',visible:puede('configuracion')},
+    {value:'nomina',label:'Nomina del Mes',visible:puede('nomina')}
+  ];
+  sel.innerHTML='<option value="">-- Seleccione reporte --</option>'+opciones.filter(item=>item.visible).map(item=>`<option value="${safeText(item.value)}">${safeText(item.label)}</option>`).join('');
+  if([...sel.options].some(opt=>opt.value===actual))sel.value=actual;
 }
 
 function generarReporte(){
@@ -6042,6 +6230,37 @@ function generarReporte(){
   }else if(tipo==='ess'){
     thead.innerHTML='<tr><th>Fecha</th><th>Codigo</th><th>Empleado</th><th>Categoria</th><th>Asunto</th><th>Prioridad</th><th>Estado</th><th>Detalle</th></tr>';
     ticketsSoporteVisibles().forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(formatoFechaISO(item.fecha))}</td><td>${safeText(item.empleadoCodigo)}</td><td>${safeText(empleadoNombrePorCodigo(item.empleadoCodigo))}</td><td>${safeText(item.categoria)}</td><td>${safeText(item.asunto)}</td><td>${safeText(item.prioridad)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.detalle)}</td></tr>`));
+  }else if(tipo==='compras'){
+    thead.innerHTML='<tr><th>Modulo</th><th>Fecha</th><th>Creado por</th><th>Campo 1</th><th>Campo 2</th><th>Estado</th><th>Detalle</th></tr>';
+    comprasRegistros.forEach(item=>{
+      const valores=Object.entries(item.datos||{}).filter(([,value])=>value);
+      const estado=item.datos?.estado||item.datos?.prioridad||'Registrado';
+      tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(item.tipo)}</td><td>${safeText(new Date(item.creadoEn).toLocaleString())}</td><td>${safeText(item.creadoPor)}</td><td>${safeText(valores[0]?.[1]||'')}</td><td>${safeText(valores[1]?.[1]||'')}</td><td>${safeText(estado)}</td><td>${safeText(valores.slice(2,5).map(([k,v])=>`${k}: ${v}`).join(' | '))}</td></tr>`);
+    });
+  }else if(tipo==='comercial'){
+    thead.innerHTML='<tr><th>Indicador</th><th>Valor</th><th>Detalle</th></tr>';
+    const permisos=normalizarModulosUsuario(usuarioSesionActual()||{});
+    [
+      ['Permisos comerciales habilitados',permisos.filter(id=>MODULOS_COMERCIALES.has(id)).length,'Submodulos internos autorizados para el usuario'],
+      ['Acceso al sistema comercial',permisos.includes('comercial')?'Si':'No','Controlado desde Usuarios'],
+      ['Rol comercial',usuarioSesionActual()?.rolComercial||'Sin rol comercial','Plantilla sugerida segun funcion'],
+      ['Reportes BI',permisos.includes('comercial_reportes_bi')?'Habilitado':'No habilitado','Reporte adaptado por permisos']
+    ].forEach(row=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(row[0])}</td><td>${safeText(row[1])}</td><td>${safeText(row[2])}</td></tr>`));
+  }else if(tipo==='snip'){
+    thead.innerHTML='<tr><th>Panel SNIP</th><th>Permiso</th><th>Estado</th><th>Uso esperado</th></tr>';
+    [
+      ['Administrativo','snip_admin','Core del sistema SNIP'],
+      ['Formulacion','snip_formulacion','Registro y perfil de proyectos'],
+      ['Evaluacion','snip_evaluacion','Evaluacion tecnica, financiera y juridica'],
+      ['Presupuesto','snip_presupuesto','Programacion y fuentes'],
+      ['Ejecucion','snip_ejecucion','Cronograma, avance y contrataciones'],
+      ['Monitoreo','snip_monitoreo','KPIs, alertas y supervisiones'],
+      ['Reportes','snip_reportes','BI y exportaciones'],
+      ['Transparencia','snip_transparencia','Portal ciudadano'],
+      ['GIS','snip_gis','Mapa nacional'],
+      ['Documental','snip_documental','Versionado y firmas'],
+      ['Auditoria','snip_auditoria','Control y trazabilidad']
+    ].forEach(([panel,permiso,uso])=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(panel)}</td><td>${safeText(permiso)}</td><td>${usuarioPuedeVerModulo(usuarioSesionActual(),permiso)?'Habilitado':'No habilitado'}</td><td>${safeText(uso)}</td></tr>`));
   }else if(tipo==='configuracion'){
     thead.innerHTML='<tr><th>Fecha</th><th>Usuario</th><th>Accion</th><th>Modulo</th><th>Detalle</th></tr>';
     (configuracionSistema.logs||[]).forEach(item=>tbody.insertAdjacentHTML('beforeend',`<tr><td>${safeText(new Date(item.fecha).toLocaleString())}</td><td>${safeText(item.usuario)}</td><td>${safeText(item.accion)}</td><td>${safeText(item.modulo)}</td><td>${safeText(item.detalle)}</td></tr>`));
