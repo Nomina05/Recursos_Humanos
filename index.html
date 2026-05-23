@@ -861,10 +861,267 @@
       <h1>Compras y Contrataciones</h1>
 
       <div class="dashboard-cards">
-        <div class="card presupuesto-total"><h3>Compras activas</h3><p>0</p></div>
-        <div class="card presupuesto-disponible"><h3>Procesos pendientes</h3><p>0</p></div>
-        <div class="card presupuesto-consumido"><h3>Contratos venciendo</h3><p>0</p></div>
-        <div class="card presupuesto-total"><h3>Solicitudes atrasadas</h3><p>0</p></div>
+        <div class="card presupuesto-total"><h3>Compras activas</h3><p id="comprasActivasKpi">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Procesos pendientes</h3><p id="comprasProcesosPendientesKpi">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Contratos venciendo</h3><p id="comprasContratosVenciendoKpi">0</p></div>
+        <div class="card presupuesto-total"><h3>Solicitudes atrasadas</h3><p id="comprasSolicitudesAtrasadasKpi">0</p></div>
+      </div>
+
+      <div class="employee-tabs" id="comprasTabs">
+        <button class="btn active" type="button" onclick="activarCompraModulo('comprasAdmin')">Administrativo</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasPlanificacion')">Planificacion</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasSolicitudes')">Solicitudes</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasPresupuesto')">Presupuesto</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasProcesos')">Procesos</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasProveedores')">Proveedores</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasContratos')">Contratos</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasInventario')">Inventario</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasRecepcion')">Recepcion</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasJuridico')">Juridico</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasAuditoria')">Auditoria</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasReportes')">Reportes</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasComunicaciones')">Notificaciones</button>
+        <button class="btn" type="button" onclick="activarCompraModulo('comprasIntegraciones')">Integraciones</button>
+      </div>
+
+      <div id="comprasAdmin" class="employee-module active">
+        <div class="dashboard-section">
+          <h2>Panel Administrativo General</h2>
+          <form data-compra-tipo="admin" data-compra-campos="parametro,valor,responsable,estado,nota" onsubmit="guardarCompraRegistro(event)">
+            <input name="parametro" placeholder="Parametro institucional / catalogo" required>
+            <input name="valor" placeholder="Valor / configuracion">
+            <input name="responsable" placeholder="Responsable">
+            <select name="estado"><option>Activo</option><option>En revision</option><option>Inactivo</option></select>
+            <textarea name="nota" placeholder="Roles, permisos, flujos, firmas, auditoria o notificaciones"></textarea>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar configuracion</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Parametro</th><th>Valor</th><th>Responsable</th><th>Estado</th><th>Nota</th><th>Accion</th></tr></thead><tbody id="tablaComprasAdmin"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasPlanificacion" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Planificacion de Compras PAC/PACC</h2>
+          <form data-compra-tipo="planificacion" data-compra-campos="codigo,periodo,descripcion,costo,prioridad,fecha,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="codigo" placeholder="Codigo PAC/PACC" required>
+            <input name="periodo" type="month" required>
+            <input name="descripcion" placeholder="Bien, servicio o necesidad futura" required>
+            <input name="costo" type="number" min="0" step="0.01" placeholder="Estimacion de costos">
+            <select name="prioridad"><option>Alta</option><option>Media</option><option>Baja</option></select>
+            <input name="fecha" type="date" placeholder="Fecha programada">
+            <select name="estado"><option>Programado</option><option>Reprogramado</option><option>Ejecutado</option><option>Cancelado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar planificacion</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Periodo</th><th>Descripcion</th><th>Costo</th><th>Prioridad</th><th>Fecha</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasPlanificacion"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasSolicitudes" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Solicitudes internas y requisiciones</h2>
+          <form data-compra-tipo="solicitudes" data-compra-campos="solicitante,departamento,tipo,descripcion,justificacion,urgencia,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="solicitante" placeholder="Solicitante / empleado" required>
+            <input name="departamento" placeholder="Departamento solicitante" required>
+            <select name="tipo"><option>Solicitud de compra</option><option>Solicitud de servicio</option><option>Requisicion interna</option></select>
+            <input name="descripcion" placeholder="Bien o servicio requerido" required>
+            <textarea name="justificacion" placeholder="Justificacion, adjuntos o comentarios internos"></textarea>
+            <select name="urgencia"><option>Normal</option><option>Urgente</option><option>Critica</option></select>
+            <select name="estado"><option>Pendiente</option><option>En aprobacion</option><option>Aprobada</option><option>Rechazada</option><option>Procesada</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar solicitud</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Solicitante</th><th>Departamento</th><th>Tipo</th><th>Descripcion</th><th>Justificacion</th><th>Urgencia</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasSolicitudes"></tbody></table></div>
+        </div>
+        <div class="dashboard-section">
+          <h2>Modulo operativo: Solicitudes de Compras</h2>
+          <iframe class="module-frame" src="solicitudes_compras.html?embedded=1" title="Solicitudes de Compras"></iframe>
+        </div>
+      </div>
+
+      <div id="comprasPresupuesto" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Panel Presupuestario y Financiero</h2>
+          <form data-compra-tipo="presupuesto" data-compra-campos="partida,centroCosto,monto,compromiso,certificacion,estado,alerta" onsubmit="guardarCompraRegistro(event)">
+            <input name="partida" placeholder="Partida presupuestaria" required>
+            <input name="centroCosto" placeholder="Centro de costo">
+            <input name="monto" type="number" min="0" step="0.01" placeholder="Monto disponible / solicitado">
+            <input name="compromiso" placeholder="Compromiso / referencia">
+            <input name="certificacion" placeholder="Certificacion de fondos">
+            <select name="estado"><option>Disponible</option><option>Comprometido</option><option>Certificado</option><option>Sobrepresupuesto</option></select>
+            <input name="alerta" placeholder="Alerta financiera">
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar control presupuestario</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Partida</th><th>Centro costo</th><th>Monto</th><th>Compromiso</th><th>Certificacion</th><th>Estado</th><th>Alerta</th><th>Accion</th></tr></thead><tbody id="tablaComprasPresupuesto"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasProcesos" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Procesos de Compras</h2>
+          <form data-compra-tipo="procesos" data-compra-campos="numero,tipo,objeto,cronograma,comite,evaluacion,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="numero" placeholder="Numero de proceso" required>
+            <select name="tipo"><option>Compra menor</option><option>Comparacion de precios</option><option>Licitacion publica</option><option>Licitacion restringida</option><option>Compra directa</option><option>Excepcion</option><option>Subasta inversa</option><option>Emergencia</option></select>
+            <input name="objeto" placeholder="Objeto del proceso" required>
+            <input name="cronograma" placeholder="Cronograma / fecha clave">
+            <input name="comite" placeholder="Comite de compras">
+            <input name="evaluacion" placeholder="Evaluacion tecnica/economica">
+            <select name="estado"><option>Creado</option><option>Publicado</option><option>Recibiendo ofertas</option><option>En evaluacion</option><option>Adjudicado</option><option>Cancelado</option><option>Desierto</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar proceso</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Numero</th><th>Tipo</th><th>Objeto</th><th>Cronograma</th><th>Comite</th><th>Evaluacion</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasProcesos"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasProveedores" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Proveedores / Suplidores</h2>
+          <form data-compra-tipo="proveedores" data-compra-campos="rnc,nombre,rubro,dgii,tss,desempeno,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="rnc" placeholder="RNC / identificacion" required>
+            <input name="nombre" placeholder="Proveedor / suplidor" required>
+            <input name="rubro" placeholder="Rubro / clasificacion">
+            <input name="dgii" placeholder="Certificacion DGII">
+            <input name="tss" placeholder="Certificacion TSS">
+            <input name="desempeno" placeholder="Evaluacion de desempeno / penalizaciones">
+            <select name="estado"><option>Activo</option><option>En validacion</option><option>Penalizado</option><option>Lista negra</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar proveedor</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>RNC</th><th>Nombre</th><th>Rubro</th><th>DGII</th><th>TSS</th><th>Desempeno</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasProveedores"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasContratos" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Contratos</h2>
+          <form data-compra-tipo="contratos" data-compra-campos="numero,proveedor,objeto,vigencia,garantia,entregables,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="numero" placeholder="Numero de contrato" required>
+            <input name="proveedor" placeholder="Proveedor">
+            <input name="objeto" placeholder="Objeto contractual" required>
+            <input name="vigencia" type="date" placeholder="Vigencia / vencimiento">
+            <input name="garantia" placeholder="Garantia / fianza">
+            <input name="entregables" placeholder="Entregables / adendas / renovaciones">
+            <select name="estado"><option>Vigente</option><option>Por vencer</option><option>Renovado</option><option>Cerrado</option><option>Penalizado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar contrato</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Numero</th><th>Proveedor</th><th>Objeto</th><th>Vigencia</th><th>Garantia</th><th>Entregables</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasContratos"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasInventario" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Almacen e Inventario</h2>
+          <form data-compra-tipo="inventario" data-compra-campos="codigo,bien,tipo,cantidad,ubicacion,minimo,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="codigo" placeholder="Codigo de bien / activo" required>
+            <input name="bien" placeholder="Bien, activo o consumible" required>
+            <select name="tipo"><option>Recepcion</option><option>Entrada</option><option>Salida</option><option>Kardex</option><option>Activo fijo</option><option>Transferencia</option><option>Despacho</option></select>
+            <input name="cantidad" type="number" min="0" step="1" placeholder="Cantidad">
+            <input name="ubicacion" placeholder="Ubicacion / departamento">
+            <input name="minimo" type="number" min="0" placeholder="Minimo de stock">
+            <select name="estado"><option>Disponible</option><option>Bajo minimo</option><option>Despachado</option><option>Transferido</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar movimiento</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Bien</th><th>Tipo</th><th>Cantidad</th><th>Ubicacion</th><th>Minimo</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasInventario"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasRecepcion" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Recepcion y Fiscalizacion</h2>
+          <form data-compra-tipo="recepcion" data-compra-campos="orden,proveedor,fecha,calidad,evidencia,noConformidad,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="orden" placeholder="Orden / contrato asociado" required>
+            <input name="proveedor" placeholder="Proveedor">
+            <input name="fecha" type="date">
+            <input name="calidad" placeholder="Validacion de calidad">
+            <input name="evidencia" placeholder="Evidencias / fotos / acta">
+            <input name="noConformidad" placeholder="No conformidades">
+            <select name="estado"><option>Recibido</option><option>En fiscalizacion</option><option>Observado</option><option>Aprobado</option><option>Rechazado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar recepcion</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Orden</th><th>Proveedor</th><th>Fecha</th><th>Calidad</th><th>Evidencia</th><th>No conformidad</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasRecepcion"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasJuridico" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Panel Juridico</h2>
+          <form data-compra-tipo="juridico" data-compra-campos="expediente,proceso,dictamen,contrato,normativa,observacion,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="expediente" placeholder="Expediente juridico" required>
+            <input name="proceso" placeholder="Proceso / contrato">
+            <input name="dictamen" placeholder="Dictamen">
+            <input name="contrato" placeholder="Validacion de contrato">
+            <input name="normativa" placeholder="Cumplimiento normativo">
+            <textarea name="observacion" placeholder="Observaciones juridicas / litigios / archivo legal"></textarea>
+            <select name="estado"><option>Pendiente</option><option>En revision</option><option>Validado</option><option>Observado</option><option>Archivado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar revision juridica</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Expediente</th><th>Proceso</th><th>Dictamen</th><th>Contrato</th><th>Normativa</th><th>Observacion</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasJuridico"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasAuditoria" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Transparencia y Auditoria</h2>
+          <form data-compra-tipo="auditoria" data-compra-campos="evento,usuario,proceso,evidencia,riesgo,reporte,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="evento" placeholder="Evento / accion auditada" required>
+            <input name="usuario" placeholder="Usuario responsable">
+            <input name="proceso" placeholder="Proceso relacionado">
+            <input name="evidencia" placeholder="Evidencia digital / trazabilidad">
+            <input name="riesgo" placeholder="Control antifraude / riesgo">
+            <input name="reporte" placeholder="Camara de Cuentas / auditoria interna / externa">
+            <select name="estado"><option>Registrado</option><option>En investigacion</option><option>Corregido</option><option>Cerrado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar auditoria</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Evento</th><th>Usuario</th><th>Proceso</th><th>Evidencia</th><th>Riesgo</th><th>Reporte</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasAuditoria"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasReportes" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Reportes e Inteligencia</h2>
+          <form data-compra-tipo="reportes" data-compra-campos="reporte,periodo,indicador,valor,departamento,formato,estado" onsubmit="guardarCompraRegistro(event)">
+            <input name="reporte" placeholder="Reporte ejecutivo / KPI" required>
+            <input name="periodo" type="month">
+            <input name="indicador" placeholder="Indicador">
+            <input name="valor" placeholder="Valor / resultado">
+            <input name="departamento" placeholder="Departamento / proveedor / proceso">
+            <select name="formato"><option>Dashboard BI</option><option>PDF</option><option>Excel</option><option>Power BI</option></select>
+            <select name="estado"><option>Disponible</option><option>En preparacion</option><option>Publicado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar reporte</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Reporte</th><th>Periodo</th><th>Indicador</th><th>Valor</th><th>Departamento</th><th>Formato</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasReportes"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasComunicaciones" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Notificaciones y Comunicaciones</h2>
+          <form data-compra-tipo="comunicaciones" data-compra-campos="canal,destinatario,motivo,vencimiento,mensaje,estado,prioridad" onsubmit="guardarCompraRegistro(event)">
+            <select name="canal"><option>Correo automatico</option><option>Alerta interna</option><option>WhatsApp/API</option><option>Push</option><option>Recordatorio</option></select>
+            <input name="destinatario" placeholder="Destinatario / rol">
+            <input name="motivo" placeholder="Aprobacion, vencimiento o pendiente" required>
+            <input name="vencimiento" type="date">
+            <textarea name="mensaje" placeholder="Mensaje"></textarea>
+            <select name="estado"><option>Pendiente</option><option>Enviado</option><option>Leido</option><option>Vencido</option></select>
+            <select name="prioridad"><option>Normal</option><option>Alta</option><option>Critica</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar notificacion</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Canal</th><th>Destinatario</th><th>Motivo</th><th>Vencimiento</th><th>Mensaje</th><th>Estado</th><th>Prioridad</th><th>Accion</th></tr></thead><tbody id="tablaComprasComunicaciones"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="comprasIntegraciones" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Integraciones</h2>
+          <form data-compra-tipo="integraciones" data-compra-campos="sistema,endpoint,responsable,frecuencia,ultimoEstado,observacion,estado" onsubmit="guardarCompraRegistro(event)">
+            <select name="sistema"><option>DGII</option><option>TSS</option><option>SIGEF</option><option>SISMAP</option><option>Portal Transaccional</option><option>Firma digital</option><option>Banco Central</option><option>Sistema contable</option><option>RRHH</option><option>Sistema documental</option></select>
+            <input name="endpoint" placeholder="Endpoint / servicio / referencia">
+            <input name="responsable" placeholder="Responsable tecnico">
+            <input name="frecuencia" placeholder="Frecuencia de sincronizacion">
+            <input name="ultimoEstado" placeholder="Ultimo estado">
+            <textarea name="observacion" placeholder="Observaciones tecnicas"></textarea>
+            <select name="estado"><option>Activo</option><option>En pruebas</option><option>Fallando</option><option>Inactivo</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar integracion</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Sistema</th><th>Endpoint</th><th>Responsable</th><th>Frecuencia</th><th>Ultimo estado</th><th>Observacion</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaComprasIntegraciones"></tbody></table></div>
+        </div>
       </div>
 
       <div class="dashboard-section">
@@ -1051,10 +1308,6 @@
         </div>
       </div>
 
-      <div class="dashboard-section">
-        <h2>Modulo operativo: Solicitudes de Compras</h2>
-        <iframe class="module-frame" src="solicitudes_compras.html?embedded=1" title="Solicitudes de Compras"></iframe>
-      </div>
     </section>
 
     <section id="almacen" class="hidden">
@@ -3028,6 +3281,23 @@ const presupuestoNomina2026=[
   {fondo:'Fondo 10',programa:'Programa 13',actividad:'Act. 1 - P3',monto:3378618.60}
 ];
 const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
+let comprasRegistros=JSON.parse(localStorage.getItem('comprasRegistros')||'[]');
+const COMPRAS_MODULOS={
+  admin:{tabla:'tablaComprasAdmin',campos:['parametro','valor','responsable','estado','nota']},
+  planificacion:{tabla:'tablaComprasPlanificacion',campos:['codigo','periodo','descripcion','costo','prioridad','fecha','estado']},
+  solicitudes:{tabla:'tablaComprasSolicitudes',campos:['solicitante','departamento','tipo','descripcion','justificacion','urgencia','estado']},
+  presupuesto:{tabla:'tablaComprasPresupuesto',campos:['partida','centroCosto','monto','compromiso','certificacion','estado','alerta']},
+  procesos:{tabla:'tablaComprasProcesos',campos:['numero','tipo','objeto','cronograma','comite','evaluacion','estado']},
+  proveedores:{tabla:'tablaComprasProveedores',campos:['rnc','nombre','rubro','dgii','tss','desempeno','estado']},
+  contratos:{tabla:'tablaComprasContratos',campos:['numero','proveedor','objeto','vigencia','garantia','entregables','estado']},
+  inventario:{tabla:'tablaComprasInventario',campos:['codigo','bien','tipo','cantidad','ubicacion','minimo','estado']},
+  recepcion:{tabla:'tablaComprasRecepcion',campos:['orden','proveedor','fecha','calidad','evidencia','noConformidad','estado']},
+  juridico:{tabla:'tablaComprasJuridico',campos:['expediente','proceso','dictamen','contrato','normativa','observacion','estado']},
+  auditoria:{tabla:'tablaComprasAuditoria',campos:['evento','usuario','proceso','evidencia','riesgo','reporte','estado']},
+  reportes:{tabla:'tablaComprasReportes',campos:['reporte','periodo','indicador','valor','departamento','formato','estado']},
+  comunicaciones:{tabla:'tablaComprasComunicaciones',campos:['canal','destinatario','motivo','vencimiento','mensaje','estado','prioridad']},
+  integraciones:{tabla:'tablaComprasIntegraciones',campos:['sistema','endpoint','responsable','frecuencia','ultimoEstado','observacion','estado']}
+};
 
 function modulosDisponibles(){
   return MODULOS_USUARIO.flatMap(grupo=>grupo.modulos);
@@ -3148,6 +3418,7 @@ function showSection(id){
   if(id==='empleados')renderEmpleados();
   if(id==='reclutamiento')renderReclutamiento();
   if(id==='asistencia')renderAsistenciaTiempo();
+  if(id==='compras')renderComprasPanel();
   if(id==='nomina')renderNominaPanel();
   if(id==='vacaciones')renderVacacionesLicencias();
   if(id==='desempeno')renderDesempeno();
@@ -3205,6 +3476,7 @@ function guardarStorage(){
   localStorage.setItem('reportesIA',JSON.stringify(reportesIA));
   localStorage.setItem('ticketsSoporteRRHH',JSON.stringify(ticketsSoporteRRHH));
   localStorage.setItem('configuracionSistema',JSON.stringify(configuracionSistema));
+  localStorage.setItem('comprasRegistros',JSON.stringify(comprasRegistros));
 }
 
 function guardarPresupuesto(){
@@ -3244,6 +3516,64 @@ function renderPresupuestoNomina(){
   });
   rows.push(`<tr class="group-row"><td colspan="3">Total de nomina por programa</td><td>${formatoNumero(PRESUPUESTO_NOMINA_2026_TOTAL)}</td></tr>`);
   tbody.innerHTML=rows.join('');
+}
+
+function compraRegistroId(){
+  return `CMP-${Date.now()}-${Math.random().toString(16).slice(2,6)}`;
+}
+
+function guardarCompraRegistro(event){
+  event.preventDefault();
+  const form=event.currentTarget;
+  const tipo=form.dataset.compraTipo;
+  const modulo=COMPRAS_MODULOS[tipo];
+  if(!modulo)return;
+  const datos={};
+  modulo.campos.forEach(campo=>{
+    datos[campo]=(form.elements[campo]?.value||'').trim();
+  });
+  comprasRegistros.unshift({
+    id:compraRegistroId(),
+    tipo,
+    datos,
+    creadoPor:usuarioSesionActual()?.nombre||'',
+    creadoEn:new Date().toISOString()
+  });
+  guardarStorage();
+  form.reset();
+  renderComprasPanel();
+}
+
+function eliminarCompraRegistro(id){
+  if(!confirm('Desea eliminar este registro?'))return;
+  comprasRegistros=comprasRegistros.filter(item=>item.id!==id);
+  guardarStorage();
+  renderComprasPanel();
+}
+
+function activarCompraModulo(id){
+  document.querySelectorAll('#compras .employee-module').forEach(modulo=>modulo.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  document.querySelectorAll('#comprasTabs button').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('onclick')?.includes(`'${id}'`)));
+}
+
+function renderComprasPanel(){
+  Object.entries(COMPRAS_MODULOS).forEach(([tipo,config])=>{
+    const tbody=document.getElementById(config.tabla);
+    if(!tbody)return;
+    const rows=comprasRegistros.filter(item=>item.tipo===tipo);
+    tbody.innerHTML=rows.map(item=>`<tr>
+      ${config.campos.map(campo=>`<td>${campo==='costo'||campo==='monto'?formatoNumero(item.datos?.[campo]||0):safeText(item.datos?.[campo]||'')}</td>`).join('')}
+      <td><button class="btn btn-danger" type="button" onclick="eliminarCompraRegistro('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('');
+  });
+  const procesosPendientes=comprasRegistros.filter(item=>item.tipo==='procesos'&&!['Adjudicado','Cancelado','Desierto'].includes(item.datos?.estado)).length;
+  const contratosVenciendo=comprasRegistros.filter(item=>item.tipo==='contratos'&&(item.datos?.estado==='Por vencer'||(item.datos?.vigencia&&new Date(item.datos.vigencia)-new Date()<1000*60*60*24*45))).length;
+  const solicitudesAtrasadas=comprasRegistros.filter(item=>item.tipo==='solicitudes'&&['Pendiente','En aprobacion'].includes(item.datos?.estado)&&item.datos?.urgencia!=='Normal').length;
+  document.getElementById('comprasActivasKpi').innerText=comprasRegistros.filter(item=>!['Cerrado','Cancelado','Desierto','Archivado','Inactivo'].includes(item.datos?.estado)).length;
+  document.getElementById('comprasProcesosPendientesKpi').innerText=procesosPendientes;
+  document.getElementById('comprasContratosVenciendoKpi').innerText=contratosVenciendo;
+  document.getElementById('comprasSolicitudesAtrasadasKpi').innerText=solicitudesAtrasadas;
 }
 
 async function validarUsuarioEnSupabase({id,login,correo}){
