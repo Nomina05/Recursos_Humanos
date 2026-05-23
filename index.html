@@ -179,6 +179,7 @@
         <summary>Ecosistema</summary>
         <div class="sidebar-group-links">
           <a id="menu-ecosistema" onclick="showSection('ecosistema')"><i class="fa-solid fa-network-wired"></i>Arquitectura General</a>
+          <a id="menu-snip" onclick="showSection('snip')"><i class="fa-solid fa-diagram-project"></i>Proyectos SNIP</a>
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="colaboracion">
@@ -1283,6 +1284,268 @@
               <li>Inventario recibido</li>
             </ul>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="snip" class="hidden">
+      <h1>Sistema de Proyectos SNIP</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Proyectos activos</h3><p>0</p></div>
+        <div class="card presupuesto-disponible"><h3>En evaluacion</h3><p>0</p></div>
+        <div class="card presupuesto-consumido"><h3>Alertas criticas</h3><p>0</p></div>
+        <div class="card presupuesto-total"><h3>Presupuesto ejecutado</h3><p>RD$ 0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Core administrativo SNIP</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Panel Administrativo General</h3>
+            <ul>
+              <li>Gestion de usuarios</li>
+              <li>Roles y permisos</li>
+              <li>Instituciones gubernamentales</li>
+              <li>Periodos fiscales y monedas</li>
+              <li>Catalogos SNIP</li>
+              <li>Bitacora y auditoria</li>
+              <li>Flujos de aprobacion</li>
+              <li>Parametros nacionales</li>
+              <li>Firmas digitales y notificaciones</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Panel Documental</h3>
+            <ul>
+              <li>Gestion documental</li>
+              <li>Versionado</li>
+              <li>OCR</li>
+              <li>Firmas digitales</li>
+              <li>Historial</li>
+              <li>Control de acceso</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Auditoria y Control</h3>
+            <ul>
+              <li>Cambios realizados</li>
+              <li>Accesos</li>
+              <li>Trazabilidad</li>
+              <li>Historial financiero</li>
+              <li>Normativas</li>
+              <li>Hallazgos y riesgos institucionales</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Formulacion de proyectos</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Registro de Proyecto</h3>
+            <ul>
+              <li>Codigo SNIP</li>
+              <li>Nombre del proyecto</li>
+              <li>Institucion responsable</li>
+              <li>Sector y subsector</li>
+              <li>Provincia y municipio</li>
+              <li>Objetivo general</li>
+              <li>Justificacion y beneficiarios</li>
+              <li>Estado, prioridad y ODS relacionados</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Perfil del Proyecto</h3>
+            <ul>
+              <li>Diagnostico</li>
+              <li>Problema identificado</li>
+              <li>Arbol de problemas</li>
+              <li>Arbol de objetivos</li>
+              <li>Indicadores</li>
+              <li>Riesgos</li>
+              <li>Impacto social y ambiental</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Presupuesto Inicial</h3>
+            <ul>
+              <li>Costos directos e indirectos</li>
+              <li>Cronograma financiero</li>
+              <li>Fuentes de financiamiento</li>
+              <li>Contrapartidas</li>
+              <li>Financiamiento externo</li>
+              <li>Presupuesto plurianual</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Adjuntos</h3>
+            <ul>
+              <li>PDFs y estudios tecnicos</li>
+              <li>Planos</li>
+              <li>Contratos</li>
+              <li>Imagenes</li>
+              <li>Permisos</li>
+              <li>Licencias ambientales</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Evaluacion tecnica y revision</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Evaluacion Tecnica</h3>
+            <ul>
+              <li>Validacion documental</li>
+              <li>Observaciones</li>
+              <li>Correcciones</li>
+              <li>Recomendaciones</li>
+              <li>Aprobacion o rechazo</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Evaluacion Financiera</h3>
+            <ul>
+              <li>Viabilidad economica</li>
+              <li>Flujo financiero</li>
+              <li>TIR y VAN</li>
+              <li>Costo-beneficio</li>
+              <li>Riesgo financiero</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Evaluacion Juridica</h3>
+            <ul>
+              <li>Legalidad</li>
+              <li>Cumplimiento normativo</li>
+              <li>Validacion de contratos</li>
+              <li>Compatibilidad presupuestaria</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Estados del flujo</h3>
+            <ul>
+              <li>Borrador</li>
+              <li>En revision</li>
+              <li>Observado</li>
+              <li>Corregido</li>
+              <li>Aprobado tecnica o financieramente</li>
+              <li>Rechazado o archivado</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Programacion, presupuesto y ejecucion</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Programacion y presupuesto</h3>
+            <ul>
+              <li>POA</li>
+              <li>Programacion trimestral</li>
+              <li>Metas fisicas y financieras</li>
+              <li>Asignaciones</li>
+              <li>Modificaciones y transferencias</li>
+              <li>Disponibilidad y ejecucion</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Fuentes de financiamiento</h3>
+            <ul>
+              <li>Gobierno central</li>
+              <li>Fondos internacionales</li>
+              <li>Donaciones</li>
+              <li>Prestamos</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Ejecucion de Proyectos</h3>
+            <ul>
+              <li>Cronograma Gantt</li>
+              <li>Hitos, entregables y dependencias</li>
+              <li>Avance fisico con evidencias</li>
+              <li>Supervisiones y fotografias</li>
+              <li>Pagos, desembolsos, facturas y retenciones</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Contrataciones</h3>
+            <ul>
+              <li>Licitaciones</li>
+              <li>Compras</li>
+              <li>Proveedores</li>
+              <li>Contratos</li>
+              <li>Ordenes de compra</li>
+              <li>Integracion con Contrataciones Publicas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Monitoreo, transparencia y datos</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Monitoreo y Seguimiento</h3>
+            <ul>
+              <li>Tiempo de ejecucion</li>
+              <li>Desviacion presupuestaria</li>
+              <li>Riesgos activos</li>
+              <li>Indicadores sociales</li>
+              <li>Retrasos, vencimientos y presupuesto agotado</li>
+              <li>Visitas tecnicas e informes</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Reportes e Inteligencia</h3>
+            <ul>
+              <li>Proyectos activos</li>
+              <li>Proyectos por provincia</li>
+              <li>Ejecucion presupuestaria</li>
+              <li>Inversion por sector</li>
+              <li>Ejecucion mensual</li>
+              <li>PDF, Excel, CSV, Power BI y API REST</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Transparencia Publica</h3>
+            <ul>
+              <li>Portal ciudadano</li>
+              <li>Consulta publica de proyectos</li>
+              <li>Estado del proyecto</li>
+              <li>Mapa geografico</li>
+              <li>Inversion publica</li>
+              <li>Comentarios, denuncias, sugerencias y encuestas</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>GIS / Georreferenciacion</h3>
+            <ul>
+              <li>Mapa nacional</li>
+              <li>Proyectos por ubicacion</li>
+              <li>Capas geograficas</li>
+              <li>Infraestructura</li>
+              <li>Zonas vulnerables</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Roles recomendados</h2>
+        <div class="role-grid">
+          <span class="role-chip">Administrador General - Control total</span>
+          <span class="role-chip">Formulador - Crea proyectos</span>
+          <span class="role-chip">Evaluador Tecnico - Revisa viabilidad</span>
+          <span class="role-chip">Evaluador Financiero - Analiza presupuesto</span>
+          <span class="role-chip">Supervisor - Monitorea avances</span>
+          <span class="role-chip">Auditor - Fiscaliza</span>
+          <span class="role-chip">Director Institucional - Aprueba</span>
+          <span class="role-chip">Ciudadano - Consulta publica</span>
         </div>
       </div>
     </section>
@@ -2607,7 +2870,8 @@ const MODULOS_USUARIO=[
     {id:'comercial_gestor_cobros',nombre:'Comercial - Gestor de Cobros'}
   ]},
   {grupo:'Ecosistema Institucional',modulos:[
-    {id:'ecosistema',nombre:'Arquitectura General'}
+    {id:'ecosistema',nombre:'Arquitectura General'},
+    {id:'snip',nombre:'Sistema de Proyectos SNIP'}
   ]},
   {grupo:'Colaboracion',modulos:[
     {id:'comunicacion',nombre:'Comunicacion interna'},
