@@ -99,7 +99,6 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
     <button type="button" data-panel="iaComercial" onclick="mostrarPanelComercial('iaComercial')">IA</button>
     <button type="button" data-panel="gestorCobrosComercial" onclick="mostrarPanelComercial('gestorCobrosComercial')">Gestor de Cobros</button>
-    <button type="button" data-panel="usuariosComerciales" onclick="mostrarPanelComercial('usuariosComerciales')">Usuarios Comerciales</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -1734,7 +1733,7 @@ body.embedded .wrap{padding:0}
   <section id="usuariosComerciales" style="display:none">
     <article class="panel">
       <h2>Usuarios del Area Comercial</h2>
-      <p class="muted">Administra perfiles, roles y permisos operativos del Sistema Comercial con trazabilidad y control estricto.</p>
+      <p class="muted">Los usuarios comerciales se administran desde Administracion > Usuarios en el Sistema de Recursos Humanos, vinculados al empleado correspondiente. Esta vista queda solo como referencia de roles y permisos.</p>
       <div class="modules">
         <span>Director Comercial</span>
         <span>Supervisor Comercial</span>
@@ -1747,32 +1746,14 @@ body.embedded .wrap{padding:0}
         <span>Auditor</span>
       </div>
       <section class="grid kpis" style="margin-top:12px">
-        <article class="panel kpi"><small>Usuarios comerciales</small><strong id="usuariosComercialesKpi">0</strong><span>Perfiles registrados</span></article>
-        <article class="panel kpi"><small>Usuarios activos</small><strong id="usuariosComercialesActivosKpi">0</strong><span>Con acceso permitido</span></article>
-        <article class="panel kpi"><small>Roles de cobranza</small><strong id="rolesCobranzaKpi">0</strong><span>Gestores, cajeros y supervisores</span></article>
-        <article class="panel kpi"><small>Fiscalizacion</small><strong id="auditoresComercialesKpi">0</strong><span>Auditores comerciales</span></article>
+        <article class="panel kpi"><small>Administracion central</small><strong>RRHH</strong><span>Modulo Usuarios</span></article>
+        <article class="panel kpi"><small>Fuente de empleados</small><strong>Empleados</strong><span>Registro RRHH</span></article>
+        <article class="panel kpi"><small>Control de permisos</small><strong>Roles</strong><span>Segun perfil comercial</span></article>
+        <article class="panel kpi"><small>Trazabilidad</small><strong>Auditoria</strong><span>Centralizada</span></article>
       </section>
     </article>
 
     <section class="grid three">
-      <article class="panel">
-        <h3>Crear Usuario Comercial</h3>
-        <form id="formUsuarioComercial">
-          <input id="usuarioComercialNombre" placeholder="Nombre completo" required>
-          <input id="usuarioComercialAcceso" placeholder="Nombre de acceso" required>
-          <input id="usuarioComercialCorreo" type="email" placeholder="Correo institucional">
-          <select id="usuarioComercialRol" required><option value="">Rol comercial</option></select>
-          <select id="usuarioComercialEstado" required>
-            <option>Activo</option>
-            <option>Inactivo</option>
-            <option>Suspendido</option>
-          </select>
-          <input id="usuarioComercialSupervisor" placeholder="Supervisor inmediato">
-          <input id="usuarioComercialFirma" placeholder="Firma digital o codigo de autorizacion">
-          <button type="submit">Guardar usuario</button>
-        </form>
-      </article>
-
       <article class="panel">
         <h3>Controles Recomendados</h3>
         <div class="alerts">
@@ -1794,15 +1775,6 @@ body.embedded .wrap{padding:0}
 
     <section class="grid two">
       <article class="panel">
-        <h3>Usuarios Registrados</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Usuario</th><th>Acceso</th><th>Rol</th><th>Funcion</th><th>Estado</th><th>Supervisor</th></tr></thead>
-            <tbody id="tablaUsuariosComerciales"></tbody>
-          </table>
-        </div>
-      </article>
-      <article class="panel">
         <h3>Matriz de Permisos</h3>
         <div class="table-wrap">
           <table>
@@ -1812,16 +1784,6 @@ body.embedded .wrap{padding:0}
         </div>
       </article>
     </section>
-
-    <article class="panel">
-      <h3>Auditoria de Usuarios Comerciales</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Fecha</th><th>Accion</th><th>Usuario</th><th>Rol</th><th>Detalle</th></tr></thead>
-          <tbody id="tablaAuditoriaUsuariosComerciales"></tbody>
-        </table>
-      </div>
-    </article>
   </section>
 </main>
 <script>
@@ -3305,22 +3267,6 @@ function auditarUsuarioComercial(accion, usuario, detalle){
   });
 }
 function renderUsuariosComerciales(){
-  usuarioComercialRol.innerHTML='<option value="">Rol comercial</option>'+rolesComerciales.map(item=>`<option value="${safeText(item.rol)}">${safeText(item.rol)} - ${safeText(item.funcion)}</option>`).join('');
-  usuariosComercialesKpi.textContent=usuariosComercialesData.length;
-  usuariosComercialesActivosKpi.textContent=usuariosComercialesData.filter(item=>item.estado==='Activo').length;
-  rolesCobranzaKpi.textContent=usuariosComercialesData.filter(item=>['Gestor de Cobros','Cajero','Supervisor Comercial'].includes(item.rol)).length;
-  auditoresComercialesKpi.textContent=usuariosComercialesData.filter(item=>item.rol==='Auditor').length;
-  tablaUsuariosComerciales.innerHTML=usuariosComercialesData.length?usuariosComercialesData.map(item=>{
-    const rol=rolComercialPorNombre(item.rol);
-    return `<tr>
-      <td>${safeText(item.nombre)}<br><small>${safeText(item.correo||'Sin correo')}</small></td>
-      <td>${safeText(item.acceso)}</td>
-      <td><span class="badge">${safeText(item.rol)}</span></td>
-      <td>${safeText(rol.funcion)}</td>
-      <td><span class="badge">${safeText(item.estado)}</span></td>
-      <td>${safeText(item.supervisor||'-')}</td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="6">No hay usuarios comerciales registrados.</td></tr>';
   tablaPermisosComerciales.innerHTML=rolesComerciales.map(item=>`
     <tr>
       <td>${safeText(item.rol)}</td>
@@ -3329,9 +3275,6 @@ function renderUsuariosComerciales(){
       <td>${safeText(item.permisos.join(' | '))}</td>
     </tr>
   `).join('');
-  tablaAuditoriaUsuariosComerciales.innerHTML=auditoriaUsuariosComerciales.length?auditoriaUsuariosComerciales.slice(0,160).map(item=>`
-    <tr><td>${safeText(new Date(item.fecha).toLocaleString('es-DO'))}</td><td>${safeText(item.accion)}</td><td>${safeText(item.usuario)}</td><td>${safeText(item.rol)}</td><td>${safeText(item.detalle)}</td></tr>
-  `).join(''):'<tr><td colspan="5">No hay auditoria de usuarios comerciales.</td></tr>';
 }
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
@@ -4143,30 +4086,6 @@ formSuspensionGestor.addEventListener('submit',event=>{
   guardarGestorCobrosComercial();
   formSuspensionGestor.reset();
   renderGestorCobrosComercial();
-});
-formUsuarioComercial.addEventListener('submit',event=>{
-  event.preventDefault();
-  const acceso=usuarioComercialAcceso.value.trim().toLowerCase();
-  if(usuariosComercialesData.some(item=>item.acceso.toLowerCase()===acceso)){
-    alert('Ya existe un usuario comercial con ese nombre de acceso.');
-    return;
-  }
-  const usuario={
-    id:idCatastro('USC'),
-    nombre:usuarioComercialNombre.value.trim(),
-    acceso,
-    correo:usuarioComercialCorreo.value.trim(),
-    rol:usuarioComercialRol.value,
-    estado:usuarioComercialEstado.value,
-    supervisor:usuarioComercialSupervisor.value.trim(),
-    firma:usuarioComercialFirma.value.trim(),
-    creado:new Date().toISOString()
-  };
-  usuariosComercialesData.unshift(usuario);
-  auditarUsuarioComercial('Usuario creado',usuario,`Estado ${usuario.estado}. Supervisor ${usuario.supervisor||'No definido'}.`);
-  guardarUsuariosComerciales();
-  formUsuarioComercial.reset();
-  renderUsuariosComerciales();
 });
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();

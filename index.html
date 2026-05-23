@@ -142,12 +142,22 @@
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="nomina">
-        <summary>Nomina y otras areas</summary>
+        <summary>Nomina</summary>
         <div class="sidebar-group-links">
           <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
           <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="compras">
+        <summary>Compras y Almacen</summary>
+        <div class="sidebar-group-links">
           <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
           <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="comercial">
+        <summary>Comercial</summary>
+        <div class="sidebar-group-links">
           <a id="menu-comercial" onclick="showSection('comercial')"><i class="fa-solid fa-chart-pie"></i>Sistema Comercial</a>
         </div>
       </details>
@@ -581,6 +591,9 @@
       <h1>Panel de Usuarios</h1>
       <form id="formUsuario" novalidate>
         <input type="hidden" id="usuarioId">
+        <select id="usuarioEmpleadoCodigo" onchange="sincronizarEmpleadoUsuario()">
+          <option value="">Vincular empleado RRHH</option>
+        </select>
         <input id="usuarioNombre" placeholder="Nombre completo" required>
         <input id="usuarioLogin" placeholder="Usuario" required>
         <input id="usuarioCorreo" type="email" placeholder="Correo institucional">
@@ -590,6 +603,9 @@
           <option>Recursos Humanos</option>
           <option>Nomina</option>
           <option>Consulta</option>
+        </select>
+        <select id="usuarioRolComercial">
+          <option value="">Rol comercial si aplica</option>
         </select>
         <select id="usuarioEstado" required>
           <option>Activo</option>
@@ -632,10 +648,21 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Nombre</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Modulos</th><th>Nota</th><th>Accion</th></tr>
+            <tr><th>Nombre</th><th>Empleado RRHH</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Rol Comercial</th><th>Estado</th><th>Unidad</th><th>Alcance</th><th>Modulos</th><th>Nota</th><th>Accion</th></tr>
           </thead>
           <tbody id="tablaUsuarios"></tbody>
         </table>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Roles comerciales disponibles</h2>
+        <p class="small">Los usuarios comerciales se crean aqui, vinculados a empleados de RRHH, y se les otorga acceso al modulo Sistema Comercial segun su funcion.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rol comercial</th><th>Funcion</th><th>Modulos operativos</th></tr></thead>
+            <tbody id="tablaRolesComercialesUsuarios"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -2120,15 +2147,19 @@ const MODULOS_USUARIO=[
     {id:'desempeno',nombre:'Desempeno'},
     {id:'capacitacion',nombre:'Capacitacion'}
   ]},
-  {grupo:'Nomina y soporte',modulos:[
+  {grupo:'Nomina',modulos:[
     {id:'nomina',nombre:'Nomina'},
-    {id:'beneficios',nombre:'Beneficios'},
-    {id:'disciplinario',nombre:'Disciplinario y legal'},
     {id:'reportes',nombre:'Reportes y analitica'}
   ]},
-  {grupo:'Otras areas',modulos:[
+  {grupo:'Soporte de Gestion Humana',modulos:[
+    {id:'beneficios',nombre:'Beneficios'},
+    {id:'disciplinario',nombre:'Disciplinario y legal'}
+  ]},
+  {grupo:'Compras y Almacen',modulos:[
     {id:'compras',nombre:'Solicitudes de Compras'},
-    {id:'almacen',nombre:'Solicitudes a Almacen'},
+    {id:'almacen',nombre:'Solicitudes a Almacen'}
+  ]},
+  {grupo:'Comercial',modulos:[
     {id:'comercial',nombre:'Sistema Comercial'}
   ]},
   {grupo:'Colaboracion',modulos:[
@@ -2144,6 +2175,17 @@ const MODULOS_USUARIO=[
   ]}
 ];
 const MODULOS_ADMIN=new Set(['estructura','usuarios','configuracion']);
+const ROLES_COMERCIALES=[
+  {rol:'Director Comercial',funcion:'Supervision general',modulos:['Sistema Comercial','Facturacion','Cobros','Gestor de Cobranza','Atencion Cliente','GIS','Finanzas','BI','IA']},
+  {rol:'Supervisor Comercial',funcion:'Control operativo',modulos:['Cobros','Gestor de Cobranza','Lectura','Suspensiones','Reconexiones','Reportes']},
+  {rol:'Cajero',funcion:'Cobros',modulos:['Caja','Cobros','Conciliaciones']},
+  {rol:'Facturador',funcion:'Facturacion',modulos:['Facturacion','Catastro','Medidores']},
+  {rol:'Lecturista',funcion:'Lecturas',modulos:['Lectura','Medidores','Rutas']},
+  {rol:'Gestor de Cobros',funcion:'Recuperacion',modulos:['Gestor de Cobranza','Cartera','Notificaciones','Convenios','GIS']},
+  {rol:'Atencion al Cliente',funcion:'Reclamos',modulos:['Atencion Cliente','Catastro','Tickets']},
+  {rol:'Tecnico',funcion:'Suspensiones/reconexiones',modulos:['Tecnico Operativo','Suspensiones','Reconexiones','GIS']},
+  {rol:'Auditor',funcion:'Fiscalizacion',modulos:['Auditoria','Reportes','BI','Finanzas']}
+];
 const presupuestoNomina2026=[
   {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 1',monto:857250.00},
   {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 2',monto:4336105.00},
@@ -2575,10 +2617,12 @@ const formUsuario=document.getElementById('formUsuario');
 formUsuario.addEventListener('submit',async event=>{
   event.preventDefault();
   const id=document.getElementById('usuarioId').value;
+  const empleadoCodigo=document.getElementById('usuarioEmpleadoCodigo').value;
   const nombre=document.getElementById('usuarioNombre').value.trim();
   const login=document.getElementById('usuarioLogin').value.trim();
   const correo=document.getElementById('usuarioCorreo').value.trim();
   const rol=document.getElementById('usuarioRol').value;
+  const rolComercial=document.getElementById('usuarioRolComercial').value;
   const estado=document.getElementById('usuarioEstado').value;
   const unidadId=document.getElementById('usuarioUnidad').value;
   const alcance=document.getElementById('usuarioAlcance').value;
@@ -2604,7 +2648,7 @@ formUsuario.addEventListener('submit',async event=>{
     if(!authUser)return;
   }
   const passwordHash=password?await hashClave(password):actual?.passwordHash;
-  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',nombre,login,correo,rol,estado,unidadId,alcance,modulos:normalizarModulosUsuario({rol,modulos}),passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
+  const usuario={id:id||authUser?.id||crearIdUsuario(),authUserId:authUser?.id||actual?.authUserId||'',empleadoCodigo,nombre,login,correo,rol,rolComercial,estado,unidadId,alcance,modulos:normalizarModulosUsuario({rol,modulos}),passwordHash,claveTemporal,adminSeedVersion:actual?.adminSeedVersion||'',actualizadoEn:new Date().toISOString()};
   const idx=usuarios.findIndex(item=>item.id===usuario.id);
   if(idx>=0)usuarios[idx]={...usuarios[idx],...usuario};else usuarios.push({...usuario,creadoEn:new Date().toISOString()});
   guardarStorage();
@@ -2616,6 +2660,8 @@ formUsuario.addEventListener('submit',async event=>{
 function limpiarUsuarioFormulario(){
   formUsuario.reset();
   document.getElementById('usuarioId').value='';
+  document.getElementById('usuarioEmpleadoCodigo').value='';
+  document.getElementById('usuarioRolComercial').value='';
   document.getElementById('usuarioEstado').value='Activo';
   document.getElementById('usuarioAlcance').value='todo';
   document.getElementById('usuarioUnidad').value='';
@@ -2633,6 +2679,8 @@ function cargarUsuarioParaEditar(id){
   document.getElementById('usuarioLogin').value=usuario.login||'';
   document.getElementById('usuarioCorreo').value=usuario.correo||'';
   document.getElementById('usuarioRol').value=usuario.rol||'';
+  document.getElementById('usuarioEmpleadoCodigo').value=usuario.empleadoCodigo||'';
+  document.getElementById('usuarioRolComercial').value=usuario.rolComercial||'';
   document.getElementById('usuarioEstado').value=usuario.estado||'Activo';
   document.getElementById('usuarioUnidad').value=usuario.unidadId||'';
   document.getElementById('usuarioAlcance').value=usuario.alcance||'todo';
@@ -2672,11 +2720,29 @@ function cambiarEstadoUsuario(id){
 function renderUsuarios(){
   const tbody=document.getElementById('tablaUsuarios');
   const q=(document.getElementById('busquedaUsuario')?.value||'').toLowerCase().trim();
-  const filtrados=usuarios.filter(usuario=>[usuario.nombre,usuario.login,usuario.correo,usuario.rol,usuario.estado].join(' ').toLowerCase().includes(q));
-  tbody.innerHTML=filtrados.map(usuario=>`<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(resumenModulosUsuario(usuario))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+  const filtrados=usuarios.filter(usuario=>[usuario.nombre,usuario.login,usuario.correo,usuario.rol,usuario.rolComercial,usuario.estado].join(' ').toLowerCase().includes(q));
+  tbody.innerHTML=filtrados.map(usuario=>{
+    const empleado=empleados.find(item=>item.codigo===usuario.empleadoCodigo);
+    return `<tr><td>${safeText(usuario.nombre)}</td><td>${safeText(empleado?`${empleado.codigo} - ${empleado.nombre} ${empleado.apellido}`:'Sin vincular')}</td><td>${safeText(usuario.login)}</td><td>${safeText(usuario.correo||'')}</td><td>${safeText(usuario.rol)}</td><td>${safeText(usuario.rolComercial||'-')}</td><td>${safeText(usuario.estado)}</td><td>${safeText(rutaUnidad(buscarUnidad(usuario.unidadId))||'Todo el sistema')}</td><td>${safeText(textoAlcance(usuario.alcance))}</td><td>${safeText(resumenModulosUsuario(usuario))}</td><td>${safeText(usuario.claveTemporal||'')}</td><td><button class="btn btn-warning" onclick="cargarUsuarioParaEditar('${safeText(usuario.id)}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-secondary" onclick="cambiarEstadoUsuario('${safeText(usuario.id)}')">${usuario.estado==='Activo'?'Desactivar':'Activar'}</button> <button class="btn btn-danger" onclick="eliminarUsuario('${safeText(usuario.id)}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+  }).join('');
   document.getElementById('totalUsuarios').innerText=usuarios.length;
   document.getElementById('usuariosActivos').innerText=usuarios.filter(usuario=>usuario.estado==='Activo').length;
   document.getElementById('usuariosAdmin').innerText=usuarios.filter(usuario=>usuario.rol==='Administrador').length;
+  const tablaRoles=document.getElementById('tablaRolesComercialesUsuarios');
+  if(tablaRoles){
+    tablaRoles.innerHTML=ROLES_COMERCIALES.map(item=>`<tr><td>${safeText(item.rol)}</td><td>${safeText(item.funcion)}</td><td>${safeText(item.modulos.join(', '))}</td></tr>`).join('');
+  }
+}
+
+function sincronizarEmpleadoUsuario(){
+  const codigo=document.getElementById('usuarioEmpleadoCodigo').value;
+  const empleado=empleados.find(item=>item.codigo===codigo);
+  if(!empleado)return;
+  if(!document.getElementById('usuarioNombre').value.trim())document.getElementById('usuarioNombre').value=`${empleado.nombre||''} ${empleado.apellido||''}`.trim();
+  if(!document.getElementById('usuarioCorreo').value.trim()&&empleado.correo)document.getElementById('usuarioCorreo').value=empleado.correo;
+  if(!document.getElementById('usuarioLogin').value.trim())document.getElementById('usuarioLogin').value=(empleado.correo||empleado.cedula||empleado.codigo||'').toLowerCase();
+  const unidad=buscarUnidadPorNombre(empleado.seccion)||buscarUnidadPorNombre(empleado.division)||buscarUnidadPorNombre(empleado.departamento)||buscarUnidadPorNombre(empleado.direccion);
+  if(unidad&&!document.getElementById('usuarioUnidad').value)document.getElementById('usuarioUnidad').value=unidad.id;
 }
 
 function textoAlcance(alcance){
@@ -2688,12 +2754,24 @@ function textoAlcance(alcance){
 function renderUsuariosPermisos(){
   const unidadSel=document.getElementById('usuarioUnidad');
   const actual=unidadSel.value;
+  const empleadoSel=document.getElementById('usuarioEmpleadoCodigo');
+  const empleadoActual=empleadoSel?.value||'';
+  const rolComercialSel=document.getElementById('usuarioRolComercial');
+  const rolComercialActual=rolComercialSel?.value||'';
   unidadSel.innerHTML='<option value="">Unidad organizacional / linea de mando</option>';
   estructuraOrganizacional
     .slice()
     .sort((a,b)=>rutaUnidad(a).localeCompare(rutaUnidad(b),'es'))
     .forEach(unidad=>unidadSel.insertAdjacentHTML('beforeend',`<option value="${safeText(unidad.id)}">${safeText(rutaUnidad(unidad))}</option>`));
   unidadSel.value=actual;
+  if(empleadoSel){
+    empleadoSel.innerHTML='<option value="">Vincular empleado RRHH</option>'+empleados.slice().sort((a,b)=>`${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`,'es')).map(emp=>`<option value="${safeText(emp.codigo)}">${safeText(emp.codigo)} - ${safeText(emp.nombre)} ${safeText(emp.apellido)} (${safeText(emp.cargo||'Sin cargo')})</option>`).join('');
+    empleadoSel.value=empleados.some(emp=>emp.codigo===empleadoActual)?empleadoActual:'';
+  }
+  if(rolComercialSel){
+    rolComercialSel.innerHTML='<option value="">Rol comercial si aplica</option>'+ROLES_COMERCIALES.map(item=>`<option value="${safeText(item.rol)}">${safeText(item.rol)} - ${safeText(item.funcion)}</option>`).join('');
+    rolComercialSel.value=ROLES_COMERCIALES.some(item=>item.rol===rolComercialActual)?rolComercialActual:'';
+  }
   renderUsuarioModulos();
   renderUsuarioVista();
 }
@@ -2984,6 +3062,12 @@ function tiposPadrePermitidos(tipo){
 
 function buscarUnidad(id){
   return estructuraOrganizacional.find(unidad=>unidad.id===id);
+}
+
+function buscarUnidadPorNombre(nombre){
+  const key=normalizarCatalogo(nombre||'');
+  if(!key)return null;
+  return estructuraOrganizacional.find(unidad=>normalizarCatalogo(unidad.nombre)===key)||null;
 }
 
 function obtenerAncestrosUnidad(unidad){
