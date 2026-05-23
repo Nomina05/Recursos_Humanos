@@ -1520,6 +1520,61 @@
       </div>
 
       <div class="dashboard-section">
+        <h2>Datos compartidos entre sistemas</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Identidad institucional</h3>
+            <ul>
+              <li>Usuarios</li>
+              <li>Roles web y permisos moviles</li>
+              <li>Empleado vinculado</li>
+              <li>Unidad organizacional</li>
+              <li>Firma y jerarquia de aprobacion</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>RRHH como fuente maestra</h3>
+            <ul>
+              <li>Empleados</li>
+              <li>Cargos</li>
+              <li>Direcciones, departamentos, divisiones y secciones</li>
+              <li>Centros de costo y centros de servicio</li>
+              <li>Disponibilidad, asistencia y responsables</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Compras y finanzas compartidas</h3>
+            <ul>
+              <li>Solicitudes por empleado y unidad</li>
+              <li>Procesos de compra</li>
+              <li>Proveedores y contratos</li>
+              <li>Presupuesto, compromisos y pagos</li>
+              <li>Inventario asignado a empleados o proyectos</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Comercial y operaciones</h3>
+            <ul>
+              <li>Usuarios comerciales y contratos de servicio</li>
+              <li>Medidores, lecturas y facturacion</li>
+              <li>Cobros, caja, suspensiones y reconexiones</li>
+              <li>Brigadas, GIS y evidencias de campo</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>SNIP y proyectos</h3>
+            <ul>
+              <li>Proyectos institucionales</li>
+              <li>Necesidades de compra generadas por proyecto</li>
+              <li>Personal asignado</li>
+              <li>Ejecucion fisica y financiera</li>
+              <li>Supervision, GIS, transparencia y auditoria</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
         <h2>Mapa de integraciones</h2>
         <div class="architecture-grid">
           <div class="architecture-card">
@@ -4086,6 +4141,7 @@ function renderUsuariosPermisos(){
     rolComercialSel.value=ROLES_COMERCIALES.some(item=>item.rol===rolComercialActual)?rolComercialActual:'';
   }
   renderUsuarioModulos();
+  renderPermisosMoviles();
   renderUsuarioVista();
 }
 
@@ -4093,6 +4149,42 @@ function modulosSeleccionadosUsuario(){
   const seleccionados=Array.from(document.querySelectorAll('#usuarioModulos input[data-modulo]:checked'))
     .map(input=>input.dataset.modulo);
   return normalizarModulosUsuario({rol:document.getElementById('usuarioRol').value,modulos:seleccionados});
+}
+
+function permisosMovilesSeleccionadosUsuario(){
+  return Array.from(document.querySelectorAll('#usuarioPermisosMoviles input[data-movil]:checked')).map(input=>input.dataset.movil);
+}
+
+function marcarPermisosMoviles(marcar){
+  document.querySelectorAll('#usuarioPermisosMoviles input[data-movil]').forEach(input=>input.checked=Boolean(marcar));
+}
+
+function aplicarPlantillaMovil(){
+  const modulos=new Set(modulosSeleccionadosUsuario());
+  const sugeridos=[];
+  if(modulos.has('ess'))sugeridos.push('movil_ess');
+  if(modulos.has('asistencia'))sugeridos.push('movil_asistencia');
+  if(modulos.has('supervisor'))sugeridos.push('movil_supervisor');
+  if(modulos.has('comercial_lectura'))sugeridos.push('movil_lectura');
+  if(modulos.has('comercial_cobros')||modulos.has('comercial_gestor_cobros'))sugeridos.push('movil_cobros');
+  if(modulos.has('comercial_cobros')||modulos.has('comercial_financiero'))sugeridos.push('movil_caja');
+  if(modulos.has('comercial_tecnico')||modulos.has('comercial_suspensiones'))sugeridos.push('movil_brigadas');
+  if(modulos.has('compras_inventario')||modulos.has('almacen'))sugeridos.push('movil_inventario');
+  if(modulos.has('compras_solicitudes')||modulos.has('compras_presupuesto')||modulos.has('compras_procesos'))sugeridos.push('movil_compras_aprobaciones');
+  if(modulos.has('snip_ejecucion')||modulos.has('snip_monitoreo'))sugeridos.push('movil_snip_supervision');
+  if(modulos.has('comercial_gis')||modulos.has('snip_gis'))sugeridos.push('movil_gis');
+  if(modulos.has('dashboard')||modulos.has('ecosistema'))sugeridos.push('movil_dashboard');
+  renderPermisosMoviles([...new Set(sugeridos)]);
+}
+
+function renderPermisosMoviles(seleccion=[]){
+  const contenedor=document.getElementById('usuarioPermisosMoviles');
+  if(!contenedor)return;
+  const seleccionados=new Set(Array.isArray(seleccion)&&seleccion.length?seleccion:permisosMovilesSeleccionadosUsuario());
+  contenedor.innerHTML=PERMISOS_MOVILES.map(permiso=>`<label class="module-check">
+    <input type="checkbox" data-movil="${safeText(permiso.id)}"${seleccionados.has(permiso.id)?' checked':''}>
+    <span>${safeText(permiso.nombre)}</span>
+  </label>`).join('');
 }
 
 function marcarModulosUsuario(marcar){
@@ -4148,6 +4240,13 @@ function resumenModulosUsuario(usuario){
   if(usuario.rol==='Administrador')return 'Todos';
   if(modulos.length<=4)return modulos.map(id=>modulosDisponibles().find(modulo=>modulo.id===id)?.nombre||id).join(', ');
   return `${modulos.length} modulos`;
+}
+
+function resumenPermisosMoviles(usuario){
+  const permisos=Array.isArray(usuario.permisosMoviles)?usuario.permisosMoviles:[];
+  if(!permisos.length)return 'Sin permisos moviles';
+  if(permisos.length<=3)return permisos.map(id=>PERMISOS_MOVILES.find(item=>item.id===id)?.nombre||id).join(', ');
+  return `${permisos.length} permisos moviles`;
 }
 
 function renderUsuarioVista(){
