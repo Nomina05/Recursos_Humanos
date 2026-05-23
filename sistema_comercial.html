@@ -99,6 +99,7 @@ body.embedded .wrap{padding:0}
     <button type="button" data-panel="reportesBiComercial" onclick="mostrarPanelComercial('reportesBiComercial')">Reportes BI</button>
     <button type="button" data-panel="iaComercial" onclick="mostrarPanelComercial('iaComercial')">IA</button>
     <button type="button" data-panel="gestorCobrosComercial" onclick="mostrarPanelComercial('gestorCobrosComercial')">Gestor de Cobros</button>
+    <button type="button" data-panel="usuariosComerciales" onclick="mostrarPanelComercial('usuariosComerciales')">Usuarios Comerciales</button>
   </nav>
   <div id="dashboardComercial">
   <section class="panel">
@@ -175,13 +176,23 @@ body.embedded .wrap{padding:0}
       <p class="muted">Administra clientes, propiedades, rutas, contratos de servicio e historial comercial.</p>
       <div class="modules">
         <span>Registro de Usuarios</span>
+        <span>Catastro de Usuarios</span>
         <span>Personas fisicas</span>
         <span>Empresas</span>
         <span>Instituciones publicas</span>
+        <span>Residencial</span>
+        <span>Comercial</span>
+        <span>Industrial</span>
+        <span>Gubernamental</span>
+        <span>Social</span>
         <span>Datos personales</span>
         <span>Contactos</span>
         <span>Documentos</span>
         <span>Registro de Inmuebles</span>
+        <span>Catastro de Contratos</span>
+        <span>Catastro de Servicios</span>
+        <span>Catastro de Medidores</span>
+        <span>Catastro Geografico</span>
         <span>Clasificacion Comercial</span>
         <span>Sectores y Rutas</span>
         <span>Contratos de Servicio</span>
@@ -199,11 +210,25 @@ body.embedded .wrap{padding:0}
       <article class="panel">
         <h3>Registro de Usuarios</h3>
         <form id="formClienteCatastro">
+          <input id="clienteCodigo" placeholder="Codigo usuario automatico">
           <select id="clienteTipo" required>
             <option value="">Tipo de usuario</option>
             <option>Persona fisica</option>
             <option>Empresa</option>
             <option>Institucion publica</option>
+          </select>
+          <select id="clienteCategoria" required>
+            <option value="">Categoria usuario</option>
+            <option>Residencial</option>
+            <option>Comercial</option>
+            <option>Industrial</option>
+            <option>Gubernamental</option>
+            <option>Social</option>
+          </select>
+          <select id="clienteEstado" required>
+            <option>Activo</option>
+            <option>Inactivo</option>
+            <option>Suspendido</option>
           </select>
           <input id="clienteDocumento" placeholder="Cedula, RNC o documento" required>
           <input id="clienteNombre" placeholder="Nombre o razon social" required>
@@ -223,6 +248,7 @@ body.embedded .wrap{padding:0}
             <option value="">Tipo de inmueble</option>
             <option>Casa</option>
             <option>Apartamento</option>
+            <option>Local</option>
             <option>Solar</option>
             <option>Comercio</option>
             <option>Industria</option>
@@ -238,6 +264,8 @@ body.embedded .wrap{padding:0}
           <input id="inmuebleZona" placeholder="Zona" required>
           <input id="inmuebleSector" placeholder="Sector" required>
           <input id="inmuebleCalle" placeholder="Calle">
+          <input id="inmuebleDireccion" class="span-all" placeholder="Direccion del inmueble">
+          <input id="inmuebleGps" placeholder="Coordenadas GPS latitud,longitud">
           <input id="inmuebleRuta" placeholder="Ruta de lectura">
           <button type="submit">Registrar inmueble</button>
         </form>
@@ -249,21 +277,67 @@ body.embedded .wrap{padding:0}
           <select id="contratoInmueble" required><option value="">Inmueble</option></select>
           <input id="contratoNumero" placeholder="Numero de contrato" required>
           <input id="contratoInstalacion" type="date" required>
+          <input id="contratoActivacion" type="date">
           <select id="contratoServicio" required>
             <option value="">Tipo de servicio</option>
             <option>Agua potable</option>
             <option>Alcantarillado</option>
+            <option>Ambos</option>
             <option>Agua y alcantarillado</option>
             <option>Servicio especial</option>
           </select>
           <select id="contratoEstado" required>
             <option>Activo</option>
-            <option>Suspendido</option>
             <option>Cortado</option>
+            <option>Reconectado</option>
             <option>Cancelado</option>
+            <option>Suspendido</option>
           </select>
+          <input id="contratoCambioTitular" placeholder="Cambio de titular / referencia">
           <button type="submit">Guardar contrato</button>
         </form>
+      </article>
+    </section>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Catastro de Servicios</h3>
+        <form id="formServicioCatastro">
+          <input id="servicioCatastroCodigo" placeholder="Codigo servicio">
+          <select id="servicioCatastroTipo" required>
+            <option value="">Servicio</option>
+            <option>Agua potable</option>
+            <option>Alcantarillado</option>
+            <option>Ambos</option>
+          </select>
+          <select id="servicioCatastroEstado" required>
+            <option>Activo</option>
+            <option>Inactivo</option>
+          </select>
+          <textarea id="servicioCatastroDescripcion" placeholder="Descripcion o politica del servicio"></textarea>
+          <button type="submit">Guardar servicio</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Catastro Geografico</h3>
+        <form id="formGeografiaCatastro">
+          <input id="geoZona" placeholder="Zona" required>
+          <input id="geoSector" placeholder="Sector" required>
+          <input id="geoRuta" placeholder="Ruta" required>
+          <input id="geoGps" placeholder="Coordenadas GPS">
+          <textarea id="geoDescripcion" placeholder="Descripcion geografica"></textarea>
+          <button type="submit">Guardar sector/ruta</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Relacion Correcta</h3>
+        <div class="compact-list">
+          <article class="record"><b>Usuario</b><small>Persona, empresa o institucion. Puede tener varios inmuebles.</small></article>
+          <article class="record"><b>Inmueble</b><small>Ubicacion fisica con sector, ruta y coordenadas. Puede tener varios contratos.</small></article>
+          <article class="record"><b>Contrato</b><small>Servicio activo que genera facturas y se asocia a medidor.</small></article>
+        </div>
       </article>
     </section>
 
@@ -303,7 +377,7 @@ body.embedded .wrap{padding:0}
         <h3>Inmuebles, Sectores y Rutas</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Usuario</th><th>Inmueble</th><th>Clasificacion</th><th>Zona</th><th>Sector</th><th>Calle</th><th>Ruta</th></tr></thead>
+            <thead><tr><th>Usuario</th><th>Inmueble</th><th>Clasificacion</th><th>Zona</th><th>Sector</th><th>Direccion/GPS</th><th>Ruta</th></tr></thead>
             <tbody id="tablaInmueblesCatastro"></tbody>
           </table>
         </div>
@@ -312,12 +386,43 @@ body.embedded .wrap{padding:0}
         <h3>Contratos Registrados</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Contrato</th><th>Usuario</th><th>Instalacion</th><th>Servicio</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Contrato</th><th>Usuario</th><th>Activacion</th><th>Servicio</th><th>Estado</th><th>Medidor</th></tr></thead>
             <tbody id="tablaContratosCatastro"></tbody>
           </table>
         </div>
       </article>
     </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Servicios y Estados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Codigo</th><th>Servicio</th><th>Estado</th><th>Descripcion</th></tr></thead>
+            <tbody id="tablaServiciosCatastro"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Sectores, Rutas y Coordenadas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Zona</th><th>Sector</th><th>Ruta</th><th>GPS</th><th>Descripcion</th></tr></thead>
+            <tbody id="tablaGeografiaCatastro"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel">
+      <h3>Auditoria del Catastro</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Accion</th><th>Registro</th><th>Detalle</th></tr></thead>
+          <tbody id="tablaAuditoriaCatastro"></tbody>
+        </table>
+      </div>
+    </article>
   </section>
 
   <section id="medidoresComerciales" style="display:none">
@@ -1625,6 +1730,99 @@ body.embedded .wrap{padding:0}
       </article>
     </section>
   </section>
+
+  <section id="usuariosComerciales" style="display:none">
+    <article class="panel">
+      <h2>Usuarios del Area Comercial</h2>
+      <p class="muted">Administra perfiles, roles y permisos operativos del Sistema Comercial con trazabilidad y control estricto.</p>
+      <div class="modules">
+        <span>Director Comercial</span>
+        <span>Supervisor Comercial</span>
+        <span>Cajero</span>
+        <span>Facturador</span>
+        <span>Lecturista</span>
+        <span>Gestor de Cobros</span>
+        <span>Atencion al Cliente</span>
+        <span>Tecnico</span>
+        <span>Auditor</span>
+      </div>
+      <section class="grid kpis" style="margin-top:12px">
+        <article class="panel kpi"><small>Usuarios comerciales</small><strong id="usuariosComercialesKpi">0</strong><span>Perfiles registrados</span></article>
+        <article class="panel kpi"><small>Usuarios activos</small><strong id="usuariosComercialesActivosKpi">0</strong><span>Con acceso permitido</span></article>
+        <article class="panel kpi"><small>Roles de cobranza</small><strong id="rolesCobranzaKpi">0</strong><span>Gestores, cajeros y supervisores</span></article>
+        <article class="panel kpi"><small>Fiscalizacion</small><strong id="auditoresComercialesKpi">0</strong><span>Auditores comerciales</span></article>
+      </section>
+    </article>
+
+    <section class="grid three">
+      <article class="panel">
+        <h3>Crear Usuario Comercial</h3>
+        <form id="formUsuarioComercial">
+          <input id="usuarioComercialNombre" placeholder="Nombre completo" required>
+          <input id="usuarioComercialAcceso" placeholder="Nombre de acceso" required>
+          <input id="usuarioComercialCorreo" type="email" placeholder="Correo institucional">
+          <select id="usuarioComercialRol" required><option value="">Rol comercial</option></select>
+          <select id="usuarioComercialEstado" required>
+            <option>Activo</option>
+            <option>Inactivo</option>
+            <option>Suspendido</option>
+          </select>
+          <input id="usuarioComercialSupervisor" placeholder="Supervisor inmediato">
+          <input id="usuarioComercialFirma" placeholder="Firma digital o codigo de autorizacion">
+          <button type="submit">Guardar usuario</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Controles Recomendados</h3>
+        <div class="alerts">
+          <div class="alert"><b>Trazabilidad completa</b>Todos los cambios de usuario quedan en auditoria comercial.</div>
+          <div class="alert"><b>Permisos estrictos</b>El gestor no modifica facturas y solo solicita suspensiones.</div>
+          <div class="alert"><b>Historial inmutable</b>Convenios, deudas y procesos legales deben conservar historial.</div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Arquitectura Comercial</h3>
+        <div class="compact-list">
+          <article class="record"><b>Sistema Comercial</b><small>Facturacion, Cobros, Gestor de Cobranza, Atencion Cliente, GIS y Caja.</small></article>
+          <article class="record"><b>Funciones modernas</b><small>Scoring de morosidad, IA predictiva y cobranza automatizada.</small></article>
+          <article class="record"><b>Institucional</b><small>Auditoria, firma digital y permisos segun rol.</small></article>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <h3>Usuarios Registrados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Usuario</th><th>Acceso</th><th>Rol</th><th>Funcion</th><th>Estado</th><th>Supervisor</th></tr></thead>
+            <tbody id="tablaUsuariosComerciales"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="panel">
+        <h3>Matriz de Permisos</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rol</th><th>Funcion</th><th>Modulos</th><th>Permisos clave</th></tr></thead>
+            <tbody id="tablaPermisosComerciales"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel">
+      <h3>Auditoria de Usuarios Comerciales</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Accion</th><th>Usuario</th><th>Rol</th><th>Detalle</th></tr></thead>
+          <tbody id="tablaAuditoriaUsuariosComerciales"></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
 </main>
 <script>
 const embeddedMode=new URLSearchParams(location.search).get('embedded')==='1';
@@ -1634,6 +1832,9 @@ let catastroClientes=JSON.parse(localStorage.getItem('catastroClientesComerciale
 let catastroInmuebles=JSON.parse(localStorage.getItem('catastroInmueblesComerciales')||'[]');
 let catastroContratos=JSON.parse(localStorage.getItem('catastroContratosComerciales')||'[]');
 let catastroHistorial=JSON.parse(localStorage.getItem('catastroHistorialComercial')||'[]');
+let catastroServicios=JSON.parse(localStorage.getItem('catastroServiciosComerciales')||'[]');
+let catastroGeografia=JSON.parse(localStorage.getItem('catastroGeografiaComercial')||'[]');
+let catastroAuditoria=JSON.parse(localStorage.getItem('catastroAuditoriaComercial')||'[]');
 let medidoresInventario=JSON.parse(localStorage.getItem('medidoresInventarioComercial')||'[]');
 let medidoresInstalaciones=JSON.parse(localStorage.getItem('medidoresInstalacionesComercial')||'[]');
 let medidoresReemplazos=JSON.parse(localStorage.getItem('medidoresReemplazosComercial')||'[]');
@@ -1664,9 +1865,22 @@ let gestionesCobrosComerciales=JSON.parse(localStorage.getItem('gestionesCobrosC
 let notificacionesCobrosComerciales=JSON.parse(localStorage.getItem('notificacionesCobrosComerciales')||'[]');
 let estadosCarteraCobrosComerciales=JSON.parse(localStorage.getItem('estadosCarteraCobrosComerciales')||'{}');
 let auditoriaCobrosComerciales=JSON.parse(localStorage.getItem('auditoriaCobrosComerciales')||'[]');
+let usuariosComercialesData=JSON.parse(localStorage.getItem('usuariosComercialesData')||'[]');
+let auditoriaUsuariosComerciales=JSON.parse(localStorage.getItem('auditoriaUsuariosComerciales')||'[]');
 let graficoComparativo=null;
 let graficoHistoricoBi=null;
 let reporteBiCache={titulo:'Reporte BI',headers:[],rows:[],periodo:''};
+const rolesComerciales=[
+  {rol:'Director Comercial',funcion:'Supervision general',modulos:['Dashboard','Facturacion','Cobros','Gestor de Cobranza','Atencion Cliente','GIS','Finanzas','BI','IA'],permisos:['Ver todo','Aprobar decisiones','Reportes ejecutivos']},
+  {rol:'Supervisor Comercial',funcion:'Control operativo',modulos:['Cobros','Gestor de Cobranza','Lectura','Suspensiones','Reconexiones','Reportes'],permisos:['Asignar gestores','Supervisar cartera','Solicitar acciones']},
+  {rol:'Cajero',funcion:'Cobros',modulos:['Caja','Cobros','Conciliaciones'],permisos:['Registrar pagos limitado','Abrir/cerrar caja','No modifica facturas']},
+  {rol:'Facturador',funcion:'Facturacion',modulos:['Facturacion','Catastro','Medidores'],permisos:['Generar facturas','Notas segun autorizacion','No aprueba descuentos']},
+  {rol:'Lecturista',funcion:'Lecturas',modulos:['Lectura','Medidores','Rutas'],permisos:['Capturar lecturas','GPS/foto','Trabajo offline']},
+  {rol:'Gestor de Cobros',funcion:'Recuperacion',modulos:['Gestor de Cobranza','Cartera','Notificaciones','Convenios','GIS'],permisos:['Ver morosos','Crear convenios','Solicitar suspension','No modifica facturas']},
+  {rol:'Atencion al Cliente',funcion:'Reclamos',modulos:['Atencion Cliente','Catastro','Tickets'],permisos:['Crear tickets','Seguimiento','No altera deuda']},
+  {rol:'Tecnico',funcion:'Suspensiones/reconexiones',modulos:['Tecnico Operativo','Suspensiones','Reconexiones','GIS'],permisos:['Ejecutar ordenes','Subir evidencias','No registra pagos']},
+  {rol:'Auditor',funcion:'Fiscalizacion',modulos:['Auditoria','Reportes','BI','Finanzas'],permisos:['Solo lectura','Fiscalizar cambios','Ver historial']}
+];
 function safeText(valor){
   return String(valor||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
 }
@@ -1696,6 +1910,7 @@ function mostrarPanelComercial(id){
   reportesBiComercial.style.display=id==='reportesBiComercial'?'block':'none';
   iaComercial.style.display=id==='iaComercial'?'block':'none';
   gestorCobrosComercial.style.display=id==='gestorCobrosComercial'?'block':'none';
+  usuariosComerciales.style.display=id==='usuariosComerciales'?'block':'none';
   document.querySelectorAll('.tabs button').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===id));
   if(id==='catastroComercial')renderCatastroComercial();
   if(id==='medidoresComerciales')renderMedidoresComerciales();
@@ -1710,6 +1925,7 @@ function mostrarPanelComercial(id){
   if(id==='reportesBiComercial')renderReportesBiComercial();
   if(id==='iaComercial')renderIaComercial();
   if(id==='gestorCobrosComercial')renderGestorCobrosComercial();
+  if(id==='usuariosComerciales')renderUsuariosComerciales();
   if(id==='dashboardComercial')renderComercial();
 }
 function idCatastro(prefijo){
@@ -1720,6 +1936,9 @@ function guardarCatastroComercial(){
   localStorage.setItem('catastroInmueblesComerciales',JSON.stringify(catastroInmuebles));
   localStorage.setItem('catastroContratosComerciales',JSON.stringify(catastroContratos));
   localStorage.setItem('catastroHistorialComercial',JSON.stringify(catastroHistorial));
+  localStorage.setItem('catastroServiciosComerciales',JSON.stringify(catastroServicios));
+  localStorage.setItem('catastroGeografiaComercial',JSON.stringify(catastroGeografia));
+  localStorage.setItem('catastroAuditoriaComercial',JSON.stringify(catastroAuditoria));
 }
 function guardarMedidoresComerciales(){
   localStorage.setItem('medidoresInventarioComercial',JSON.stringify(medidoresInventario));
@@ -1772,6 +1991,10 @@ function guardarGestorCobrosComercial(){
   localStorage.setItem('estadosCarteraCobrosComerciales',JSON.stringify(estadosCarteraCobrosComerciales));
   localStorage.setItem('auditoriaCobrosComerciales',JSON.stringify(auditoriaCobrosComerciales));
 }
+function guardarUsuariosComerciales(){
+  localStorage.setItem('usuariosComercialesData',JSON.stringify(usuariosComercialesData));
+  localStorage.setItem('auditoriaUsuariosComerciales',JSON.stringify(auditoriaUsuariosComerciales));
+}
 function clienteCatastroPorId(id){
   return catastroClientes.find(item=>item.id===id);
 }
@@ -1790,6 +2013,19 @@ function opcionesClientesCatastro(valorInicial){
 }
 function opcionesInmueblesCatastro(){
   return '<option value="">Inmueble</option>'+catastroInmuebles.map(item=>`<option value="${safeText(item.id)}">${safeText(nombreClienteCatastro(item.clienteId))} - ${safeText(item.tipo)} - ${safeText(item.sector)}</option>`).join('');
+}
+function codigoCatastro(prefix, lista, campo){
+  const total=lista.length+1;
+  return `${prefix}-${String(total).padStart(6,'0')}`;
+}
+function auditarCatastro(accion, registro, detalle){
+  catastroAuditoria.unshift({
+    id:idCatastro('AUDCAT'),
+    accion,
+    registro,
+    detalle,
+    fecha:new Date().toISOString()
+  });
 }
 function medidorPorId(id){
   return medidoresInventario.find(item=>item.id===id);
@@ -1820,7 +2056,7 @@ function renderCatastroComercial(){
     const inmuebles=catastroInmuebles.filter(row=>row.clienteId===item.id);
     const contratos=catastroContratos.filter(row=>inmuebles.some(inmueble=>inmueble.id===row.inmuebleId));
     return `<article class="record">
-      <b>${safeText(item.nombre)}</b> <span class="badge">${safeText(item.tipo)}</span>
+      <b>${safeText(item.codigo||item.id)} - ${safeText(item.nombre)}</b> <span class="badge">${safeText(item.categoria||item.tipo)}</span> <span class="badge">${safeText(item.estado||'Activo')}</span>
       <small>${safeText(item.documento)} | ${safeText(item.contacto||'Sin telefono')} | ${safeText(item.correo||'Sin correo')}</small>
       <small>${safeText(item.direccion||'Sin direccion')} | Documentos: ${safeText(item.documentos||'Pendientes')}</small>
       <small>${inmuebles.length} inmueble(s) | ${contratos.length} contrato(s) | ${catastroHistorial.filter(row=>row.clienteId===item.id).length} evento(s)</small>
@@ -1833,20 +2069,22 @@ function renderCatastroComercial(){
       <td>${safeText(item.clasificacion)}</td>
       <td>${safeText(item.zona)}</td>
       <td>${safeText(item.sector)}</td>
-      <td>${safeText(item.calle||'-')}</td>
+      <td>${safeText(item.direccion||item.calle||'-')}<br><small>${safeText(item.gps||'Sin GPS')}</small></td>
       <td>${safeText(item.ruta||'-')}</td>
     </tr>
   `).join(''):'<tr><td colspan="7">No hay inmuebles registrados.</td></tr>';
   tablaContratosCatastro.innerHTML=catastroContratos.length?catastroContratos.map(item=>{
     const inmueble=inmuebleCatastroPorId(item.inmuebleId)||{};
+    const medidor=medidorContrato(item.id);
     return `<tr>
       <td>${safeText(item.numero)}</td>
       <td>${safeText(nombreClienteCatastro(inmueble.clienteId))}<br><small>${safeText(inmueble.tipo||'Sin inmueble')}</small></td>
-      <td>${safeText(item.instalacion||'-')}</td>
+      <td>${safeText(item.activacion||item.instalacion||'-')}</td>
       <td>${safeText(item.servicio)}</td>
       <td><span class="badge">${safeText(item.estado)}</span></td>
+      <td>${safeText(medidor?`${medidor.codigo} - ${medidor.serie}`:'Sin medidor')}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="5">No hay contratos registrados.</td></tr>';
+  }).join(''):'<tr><td colspan="6">No hay contratos registrados.</td></tr>';
   tablaHistorialCatastro.innerHTML=catastroHistorial.length?catastroHistorial.slice(0,80).map(item=>`
     <tr>
       <td>${safeText(item.fecha)}</td>
@@ -1856,6 +2094,15 @@ function renderCatastroComercial(){
       <td>${safeText(item.detalle)}</td>
     </tr>
   `).join(''):'<tr><td colspan="5">No hay historial comercial registrado.</td></tr>';
+  tablaServiciosCatastro.innerHTML=catastroServicios.length?catastroServicios.map(item=>`
+    <tr><td>${safeText(item.codigo)}</td><td>${safeText(item.tipo)}</td><td><span class="badge">${safeText(item.estado)}</span></td><td>${safeText(item.descripcion||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="4">No hay servicios catastrados.</td></tr>';
+  tablaGeografiaCatastro.innerHTML=catastroGeografia.length?catastroGeografia.map(item=>`
+    <tr><td>${safeText(item.zona)}</td><td>${safeText(item.sector)}</td><td>${safeText(item.ruta)}</td><td>${safeText(item.gps||'-')}</td><td>${safeText(item.descripcion||'-')}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay sectores o rutas catastradas.</td></tr>';
+  tablaAuditoriaCatastro.innerHTML=catastroAuditoria.length?catastroAuditoria.slice(0,120).map(item=>`
+    <tr><td>${safeText(new Date(item.fecha).toLocaleString('es-DO'))}</td><td>${safeText(item.accion)}</td><td>${safeText(item.registro)}</td><td>${safeText(item.detalle)}</td></tr>
+  `).join(''):'<tr><td colspan="4">No hay auditoria del catastro.</td></tr>';
 }
 function auditoriaMedidores(){
   const instalaciones=medidoresInstalaciones.map(item=>({
@@ -3044,6 +3291,48 @@ function renderGestorCobrosComercial(){
     <tr><td>${safeText(new Date(item.fecha).toLocaleString('es-DO'))}</td><td>${safeText(item.gestor)}</td><td>${safeText(item.accion)}</td><td>${safeText(facturaPorId(item.facturaId)?.numero||'-')}</td><td>${safeText(item.detalle)}</td></tr>
   `).join(''):'<tr><td colspan="5">No hay auditoria de cobranza.</td></tr>';
 }
+function rolComercialPorNombre(nombre){
+  return rolesComerciales.find(item=>item.rol===nombre)||rolesComerciales[0];
+}
+function auditarUsuarioComercial(accion, usuario, detalle){
+  auditoriaUsuariosComerciales.unshift({
+    id:idCatastro('AUDUSC'),
+    accion,
+    usuario:usuario.nombre,
+    rol:usuario.rol,
+    detalle,
+    fecha:new Date().toISOString()
+  });
+}
+function renderUsuariosComerciales(){
+  usuarioComercialRol.innerHTML='<option value="">Rol comercial</option>'+rolesComerciales.map(item=>`<option value="${safeText(item.rol)}">${safeText(item.rol)} - ${safeText(item.funcion)}</option>`).join('');
+  usuariosComercialesKpi.textContent=usuariosComercialesData.length;
+  usuariosComercialesActivosKpi.textContent=usuariosComercialesData.filter(item=>item.estado==='Activo').length;
+  rolesCobranzaKpi.textContent=usuariosComercialesData.filter(item=>['Gestor de Cobros','Cajero','Supervisor Comercial'].includes(item.rol)).length;
+  auditoresComercialesKpi.textContent=usuariosComercialesData.filter(item=>item.rol==='Auditor').length;
+  tablaUsuariosComerciales.innerHTML=usuariosComercialesData.length?usuariosComercialesData.map(item=>{
+    const rol=rolComercialPorNombre(item.rol);
+    return `<tr>
+      <td>${safeText(item.nombre)}<br><small>${safeText(item.correo||'Sin correo')}</small></td>
+      <td>${safeText(item.acceso)}</td>
+      <td><span class="badge">${safeText(item.rol)}</span></td>
+      <td>${safeText(rol.funcion)}</td>
+      <td><span class="badge">${safeText(item.estado)}</span></td>
+      <td>${safeText(item.supervisor||'-')}</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="6">No hay usuarios comerciales registrados.</td></tr>';
+  tablaPermisosComerciales.innerHTML=rolesComerciales.map(item=>`
+    <tr>
+      <td>${safeText(item.rol)}</td>
+      <td>${safeText(item.funcion)}</td>
+      <td>${safeText(item.modulos.join(', '))}</td>
+      <td>${safeText(item.permisos.join(' | '))}</td>
+    </tr>
+  `).join('');
+  tablaAuditoriaUsuariosComerciales.innerHTML=auditoriaUsuariosComerciales.length?auditoriaUsuariosComerciales.slice(0,160).map(item=>`
+    <tr><td>${safeText(new Date(item.fecha).toLocaleString('es-DO'))}</td><td>${safeText(item.accion)}</td><td>${safeText(item.usuario)}</td><td>${safeText(item.rol)}</td><td>${safeText(item.detalle)}</td></tr>
+  `).join(''):'<tr><td colspan="5">No hay auditoria de usuarios comerciales.</td></tr>';
+}
 function renderComercial(){
   const actual=comercialPeriodos[0]||{};
   const facturacion=Number(actual.facturacion||0);
@@ -3122,9 +3411,13 @@ formClienteCatastro.addEventListener('submit',event=>{
     alert('Ya existe un usuario catastrado con ese documento.');
     return;
   }
+  const codigo=clienteCodigo.value.trim()||codigoCatastro('USR',catastroClientes,'codigo');
   catastroClientes.unshift({
     id:idCatastro('CLI'),
+    codigo,
     tipo:clienteTipo.value,
+    categoria:clienteCategoria.value,
+    estado:clienteEstado.value,
     documento,
     nombre:clienteNombre.value.trim(),
     contacto:clienteContacto.value.trim(),
@@ -3133,23 +3426,29 @@ formClienteCatastro.addEventListener('submit',event=>{
     documentos:clienteDocumentoSoporte.value.trim(),
     creado:new Date().toISOString()
   });
+  auditarCatastro('Usuario creado',codigo,`${clienteNombre.value.trim()} | ${clienteCategoria.value} | ${clienteEstado.value}`);
   guardarCatastroComercial();
   formClienteCatastro.reset();
   renderCatastroComercial();
 });
 formInmuebleCatastro.addEventListener('submit',event=>{
   event.preventDefault();
+  const codigo=codigoCatastro('INM',catastroInmuebles,'codigo');
   catastroInmuebles.unshift({
     id:idCatastro('INM'),
+    codigo,
     clienteId:inmuebleCliente.value,
     tipo:inmuebleTipo.value,
     clasificacion:inmuebleClasificacion.value,
     zona:inmuebleZona.value.trim(),
     sector:inmuebleSector.value.trim(),
     calle:inmuebleCalle.value.trim(),
+    direccion:inmuebleDireccion.value.trim(),
+    gps:inmuebleGps.value.trim(),
     ruta:inmuebleRuta.value.trim(),
     creado:new Date().toISOString()
   });
+  auditarCatastro('Inmueble creado',codigo,`${inmuebleSector.value.trim()} | Ruta ${inmuebleRuta.value.trim()||'No definida'}`);
   guardarCatastroComercial();
   formInmuebleCatastro.reset();
   renderCatastroComercial();
@@ -3166,12 +3465,56 @@ formContratoCatastro.addEventListener('submit',event=>{
     inmuebleId:contratoInmueble.value,
     numero,
     instalacion:contratoInstalacion.value,
+    activacion:contratoActivacion.value||contratoInstalacion.value,
     servicio:contratoServicio.value,
     estado:contratoEstado.value,
+    cambioTitular:contratoCambioTitular.value.trim(),
     creado:new Date().toISOString()
   });
+  auditarCatastro('Contrato creado',numero,`${contratoServicio.value} | ${contratoEstado.value}`);
   guardarCatastroComercial();
   formContratoCatastro.reset();
+  renderCatastroComercial();
+});
+formServicioCatastro.addEventListener('submit',event=>{
+  event.preventDefault();
+  const codigo=servicioCatastroCodigo.value.trim()||codigoCatastro('SRV',catastroServicios,'codigo');
+  if(catastroServicios.some(item=>String(item.codigo).toLowerCase()===codigo.toLowerCase())){
+    alert('Ya existe un servicio con ese codigo.');
+    return;
+  }
+  catastroServicios.unshift({
+    id:idCatastro('SRV'),
+    codigo,
+    tipo:servicioCatastroTipo.value,
+    estado:servicioCatastroEstado.value,
+    descripcion:servicioCatastroDescripcion.value.trim(),
+    creado:new Date().toISOString()
+  });
+  auditarCatastro('Servicio creado',codigo,`${servicioCatastroTipo.value} | ${servicioCatastroEstado.value}`);
+  guardarCatastroComercial();
+  formServicioCatastro.reset();
+  renderCatastroComercial();
+});
+formGeografiaCatastro.addEventListener('submit',event=>{
+  event.preventDefault();
+  const duplicado=catastroGeografia.some(item=>String(item.sector).toLowerCase()===geoSector.value.trim().toLowerCase()&&String(item.ruta).toLowerCase()===geoRuta.value.trim().toLowerCase());
+  if(duplicado){
+    alert('Ya existe ese sector con esa ruta.');
+    return;
+  }
+  catastroGeografia.unshift({
+    id:idCatastro('GEO'),
+    zona:geoZona.value.trim(),
+    sector:geoSector.value.trim(),
+    ruta:geoRuta.value.trim(),
+    gps:geoGps.value.trim(),
+    descripcion:geoDescripcion.value.trim(),
+    creado:new Date().toISOString()
+  });
+  auditarCatastro('Geografia creada',`${geoSector.value.trim()} / ${geoRuta.value.trim()}`,geoZona.value.trim());
+  guardarCatastroComercial();
+  formGeografiaCatastro.reset();
   renderCatastroComercial();
 });
 formHistorialCatastro.addEventListener('submit',event=>{
@@ -3185,6 +3528,7 @@ formHistorialCatastro.addEventListener('submit',event=>{
     detalle:historialDetalle.value.trim(),
     creado:new Date().toISOString()
   });
+  auditarCatastro('Historial agregado',nombreClienteCatastro(historialCliente.value),`${historialTipo.value} | ${historialDetalle.value.trim()}`);
   guardarCatastroComercial();
   formHistorialCatastro.reset();
   historialFecha.value=new Date().toISOString().slice(0,10);
@@ -3799,6 +4143,30 @@ formSuspensionGestor.addEventListener('submit',event=>{
   guardarGestorCobrosComercial();
   formSuspensionGestor.reset();
   renderGestorCobrosComercial();
+});
+formUsuarioComercial.addEventListener('submit',event=>{
+  event.preventDefault();
+  const acceso=usuarioComercialAcceso.value.trim().toLowerCase();
+  if(usuariosComercialesData.some(item=>item.acceso.toLowerCase()===acceso)){
+    alert('Ya existe un usuario comercial con ese nombre de acceso.');
+    return;
+  }
+  const usuario={
+    id:idCatastro('USC'),
+    nombre:usuarioComercialNombre.value.trim(),
+    acceso,
+    correo:usuarioComercialCorreo.value.trim(),
+    rol:usuarioComercialRol.value,
+    estado:usuarioComercialEstado.value,
+    supervisor:usuarioComercialSupervisor.value.trim(),
+    firma:usuarioComercialFirma.value.trim(),
+    creado:new Date().toISOString()
+  };
+  usuariosComercialesData.unshift(usuario);
+  auditarUsuarioComercial('Usuario creado',usuario,`Estado ${usuario.estado}. Supervisor ${usuario.supervisor||'No definido'}.`);
+  guardarUsuariosComerciales();
+  formUsuarioComercial.reset();
+  renderUsuariosComerciales();
 });
 window.addEventListener('online',()=>{
   if(capturasLectura.some(item=>item.estado==='Pendiente'))sincronizarLecturasPendientes();
