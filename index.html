@@ -71,6 +71,20 @@
   .module-check span{line-height:1.25}
   .module-check.disabled{color:#94a3b8}
   .module-frame{width:100%;height:min(860px,calc(100vh - 150px));min-height:680px;border:1px solid #dbe4f0;border-radius:8px;background:#fff}
+  .architecture-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .architecture-card{border:1px solid #dbe4f0;border-radius:8px;background:#f8fafc;padding:12px}
+  .architecture-card h3{margin:0 0 8px;color:#1d3557;font-size:15px}
+  .architecture-card ul{margin:0;padding-left:18px;color:#334155;font-size:13px;line-height:1.55}
+  .architecture-card li{margin:2px 0}
+  .workflow-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;counter-reset:workflow}
+  .workflow-step{border:1px solid #dbe4f0;border-radius:8px;background:#fff;padding:10px;color:#334155;font-size:13px;position:relative}
+  .workflow-step::before{counter-increment:workflow;content:counter(workflow);display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;background:#1d4ed8;color:#fff;font-weight:700;margin-right:6px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+  .role-chip{border:1px solid #dbe4f0;border-radius:999px;background:#eef2ff;color:#1d3557;padding:7px 10px;font-size:13px;font-weight:600}
+  .phase-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+  .phase-card{border-left:4px solid #1d4ed8;background:#fff;border-radius:8px;padding:10px;box-shadow:0 1px 5px rgba(0,0,0,.05)}
+  .phase-card strong{display:block;color:#1d3557;margin-bottom:5px}
+  .phase-card span{color:#475569;font-size:13px;line-height:1.45}
   .org-path{grid-column:1/-1;padding:8px 10px;border-radius:6px;background:#eef2ff;color:#1d3557;font-size:13px}
   .employee-profile{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-top:16px}
   .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -151,7 +165,7 @@
       <details class="sidebar-group" data-sidebar-group="compras">
         <summary>Compras y Almacen</summary>
         <div class="sidebar-group-links">
-          <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Solicitudes Compras</a>
+          <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Compras y Contrataciones</a>
           <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Solicitud Almacen</a>
         </div>
       </details>
@@ -159,6 +173,12 @@
         <summary>Comercial</summary>
         <div class="sidebar-group-links">
           <a id="menu-comercial" onclick="showSection('comercial')"><i class="fa-solid fa-chart-pie"></i>Sistema Comercial</a>
+        </div>
+      </details>
+      <details class="sidebar-group" data-sidebar-group="ecosistema">
+        <summary>Ecosistema</summary>
+        <div class="sidebar-group-links">
+          <a id="menu-ecosistema" onclick="showSection('ecosistema')"><i class="fa-solid fa-network-wired"></i>Arquitectura General</a>
         </div>
       </details>
       <details class="sidebar-group" data-sidebar-group="colaboracion">
@@ -604,7 +624,7 @@
           <option>Nomina</option>
           <option>Consulta</option>
         </select>
-        <select id="usuarioRolComercial">
+        <select id="usuarioRolComercial" onchange="aplicarPlantillaRolComercial()">
           <option value="">Rol comercial si aplica</option>
         </select>
         <select id="usuarioEstado" required>
@@ -837,8 +857,201 @@
     </section>
 
     <section id="compras" class="hidden">
-      <h1>Solicitudes de Compras</h1>
+      <h1>Compras y Contrataciones</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Compras activas</h3><p>0</p></div>
+        <div class="card presupuesto-disponible"><h3>Procesos pendientes</h3><p>0</p></div>
+        <div class="card presupuesto-consumido"><h3>Contratos venciendo</h3><p>0</p></div>
+        <div class="card presupuesto-total"><h3>Solicitudes atrasadas</h3><p>0</p></div>
+      </div>
+
       <div class="dashboard-section">
+        <h2>Arquitectura general del area</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Panel Administrativo General</h3>
+            <ul>
+              <li>Dashboard ejecutivo</li>
+              <li>Configuracion general</li>
+              <li>Parametros institucionales</li>
+              <li>Gestion de usuarios</li>
+              <li>Roles, permisos y bitacora</li>
+              <li>Flujos de aprobacion y firmas digitales</li>
+              <li>Catalogos institucionales</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Planificacion de Compras</h3>
+            <ul>
+              <li>Plan Anual de Compras PAC/PACC</li>
+              <li>Programacion presupuestaria</li>
+              <li>Solicitudes futuras</li>
+              <li>Calendario de adquisiciones</li>
+              <li>Priorizacion institucional</li>
+              <li>Estimacion de costos</li>
+              <li>Reprogramaciones e historial</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Solicitudes Internas</h3>
+            <ul>
+              <li>Solicitudes de compra</li>
+              <li>Solicitudes de servicios</li>
+              <li>Requisiciones internas</li>
+              <li>Adjuntos y documentos</li>
+              <li>Justificacion de compra</li>
+              <li>Estados, comentarios y aprobaciones</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Presupuestario y Financiero</h3>
+            <ul>
+              <li>Disponibilidad presupuestaria</li>
+              <li>Certificacion de fondos</li>
+              <li>Compromisos</li>
+              <li>Partidas y centros de costos</li>
+              <li>Ejecucion financiera</li>
+              <li>Alertas de sobrepresupuesto</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Procesos de Compras</h3>
+            <ul>
+              <li>Compras menores y directas</li>
+              <li>Comparaciones de precios</li>
+              <li>Licitaciones publicas y restringidas</li>
+              <li>Excepciones, emergencias y subastas</li>
+              <li>Comite, evaluaciones, actas y adjudicacion</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Proveedores y Contratos</h3>
+            <ul>
+              <li>Registro de proveedores</li>
+              <li>Documentacion legal y validaciones</li>
+              <li>Historial de contrataciones</li>
+              <li>Generacion de contratos</li>
+              <li>Vigencias, renovaciones y garantias</li>
+              <li>Cierre contractual</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Almacen, Inventario y Recepcion</h3>
+            <ul>
+              <li>Recepcion de bienes</li>
+              <li>Entradas, salidas y kardex</li>
+              <li>Activos fijos y consumibles</li>
+              <li>Transferencias internas</li>
+              <li>Validacion de calidad</li>
+              <li>Actas, evidencias y no conformidades</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Juridico, Auditoria e Integraciones</h3>
+            <ul>
+              <li>Revision legal y dictamenes</li>
+              <li>Portal de transparencia</li>
+              <li>Trazabilidad completa</li>
+              <li>Reportes para organos de control</li>
+              <li>DGII, TSS, SIGEF, SISMAP y portal transaccional</li>
+              <li>Firma digital y sistema documental</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Flujo completo del proceso</h2>
+        <div class="workflow-steps">
+          <div class="workflow-step">Departamento solicita</div>
+          <div class="workflow-step">Supervisor aprueba</div>
+          <div class="workflow-step">Finanzas valida presupuesto</div>
+          <div class="workflow-step">Compras crea proceso</div>
+          <div class="workflow-step">Proveedores ofertan</div>
+          <div class="workflow-step">Comite evalua</div>
+          <div class="workflow-step">Se adjudica</div>
+          <div class="workflow-step">Juridica genera contrato</div>
+          <div class="workflow-step">Almacen recibe</div>
+          <div class="workflow-step">Inventario registra</div>
+          <div class="workflow-step">Finanzas procesa pago</div>
+          <div class="workflow-step">Auditoria conserva trazabilidad</div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Roles del sistema</h2>
+        <div class="role-grid">
+          <span class="role-chip">Administrador General</span>
+          <span class="role-chip">Director Administrativo</span>
+          <span class="role-chip">Compras y Contrataciones</span>
+          <span class="role-chip">Finanzas</span>
+          <span class="role-chip">Presupuesto</span>
+          <span class="role-chip">Juridica</span>
+          <span class="role-chip">Auditor</span>
+          <span class="role-chip">Almacen</span>
+          <span class="role-chip">Supervisor Departamental</span>
+          <span class="role-chip">Solicitante</span>
+          <span class="role-chip">Comite Evaluador</span>
+          <span class="role-chip">Proveedor externo</span>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Desarrollo por fases</h2>
+        <div class="phase-list">
+          <div class="phase-card"><strong>Fase 1</strong><span>Usuarios, roles, solicitudes internas y aprobaciones.</span></div>
+          <div class="phase-card"><strong>Fase 2</strong><span>Procesos de compras, proveedores y presupuesto.</span></div>
+          <div class="phase-card"><strong>Fase 3</strong><span>Contratos, inventario, almacen y recepcion.</span></div>
+          <div class="phase-card"><strong>Fase 4</strong><span>Auditoria, BI, transparencia e integraciones gubernamentales.</span></div>
+          <div class="phase-card"><strong>Fase 5</strong><span>IA, automatizacion, firma digital avanzada y analitica predictiva.</span></div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Integracion institucional</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>RRHH hacia Compras</h3>
+            <ul>
+              <li>Empleados autorizados</li>
+              <li>Firmas y escalas jerarquicas</li>
+              <li>Estructura organizacional</li>
+              <li>Departamentos solicitantes</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Compras hacia RRHH</h3>
+            <ul>
+              <li>Solicitudes por empleado</li>
+              <li>Equipos asignados</li>
+              <li>Uniformes y herramientas</li>
+              <li>Capacitaciones contratadas</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Finanzas compartidas</h3>
+            <ul>
+              <li>Presupuesto</li>
+              <li>Pagos</li>
+              <li>Centros de costos</li>
+              <li>Ejecucion financiera</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Inventario compartido</h3>
+            <ul>
+              <li>Activos asignados al personal</li>
+              <li>Laptops, vehiculos y herramientas</li>
+              <li>Despachos por departamento</li>
+              <li>Control documental</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Modulo operativo: Solicitudes de Compras</h2>
         <iframe class="module-frame" src="solicitudes_compras.html?embedded=1" title="Solicitudes de Compras"></iframe>
       </div>
     </section>
@@ -854,6 +1067,223 @@
       <h1>Panel General del Sistema Comercial</h1>
       <div class="dashboard-section">
         <iframe class="module-frame" src="sistema_comercial.html?embedded=1" title="Sistema Comercial"></iframe>
+      </div>
+    </section>
+
+    <section id="ecosistema" class="hidden">
+      <h1>Arquitectura General del Ecosistema</h1>
+
+      <div class="dashboard-cards">
+        <div class="card presupuesto-total"><h3>Nucleo central</h3><p>Core Platform</p></div>
+        <div class="card presupuesto-disponible"><h3>Sistemas integrados</h3><p>3</p></div>
+        <div class="card presupuesto-consumido"><h3>Modelo tecnico</h3><p>APIs + Eventos</p></div>
+        <div class="card presupuesto-total"><h3>Alcance</h3><p>ERP Gubernamental</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Nucleo central compartido</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Identidad y seguridad</h3>
+            <ul>
+              <li>Autenticacion</li>
+              <li>Usuarios</li>
+              <li>Roles y permisos</li>
+              <li>Auditoria</li>
+              <li>Firma digital</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Operacion comun</h3>
+            <ul>
+              <li>Notificaciones</li>
+              <li>Configuracion institucional</li>
+              <li>Workflow engine</li>
+              <li>Gestion documental</li>
+              <li>API Gateway</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Portal central</h3>
+            <ul>
+              <li>Entrada unica al ecosistema</li>
+              <li>Permisos por area</li>
+              <li>Paneles separados por sistema</li>
+              <li>Bitacora transversal</li>
+              <li>Reportes institucionales</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Sistemas integrados</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Gestion Humana</h3>
+            <ul>
+              <li>Empleados</li>
+              <li>Departamentos</li>
+              <li>Nomina</li>
+              <li>Vacaciones</li>
+              <li>Estructura organizacional</li>
+              <li>Asistencia y desempeno</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Compras y Contrataciones</h3>
+            <ul>
+              <li>Solicitudes</li>
+              <li>Proveedores</li>
+              <li>Compras</li>
+              <li>Contratos</li>
+              <li>Inventario</li>
+              <li>Pagos</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Proyectos SNIP</h3>
+            <ul>
+              <li>Proyectos institucionales</li>
+              <li>Presupuesto de proyectos</li>
+              <li>Cronogramas</li>
+              <li>Indicadores</li>
+              <li>Ejecucion fisica y financiera</li>
+              <li>Supervision e informes</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Mapa de integraciones</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Gestion Humana hacia Compras</h3>
+            <ul>
+              <li>Empleados solicitantes</li>
+              <li>Departamentos</li>
+              <li>Jerarquias</li>
+              <li>Firmas autorizadas</li>
+              <li>Centros de costos</li>
+              <li>Niveles de aprobacion</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Proyectos SNIP hacia Compras</h3>
+            <ul>
+              <li>Requisiciones automaticas</li>
+              <li>Partidas de compras</li>
+              <li>Necesidades presupuestarias</li>
+              <li>Licitaciones vinculadas</li>
+              <li>Contratos asociados al proyecto</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>SNIP, Finanzas y Compras</h3>
+            <ul>
+              <li>Presupuesto aprobado</li>
+              <li>Verificacion de fondos</li>
+              <li>Certificacion de disponibilidad</li>
+              <li>Ejecucion del proceso</li>
+              <li>Pago registrado en el proyecto</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Gestion Humana hacia SNIP</h3>
+            <ul>
+              <li>Personal asignado</li>
+              <li>Salarios</li>
+              <li>Perfiles tecnicos</li>
+              <li>Disponibilidad</li>
+              <li>Horas hombre</li>
+              <li>Desempeno por proyecto</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Dashboards integrados</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Director Institucional</h3>
+            <ul>
+              <li>Proyectos activos</li>
+              <li>Presupuesto ejecutado</li>
+              <li>Compras pendientes</li>
+              <li>Recursos humanos asignados</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Finanzas</h3>
+            <ul>
+              <li>Gastos por proyecto</li>
+              <li>Contratos activos</li>
+              <li>Pagos pendientes</li>
+              <li>Disponibilidad presupuestaria</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Recursos Humanos</h3>
+            <ul>
+              <li>Personal por proyecto</li>
+              <li>Productividad</li>
+              <li>Carga laboral</li>
+              <li>Asignaciones y disponibilidad</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Flujo SNIP, Finanzas y Compras</h2>
+        <div class="workflow-steps">
+          <div class="workflow-step">Proyecto SNIP</div>
+          <div class="workflow-step">Presupuesto aprobado</div>
+          <div class="workflow-step">Compras verifica fondos</div>
+          <div class="workflow-step">Finanzas certifica disponibilidad</div>
+          <div class="workflow-step">Compras ejecuta proceso</div>
+          <div class="workflow-step">Pago se registra en proyecto</div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Arquitectura tecnica recomendada</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Microservicios modulares</h3>
+            <ul>
+              <li>Portal Central</li>
+              <li>API Gateway</li>
+              <li>Modulo RRHH</li>
+              <li>Modulo Compras</li>
+              <li>Modulo SNIP</li>
+              <li>Bases de datos integradas</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>APIs REST</h3>
+            <ul>
+              <li>GET /api/employees</li>
+              <li>GET /api/projects</li>
+              <li>GET /api/purchases</li>
+              <li>GET /api/budgets</li>
+              <li>POST /api/requisitions</li>
+            </ul>
+          </div>
+          <div class="architecture-card">
+            <h3>Eventos institucionales</h3>
+            <ul>
+              <li>Proyecto aprobado</li>
+              <li>Requisicion generada</li>
+              <li>Compra adjudicada</li>
+              <li>Contrato firmado</li>
+              <li>Pago registrado</li>
+              <li>Inventario recibido</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2156,11 +2586,28 @@ const MODULOS_USUARIO=[
     {id:'disciplinario',nombre:'Disciplinario y legal'}
   ]},
   {grupo:'Compras y Almacen',modulos:[
-    {id:'compras',nombre:'Solicitudes de Compras'},
+    {id:'compras',nombre:'Compras y Contrataciones'},
     {id:'almacen',nombre:'Solicitudes a Almacen'}
   ]},
   {grupo:'Comercial',modulos:[
-    {id:'comercial',nombre:'Sistema Comercial'}
+    {id:'comercial',nombre:'Acceso al Sistema Comercial'},
+    {id:'comercial_dashboard',nombre:'Comercial - Dashboard Ejecutivo'},
+    {id:'comercial_catastro',nombre:'Comercial - Catastro'},
+    {id:'comercial_medidores',nombre:'Comercial - Medidores'},
+    {id:'comercial_lectura',nombre:'Comercial - Lectura'},
+    {id:'comercial_facturacion',nombre:'Comercial - Facturacion'},
+    {id:'comercial_cobros',nombre:'Comercial - Cobros y Caja'},
+    {id:'comercial_suspensiones',nombre:'Comercial - Suspensiones'},
+    {id:'comercial_atencion',nombre:'Comercial - Atencion al Cliente'},
+    {id:'comercial_tecnico',nombre:'Comercial - Tecnico Operativo'},
+    {id:'comercial_gis',nombre:'Comercial - GIS'},
+    {id:'comercial_financiero',nombre:'Comercial - Financiero'},
+    {id:'comercial_reportes_bi',nombre:'Comercial - Reportes BI'},
+    {id:'comercial_ia',nombre:'Comercial - IA'},
+    {id:'comercial_gestor_cobros',nombre:'Comercial - Gestor de Cobros'}
+  ]},
+  {grupo:'Ecosistema Institucional',modulos:[
+    {id:'ecosistema',nombre:'Arquitectura General'}
   ]},
   {grupo:'Colaboracion',modulos:[
     {id:'comunicacion',nombre:'Comunicacion interna'},
@@ -2175,6 +2622,22 @@ const MODULOS_USUARIO=[
   ]}
 ];
 const MODULOS_ADMIN=new Set(['estructura','usuarios','configuracion']);
+const MODULOS_COMERCIALES=new Set([
+  'comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros',
+  'comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi',
+  'comercial_ia','comercial_gestor_cobros'
+]);
+const MODULOS_POR_ROL_COMERCIAL={
+  'Director Comercial':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros','comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi','comercial_ia','comercial_gestor_cobros'],
+  'Supervisor Comercial':['comercial_dashboard','comercial_lectura','comercial_cobros','comercial_suspensiones','comercial_tecnico','comercial_gestor_cobros','comercial_reportes_bi'],
+  'Cajero':['comercial_dashboard','comercial_cobros','comercial_financiero'],
+  'Facturador':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_facturacion'],
+  'Lecturista':['comercial_dashboard','comercial_medidores','comercial_lectura'],
+  'Gestor de Cobros':['comercial_dashboard','comercial_cobros','comercial_suspensiones','comercial_gis','comercial_gestor_cobros'],
+  'Atencion al Cliente':['comercial_dashboard','comercial_catastro','comercial_atencion'],
+  'Tecnico':['comercial_dashboard','comercial_suspensiones','comercial_tecnico','comercial_gis'],
+  'Auditor':['comercial_dashboard','comercial_financiero','comercial_reportes_bi']
+};
 const ROLES_COMERCIALES=[
   {rol:'Director Comercial',funcion:'Supervision general',modulos:['Sistema Comercial','Facturacion','Cobros','Gestor de Cobranza','Atencion Cliente','GIS','Finanzas','BI','IA']},
   {rol:'Supervisor Comercial',funcion:'Control operativo',modulos:['Cobros','Gestor de Cobranza','Lectura','Suspensiones','Reconexiones','Reportes']},
@@ -2221,7 +2684,8 @@ function normalizarModulosUsuario(usuario={}){
   const permitidos=new Set(modulosDisponibles().map(modulo=>modulo.id));
   const base=Array.isArray(usuario.modulos)?usuario.modulos:modulosPlantillaRol(usuario.rol);
   const administrativos=usuario.rol==='Administrador'?[...MODULOS_ADMIN]:[];
-  const modulos=[...new Set(['dashboard',...base,...administrativos])]
+  const comerciales=base.some(id=>MODULOS_COMERCIALES.has(id))?['comercial']:[];
+  const modulos=[...new Set(['dashboard',...base,...comerciales,...administrativos])]
     .filter(id=>permitidos.has(id))
     .filter(id=>usuario.rol==='Administrador'||!MODULOS_ADMIN.has(id));
   return modulos;
@@ -2231,6 +2695,7 @@ function usuarioPuedeVerModulo(usuario,id){
   if(!usuario||!id)return false;
   if(id==='dashboard')return true;
   if(MODULOS_ADMIN.has(id)&&usuario.rol!=='Administrador')return false;
+  if(id==='comercial'&&normalizarModulosUsuario(usuario).some(modulo=>MODULOS_COMERCIALES.has(modulo)))return true;
   return normalizarModulosUsuario(usuario).includes(id);
 }
 
@@ -2525,6 +2990,12 @@ function aplicarPermisosMenu(usuario){
     const menu=document.getElementById('menu-'+modulo.id);
     if(menu)menu.classList.toggle('hidden',!usuarioPuedeVerModulo(usuario,modulo.id));
   });
+  localStorage.setItem('usuarioComercialPermisos',JSON.stringify({
+    usuarioId:usuario?.id||'',
+    rol:usuario?.rol||'',
+    rolComercial:usuario?.rolComercial||'',
+    modulos:normalizarModulosUsuario(usuario||{})
+  }));
   actualizarGruposSidebar(document.querySelector('.sidebar a.active'));
 }
 
@@ -2793,6 +3264,14 @@ function marcarModulosUsuario(marcar){
 
 function aplicarPlantillaModulosRol(){
   renderUsuarioModulos(modulosPlantillaRol(document.getElementById('usuarioRol').value));
+}
+
+function aplicarPlantillaRolComercial(){
+  const rolComercial=document.getElementById('usuarioRolComercial')?.value||'';
+  const modulosComerciales=MODULOS_POR_ROL_COMERCIAL[rolComercial]||[];
+  if(!modulosComerciales.length)return;
+  const actuales=modulosSeleccionadosUsuario();
+  renderUsuarioModulos([...new Set([...actuales,'comercial',...modulosComerciales])]);
 }
 
 function renderUsuarioModulos(seleccion){
