@@ -180,6 +180,7 @@
   .module-nav-actions{display:flex;gap:6px;flex-wrap:wrap}
   .module-nav-actions .btn{min-height:34px;padding:7px 9px;font-size:12px;background:#e8eef5;color:#24415c;box-shadow:none;border:1px solid transparent}
   .module-nav-actions .btn.active{background:#fff;color:#17324d;border-color:#cdd9e6;box-shadow:var(--shadow-sm)}
+  #snip > .dashboard-section{display:none}
   .architecture-card,.profile-item,.module-permission-card,.phase-card,.workflow-step{background:#fff;border-color:#dce6ef;border-radius:9px;box-shadow:var(--shadow-sm)}
   .architecture-card h3,.profile-item strong,.module-permission-card h4{color:#172b47}
   .role-chip{border-color:#cdd9e6;background:#f3f7fb;color:#17324d;border-radius:8px}
@@ -257,7 +258,6 @@
       <details class="sidebar-group" data-sidebar-group="ecosistema">
         <summary>Ecosistema</summary>
         <div class="sidebar-group-links">
-          <a id="menu-ecosistema" onclick="showSection('ecosistema')"><i class="fa-solid fa-network-wired"></i>Arquitectura General</a>
           <a id="menu-snip" onclick="showSection('snip')"><i class="fa-solid fa-diagram-project"></i>Proyectos SNIP</a>
         </div>
       </details>
@@ -1850,10 +1850,237 @@
       <h1>Sistema de Proyectos SNIP</h1>
 
       <div class="dashboard-cards">
-        <div class="card presupuesto-total"><h3>Proyectos activos</h3><p>0</p></div>
-        <div class="card presupuesto-disponible"><h3>En evaluacion</h3><p>0</p></div>
-        <div class="card presupuesto-consumido"><h3>Alertas criticas</h3><p>0</p></div>
-        <div class="card presupuesto-total"><h3>Presupuesto ejecutado</h3><p>RD$ 0</p></div>
+        <div class="card presupuesto-total"><h3>Proyectos activos</h3><p id="snipProyectosActivosKpi">0</p></div>
+        <div class="card presupuesto-disponible"><h3>En evaluacion</h3><p id="snipEvaluacionKpi">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Alertas criticas</h3><p id="snipAlertasKpi">0</p></div>
+        <div class="card presupuesto-total"><h3>Presupuesto ejecutado</h3><p id="snipPresupuestoKpi">RD$ 0</p></div>
+      </div>
+
+      <div class="module-nav" id="snipTabs">
+        <div class="module-nav-group">
+          <span class="module-nav-title">Gobierno SNIP</span>
+          <div class="module-nav-actions">
+            <button class="btn active" type="button" onclick="activarSnipModulo('snipAdmin')">Administrativo</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipDocumental')">Documental</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipAuditoria')">Auditoria</button>
+          </div>
+        </div>
+        <div class="module-nav-group">
+          <span class="module-nav-title">Ciclo del proyecto</span>
+          <div class="module-nav-actions">
+            <button class="btn" type="button" onclick="activarSnipModulo('snipFormulacion')">Formulacion</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipEvaluacion')">Evaluacion</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipProgramacion')">Presupuesto</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipEjecucion')">Ejecucion</button>
+          </div>
+        </div>
+        <div class="module-nav-group">
+          <span class="module-nav-title">Seguimiento y datos</span>
+          <div class="module-nav-actions">
+            <button class="btn" type="button" onclick="activarSnipModulo('snipMonitoreo')">Monitoreo</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipReportes')">Reportes</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipTransparencia')">Transparencia</button>
+            <button class="btn" type="button" onclick="activarSnipModulo('snipGis')">GIS</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="snipAdmin" class="employee-module active">
+        <div class="dashboard-section">
+          <h2>Panel Administrativo General</h2>
+          <form data-snip-tipo="admin" data-snip-campos="institucion,parametro,periodo,moneda,responsable,estado,nota" onsubmit="guardarSnipRegistro(event)">
+            <input name="institucion" placeholder="Institucion gubernamental" required>
+            <input name="parametro" placeholder="Catalogo, flujo, rol o parametro nacional" required>
+            <input name="periodo" placeholder="Periodo fiscal">
+            <input name="moneda" placeholder="Moneda">
+            <input name="responsable" placeholder="Responsable">
+            <select name="estado"><option>Activo</option><option>En revision</option><option>Inactivo</option></select>
+            <textarea name="nota" placeholder="Firmas digitales, notificaciones, roles, permisos, bitacora o configuracion"></textarea>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar configuracion SNIP</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Institucion</th><th>Parametro</th><th>Periodo</th><th>Moneda</th><th>Responsable</th><th>Estado</th><th>Nota</th><th>Accion</th></tr></thead><tbody id="tablaSnipAdmin"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipFormulacion" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Formulacion y Registro de Proyecto</h2>
+          <form data-snip-tipo="formulacion" data-snip-campos="codigo,nombre,institucion,sector,ubicacion,objetivo,beneficiarios,estado,prioridad" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP" required>
+            <input name="nombre" placeholder="Nombre del proyecto" required>
+            <input name="institucion" placeholder="Institucion responsable">
+            <input name="sector" placeholder="Sector / subsector">
+            <input name="ubicacion" placeholder="Provincia / municipio">
+            <textarea name="objetivo" placeholder="Objetivo general, justificacion, ODS, diagnostico, problema, arbol de objetivos, riesgos e impacto"></textarea>
+            <input name="beneficiarios" placeholder="Beneficiarios">
+            <select name="estado"><option>Borrador</option><option>En revision</option><option>Observado</option><option>Corregido</option><option>Aprobado</option><option>Rechazado</option></select>
+            <select name="prioridad"><option>Alta</option><option>Media</option><option>Baja</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar proyecto</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Nombre</th><th>Institucion</th><th>Sector</th><th>Ubicacion</th><th>Objetivo</th><th>Beneficiarios</th><th>Estado</th><th>Prioridad</th><th>Accion</th></tr></thead><tbody id="tablaSnipFormulacion"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipEvaluacion" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Evaluacion Tecnica, Financiera y Juridica</h2>
+          <form data-snip-tipo="evaluacion" data-snip-campos="codigo,tipo,validacion,observaciones,recomendacion,indicador,riesgo,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <select name="tipo"><option>Tecnica</option><option>Financiera</option><option>Juridica</option><option>Flujo de revision</option></select>
+            <input name="validacion" placeholder="Validacion documental / legalidad / viabilidad">
+            <textarea name="observaciones" placeholder="Observaciones y correcciones"></textarea>
+            <input name="recomendacion" placeholder="Recomendacion">
+            <input name="indicador" placeholder="TIR, VAN, costo-beneficio o cumplimiento">
+            <input name="riesgo" placeholder="Riesgo financiero, juridico o tecnico">
+            <select name="estado"><option>En revision</option><option>Observado</option><option>Corregido</option><option>Aprobado tecnicamente</option><option>Aprobado financieramente</option><option>Rechazado</option><option>Archivado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar evaluacion</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Tipo</th><th>Validacion</th><th>Observaciones</th><th>Recomendacion</th><th>Indicador</th><th>Riesgo</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipEvaluacion"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipProgramacion" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Programacion, Presupuesto y Financiamiento</h2>
+          <form data-snip-tipo="programacion" data-snip-campos="codigo,poa,trimestre,metaFisica,metaFinanciera,monto,fuente,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="poa" placeholder="POA / programacion anual">
+            <select name="trimestre"><option>T1</option><option>T2</option><option>T3</option><option>T4</option><option>Plurianual</option></select>
+            <input name="metaFisica" placeholder="Meta fisica">
+            <input name="metaFinanciera" placeholder="Meta financiera">
+            <input name="monto" type="number" min="0" step="0.01" placeholder="Asignacion / monto">
+            <select name="fuente"><option>Gobierno central</option><option>Fondos internacionales</option><option>Donacion</option><option>Prestamo</option><option>Contrapartida</option></select>
+            <select name="estado"><option>Disponible</option><option>Modificado</option><option>Transferido</option><option>Ejecutado</option><option>Agotado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar presupuesto</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>POA</th><th>Trimestre</th><th>Meta fisica</th><th>Meta financiera</th><th>Monto</th><th>Fuente</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipProgramacion"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipEjecucion" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Ejecucion de Proyectos</h2>
+          <form data-snip-tipo="ejecucion" data-snip-campos="codigo,hito,fecha,avanceFisico,avanceFinanciero,contratacion,evidencia,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="hito" placeholder="Hito, entregable o dependencia">
+            <input name="fecha" type="date">
+            <input name="avanceFisico" type="number" min="0" max="100" step="0.01" placeholder="% avance fisico">
+            <input name="avanceFinanciero" type="number" min="0" step="0.01" placeholder="Pagos, desembolsos o balance">
+            <input name="contratacion" placeholder="Licitacion, compra, proveedor, contrato u OC">
+            <input name="evidencia" placeholder="Evidencias, supervisiones o fotografias">
+            <select name="estado"><option>En ejecucion</option><option>En retraso</option><option>Observado</option><option>Completado</option><option>Detenido</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar avance</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Hito</th><th>Fecha</th><th>Avance fisico</th><th>Avance financiero</th><th>Contratacion</th><th>Evidencia</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipEjecucion"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipMonitoreo" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Monitoreo, KPIs, Alertas y Supervisiones</h2>
+          <form data-snip-tipo="monitoreo" data-snip-campos="codigo,indicador,valor,alerta,supervision,hallazgo,recomendacion,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="indicador" placeholder="Tiempo, desviacion, riesgo o indicador social">
+            <input name="valor" placeholder="Valor">
+            <select name="alerta"><option>Sin alerta</option><option>Retraso</option><option>Sobre-ejecucion</option><option>Presupuesto agotado</option><option>Vencimiento</option></select>
+            <input name="supervision" placeholder="Visita tecnica / informe">
+            <input name="hallazgo" placeholder="Hallazgo">
+            <input name="recomendacion" placeholder="Recomendacion">
+            <select name="estado"><option>Abierto</option><option>En seguimiento</option><option>Corregido</option><option>Cerrado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar monitoreo</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Indicador</th><th>Valor</th><th>Alerta</th><th>Supervision</th><th>Hallazgo</th><th>Recomendacion</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipMonitoreo"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipReportes" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Reportes Ejecutivos y BI</h2>
+          <form data-snip-tipo="reportes" data-snip-campos="reporte,periodo,provincia,sector,indicador,formato,valor,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="reporte" placeholder="Reporte ejecutivo / dashboard BI" required>
+            <input name="periodo" type="month">
+            <input name="provincia" placeholder="Provincia">
+            <input name="sector" placeholder="Sector">
+            <input name="indicador" placeholder="Indicador nacional / ranking / ejecucion">
+            <select name="formato"><option>PDF</option><option>Excel</option><option>CSV</option><option>Power BI</option><option>API REST</option></select>
+            <input name="valor" placeholder="Valor / resultado">
+            <select name="estado"><option>Disponible</option><option>En preparacion</option><option>Publicado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar reporte</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Reporte</th><th>Periodo</th><th>Provincia</th><th>Sector</th><th>Indicador</th><th>Formato</th><th>Valor</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipReportes"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipTransparencia" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Transparencia Publica y Participacion Ciudadana</h2>
+          <form data-snip-tipo="transparencia" data-snip-campos="codigo,publicacion,estadoPublico,mapa,inversion,participacion,respuesta,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="publicacion" placeholder="Portal ciudadano / consulta publica">
+            <input name="estadoPublico" placeholder="Estado visible al ciudadano">
+            <input name="mapa" placeholder="Mapa geografico / ubicacion">
+            <input name="inversion" type="number" min="0" step="0.01" placeholder="Inversion publica">
+            <select name="participacion"><option>Comentario</option><option>Denuncia</option><option>Sugerencia</option><option>Encuesta</option></select>
+            <input name="respuesta" placeholder="Respuesta / seguimiento">
+            <select name="estado"><option>Publicado</option><option>Pendiente respuesta</option><option>Respondido</option><option>Cerrado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar transparencia</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Publicacion</th><th>Estado publico</th><th>Mapa</th><th>Inversion</th><th>Participacion</th><th>Respuesta</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipTransparencia"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipGis" class="employee-module">
+        <div class="dashboard-section">
+          <h2>GIS / Georreferenciacion</h2>
+          <form data-snip-tipo="gis" data-snip-campos="codigo,ubicacion,latitud,longitud,capa,infraestructura,zona,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="ubicacion" placeholder="Ubicacion">
+            <input name="latitud" placeholder="Latitud">
+            <input name="longitud" placeholder="Longitud">
+            <input name="capa" placeholder="Capa geografica">
+            <input name="infraestructura" placeholder="Infraestructura">
+            <input name="zona" placeholder="Zona vulnerable / cobertura">
+            <select name="estado"><option>Georreferenciado</option><option>Pendiente coordenadas</option><option>Validado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar GIS</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Ubicacion</th><th>Latitud</th><th>Longitud</th><th>Capa</th><th>Infraestructura</th><th>Zona</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipGis"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipDocumental" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Gestion Documental</h2>
+          <form data-snip-tipo="documental" data-snip-campos="codigo,documento,tipo,version,ocr,firma,acceso,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="documento" placeholder="Documento / adjunto" required>
+            <select name="tipo"><option>PDF</option><option>Estudio tecnico</option><option>Plano</option><option>Contrato</option><option>Imagen</option><option>Permiso</option><option>Licencia ambiental</option></select>
+            <input name="version" placeholder="Version">
+            <select name="ocr"><option>Pendiente OCR</option><option>OCR aplicado</option><option>No aplica</option></select>
+            <input name="firma" placeholder="Firma digital / firmante">
+            <input name="acceso" placeholder="Control de acceso">
+            <select name="estado"><option>Vigente</option><option>En revision</option><option>Archivado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar documento</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Documento</th><th>Tipo</th><th>Version</th><th>OCR</th><th>Firma</th><th>Acceso</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipDocumental"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="snipAuditoria" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Auditoria Interna y Cumplimiento</h2>
+          <form data-snip-tipo="auditoria" data-snip-campos="codigo,evento,usuario,trazabilidad,normativa,hallazgo,riesgo,estado" onsubmit="guardarSnipRegistro(event)">
+            <input name="codigo" placeholder="Codigo SNIP / proyecto" required>
+            <input name="evento" placeholder="Cambio, acceso o accion auditada" required>
+            <input name="usuario" placeholder="Usuario">
+            <input name="trazabilidad" placeholder="Historial financiero / trazabilidad">
+            <input name="normativa" placeholder="Normativa / indicador de control">
+            <input name="hallazgo" placeholder="Hallazgo">
+            <input name="riesgo" placeholder="Riesgo institucional">
+            <select name="estado"><option>Registrado</option><option>En investigacion</option><option>Corregido</option><option>Cerrado</option></select>
+            <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar auditoria</button></div>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Evento</th><th>Usuario</th><th>Trazabilidad</th><th>Normativa</th><th>Hallazgo</th><th>Riesgo</th><th>Estado</th><th>Accion</th></tr></thead><tbody id="tablaSnipAuditoria"></tbody></table></div>
+        </div>
       </div>
 
       <div class="dashboard-section">
@@ -3454,7 +3681,6 @@ const MODULOS_USUARIO=[
     {id:'comercial_gestor_cobros',nombre:'Comercial - Gestor de Cobros'}
   ]},
   {grupo:'Ecosistema Institucional',modulos:[
-    {id:'ecosistema',nombre:'Arquitectura General'},
     {id:'snip',nombre:'Sistema de Proyectos SNIP'},
     {id:'snip_admin',nombre:'SNIP - Administrativo'},
     {id:'snip_formulacion',nombre:'SNIP - Formulacion'},
@@ -3566,6 +3792,7 @@ const presupuestoNomina2026=[
 const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
 let comprasRegistros=JSON.parse(localStorage.getItem('comprasRegistros')||'[]');
 let notificacionesSistema=JSON.parse(localStorage.getItem('notificacionesSistema')||'[]');
+let snipRegistros=JSON.parse(localStorage.getItem('snipRegistros')||'[]');
 const COMPRAS_MODULOS={
   admin:{tabla:'tablaComprasAdmin',campos:['parametro','valor','responsable','estado','nota']},
   planificacion:{tabla:'tablaComprasPlanificacion',campos:['codigo','periodo','descripcion','costo','prioridad','fecha','estado']},
@@ -3581,6 +3808,19 @@ const COMPRAS_MODULOS={
   reportes:{tabla:'tablaComprasReportes',campos:['reporte','periodo','indicador','valor','departamento','formato','estado']},
   comunicaciones:{tabla:'tablaComprasComunicaciones',campos:['canal','destinatario','motivo','vencimiento','mensaje','estado','prioridad']},
   integraciones:{tabla:'tablaComprasIntegraciones',campos:['sistema','endpoint','responsable','frecuencia','ultimoEstado','observacion','estado']}
+};
+const SNIP_MODULOS={
+  admin:{panel:'snipAdmin',permiso:'snip_admin',tabla:'tablaSnipAdmin',campos:['institucion','parametro','periodo','moneda','responsable','estado','nota']},
+  formulacion:{panel:'snipFormulacion',permiso:'snip_formulacion',tabla:'tablaSnipFormulacion',campos:['codigo','nombre','institucion','sector','ubicacion','objetivo','beneficiarios','estado','prioridad']},
+  evaluacion:{panel:'snipEvaluacion',permiso:'snip_evaluacion',tabla:'tablaSnipEvaluacion',campos:['codigo','tipo','validacion','observaciones','recomendacion','indicador','riesgo','estado']},
+  programacion:{panel:'snipProgramacion',permiso:'snip_presupuesto',tabla:'tablaSnipProgramacion',campos:['codigo','poa','trimestre','metaFisica','metaFinanciera','monto','fuente','estado']},
+  ejecucion:{panel:'snipEjecucion',permiso:'snip_ejecucion',tabla:'tablaSnipEjecucion',campos:['codigo','hito','fecha','avanceFisico','avanceFinanciero','contratacion','evidencia','estado']},
+  monitoreo:{panel:'snipMonitoreo',permiso:'snip_monitoreo',tabla:'tablaSnipMonitoreo',campos:['codigo','indicador','valor','alerta','supervision','hallazgo','recomendacion','estado']},
+  reportes:{panel:'snipReportes',permiso:'snip_reportes',tabla:'tablaSnipReportes',campos:['reporte','periodo','provincia','sector','indicador','formato','valor','estado']},
+  transparencia:{panel:'snipTransparencia',permiso:'snip_transparencia',tabla:'tablaSnipTransparencia',campos:['codigo','publicacion','estadoPublico','mapa','inversion','participacion','respuesta','estado']},
+  gis:{panel:'snipGis',permiso:'snip_gis',tabla:'tablaSnipGis',campos:['codigo','ubicacion','latitud','longitud','capa','infraestructura','zona','estado']},
+  documental:{panel:'snipDocumental',permiso:'snip_documental',tabla:'tablaSnipDocumental',campos:['codigo','documento','tipo','version','ocr','firma','acceso','estado']},
+  auditoria:{panel:'snipAuditoria',permiso:'snip_auditoria',tabla:'tablaSnipAuditoria',campos:['codigo','evento','usuario','trazabilidad','normativa','hallazgo','riesgo','estado']}
 };
 
 function modulosDisponibles(){
@@ -3719,8 +3959,8 @@ function showSection(id){
   if(id==='ess')renderAutoservicioEmpleado();
   if(id==='configuracion')renderConfiguracionSeguridad();
   if(id==='reportes')renderAnaliticaReportes();
-  if(id==='ecosistema')renderEcosistemaInstitucional();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
+  if(id==='snip')renderSnipPanel();
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
   if(id==='notificaciones')renderNotificacionesCorreccion();
@@ -3767,6 +4007,7 @@ function guardarStorage(){
   localStorage.setItem('configuracionSistema',JSON.stringify(configuracionSistema));
   localStorage.setItem('comprasRegistros',JSON.stringify(comprasRegistros));
   localStorage.setItem('notificacionesSistema',JSON.stringify(notificacionesSistema));
+  localStorage.setItem('snipRegistros',JSON.stringify(snipRegistros));
 }
 
 function guardarPresupuesto(){
@@ -4001,6 +4242,109 @@ function renderEcosistemaInstitucional(){
   ];
   const tbody=document.getElementById('tablaEcoConexiones');
   if(tbody)tbody.innerHTML=conexiones.map(row=>`<tr><td>${safeText(row[0])}</td><td>${safeText(row[1])}</td><td>${safeText(row[2])}</td><td>${safeText(row[3])}</td><td>${safeText(row[4])}</td></tr>`).join('');
+}
+
+function snipRegistroId(){
+  return `SNIP-${Date.now()}-${Math.random().toString(16).slice(2,6)}`;
+}
+
+function guardarSnipRegistro(event){
+  event.preventDefault();
+  const form=event.currentTarget;
+  const tipo=form.dataset.snipTipo;
+  const config=SNIP_MODULOS[tipo];
+  if(!config)return;
+  const datos={};
+  config.campos.forEach(campo=>datos[campo]=(form.elements[campo]?.value||'').trim());
+  const registro={id:snipRegistroId(),tipo,datos,creadoPor:usuarioSesionActual()?.nombre||'',creadoEn:new Date().toISOString()};
+  snipRegistros.unshift(registro);
+  registrarNotificacionSistema('Proyectos SNIP',`Nuevo registro en ${tipo}`,datos.estado||'Registrado',datos.codigo||datos.nombre||tipo);
+  registrarLogSistema('Crear registro','Proyectos SNIP',`${tipo}: ${Object.values(datos).filter(Boolean).slice(0,2).join(' | ')}`);
+  guardarStorage();
+  form.reset();
+  renderSnipPanel();
+}
+
+function eliminarSnipRegistro(id){
+  if(!confirm('Desea eliminar este registro SNIP?'))return;
+  const registro=snipRegistros.find(item=>item.id===id);
+  snipRegistros=snipRegistros.filter(item=>item.id!==id);
+  registrarLogSistema('Eliminar registro','Proyectos SNIP',registro?`${registro.tipo}: ${Object.values(registro.datos||{}).filter(Boolean).slice(0,2).join(' | ')}`:id);
+  guardarStorage();
+  renderSnipPanel();
+}
+
+function usuarioPuedeVerPanelSnip(panelId){
+  const usuario=usuarioSesionActual();
+  if(!usuario)return true;
+  if(usuario.rol==='Administrador')return true;
+  const config=Object.values(SNIP_MODULOS).find(item=>item.panel===panelId);
+  return Boolean(config&&normalizarModulosUsuario(usuario).includes(config.permiso));
+}
+
+function primerPanelSnipPermitido(){
+  return Object.values(SNIP_MODULOS).find(item=>usuarioPuedeVerPanelSnip(item.panel))?.panel||'';
+}
+
+function activarSnipModulo(id){
+  if(!usuarioPuedeVerPanelSnip(id)){
+    const primero=primerPanelSnipPermitido();
+    if(primero&&primero!==id)activarSnipModulo(primero);
+    return;
+  }
+  document.querySelectorAll('#snip .employee-module').forEach(modulo=>modulo.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  document.querySelectorAll('#snipTabs button').forEach(btn=>btn.classList.toggle('active',btn.getAttribute('onclick')?.includes(`'${id}'`)));
+}
+
+function aplicarPermisosSnipPanel(){
+  document.querySelectorAll('#snipTabs button').forEach(btn=>{
+    const match=btn.getAttribute('onclick')?.match(/'([^']+)'/);
+    const panel=match?.[1]||'';
+    btn.classList.toggle('hidden',!usuarioPuedeVerPanelSnip(panel));
+  });
+  document.querySelectorAll('#snipTabs .module-nav-group').forEach(grupo=>{
+    const visible=Array.from(grupo.querySelectorAll('button')).some(btn=>!btn.classList.contains('hidden'));
+    grupo.classList.toggle('hidden',!visible);
+  });
+  const activo=document.querySelector('#snip .employee-module.active')?.id;
+  const primero=primerPanelSnipPermitido();
+  let aviso=document.getElementById('snipSinPermisos');
+  if(!primero){
+    if(!aviso){
+      aviso=document.createElement('div');
+      aviso.id='snipSinPermisos';
+      aviso.className='dashboard-section';
+      aviso.innerHTML='<h2>Permisos SNIP no asignados</h2><p class="small">Este usuario tiene acceso al area SNIP, pero no tiene submodulos internos habilitados.</p>';
+      document.getElementById('snipTabs')?.insertAdjacentElement('afterend',aviso);
+    }
+    document.querySelectorAll('#snip .employee-module').forEach(modulo=>modulo.classList.remove('active'));
+    return;
+  }
+  if(aviso)aviso.remove();
+  if(!activo||!usuarioPuedeVerPanelSnip(activo))activarSnipModulo(primero);
+}
+
+function renderSnipPanel(){
+  aplicarPermisosSnipPanel();
+  Object.entries(SNIP_MODULOS).forEach(([tipo,config])=>{
+    const tbody=document.getElementById(config.tabla);
+    if(!tbody)return;
+    const rows=snipRegistros.filter(item=>item.tipo===tipo);
+    tbody.innerHTML=rows.map(item=>`<tr>
+      ${config.campos.map(campo=>`<td>${['monto','avanceFinanciero','inversion'].includes(campo)?formatoNumero(item.datos?.[campo]||0):safeText(item.datos?.[campo]||'')}</td>`).join('')}
+      <td><button class="btn btn-danger" type="button" onclick="eliminarSnipRegistro('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('');
+  });
+  const proyectosActivos=snipRegistros.filter(item=>item.tipo==='formulacion'&&!['Rechazado','Archivado'].includes(item.datos?.estado)).length;
+  const enEvaluacion=snipRegistros.filter(item=>item.tipo==='evaluacion'&&['En revision','Observado','Corregido'].includes(item.datos?.estado)).length;
+  const alertas=snipRegistros.filter(item=>(item.tipo==='monitoreo'&&item.datos?.alerta&&item.datos.alerta!=='Sin alerta')||['En retraso','Observado','Detenido','Agotado'].includes(item.datos?.estado)).length;
+  const presupuesto=snipRegistros.filter(item=>item.tipo==='programacion').reduce((sum,item)=>sum+Number(item.datos?.monto||0),0)
+    +snipRegistros.filter(item=>item.tipo==='ejecucion').reduce((sum,item)=>sum+Number(item.datos?.avanceFinanciero||0),0);
+  document.getElementById('snipProyectosActivosKpi').innerText=proyectosActivos;
+  document.getElementById('snipEvaluacionKpi').innerText=enEvaluacion;
+  document.getElementById('snipAlertasKpi').innerText=alertas;
+  document.getElementById('snipPresupuestoKpi').innerText=formatoNumero(presupuesto);
 }
 
 async function validarUsuarioEnSupabase({id,login,correo}){
