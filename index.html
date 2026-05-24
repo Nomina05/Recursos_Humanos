@@ -31,6 +31,10 @@
   .sidebar-subgroup-title{display:block;color:#bfdbfe;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:7px 0 5px}
   .sidebar-group-links .sidebar-subgroup a{font-size:12px;min-height:31px;padding:7px 8px}
   .sidebar-note{display:block;color:#d7e6f5;font-size:12px;font-weight:700;margin:8px 0 4px;padding:0 8px}
+  .sidebar-panel-switch{display:grid;grid-template-columns:1fr;gap:6px;margin:0 0 10px}
+  .sidebar-panel-button{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#dce8f5;border-radius:8px;padding:9px 10px;text-align:left;font-family:inherit;font-weight:700;cursor:pointer}
+  .sidebar-panel-button.active,.sidebar-panel-button:hover{background:#2f638a;color:#fff}
+  .sidebar-panel-hidden{display:none!important}
   .content{margin-left:260px;padding:20px;flex:1;min-width:0}
   h1{color:var(--accent);margin:0 0 16px}
   .dashboard-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:12px}
@@ -231,8 +235,14 @@
     <h2>Sistema RRHH</h2>
     <nav class="sidebar-nav">
       <a id="menu-dashboard" class="active" data-menu-target="dashboard" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard Ejecutivo</a>
+      <div class="sidebar-panel-switch">
+        <button class="sidebar-panel-button active" type="button" data-sidebar-panel-button="rrhh" onclick="seleccionarPanelLateral('rrhh')">Recursos Humanos</button>
+        <button class="sidebar-panel-button" type="button" data-sidebar-panel-button="comercial" onclick="seleccionarPanelLateral('comercial')">Direccion Comercial</button>
+        <button class="sidebar-panel-button" type="button" data-sidebar-panel-button="financiero" onclick="seleccionarPanelLateral('financiero')">Adm. y Financiero</button>
+        <button class="sidebar-panel-button" type="button" data-sidebar-panel-button="admin" onclick="seleccionarPanelLateral('admin')">Administracion</button>
+      </div>
 
-      <details class="sidebar-group" data-sidebar-group="rrhh" open>
+      <details class="sidebar-group" data-sidebar-group="rrhh" data-sidebar-panel="rrhh" open>
         <summary>Panel: Recursos Humanos</summary>
         <div class="sidebar-group-links">
           <span class="sidebar-note">Direccion Recursos Humanos</span>
@@ -266,7 +276,7 @@
         </div>
       </details>
 
-      <details class="sidebar-group" data-sidebar-group="comercial">
+      <details class="sidebar-group" data-sidebar-group="comercial" data-sidebar-panel="comercial">
         <summary>Panel: Direccion Comercial</summary>
         <div class="sidebar-group-links">
           <span class="sidebar-note">Direccion Comercial</span>
@@ -353,21 +363,21 @@
         </div>
       </details>
 
-      <details class="sidebar-group" data-sidebar-group="financiero">
+      <details class="sidebar-group" data-sidebar-group="financiero" data-sidebar-panel="financiero">
         <summary>Panel: Direccion Administrativo y Financiero</summary>
         <div class="sidebar-group-links">
           <span class="sidebar-note">Direccion Administrativo y Financiero</span>
           <span class="sidebar-subgroup-title">Departamento Financiero</span>
           <div class="sidebar-subgroup">
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('financieroComercial')"><i class="fa-solid fa-building-columns"></i>Departamento Financiero</a>
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')"><i class="fa-solid fa-file-invoice-dollar"></i>Morosidad y Deuda Vencida</a>
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')"><i class="fa-solid fa-cash-register"></i>Arqueo de Caja</a>
+            <a id="menu-finanzas" data-menu-target="finanzas" onclick="showSection('finanzas')"><i class="fa-solid fa-building-columns"></i>Departamento Financiero</a>
+            <a data-menu-target="finanzas" onclick="showSection('finanzas')"><i class="fa-solid fa-file-invoice-dollar"></i>Morosidad y Deuda Vencida</a>
+            <a data-menu-target="finanzas" onclick="showSection('finanzas')"><i class="fa-solid fa-cash-register"></i>Arqueo de Caja</a>
           </div>
           <span class="sidebar-subgroup-title">Seccion de Tesoreria</span>
           <div class="sidebar-subgroup">
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Caja</a>
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Cobros</a>
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Convenios de Pago</a>
+            <a data-menu-target="finanzas" onclick="showSection('finanzas')">Caja</a>
+            <a data-menu-target="finanzas" onclick="showSection('finanzas')">Cobros</a>
+            <a data-menu-target="finanzas" onclick="showSection('finanzas')">Convenios de Pago</a>
           </div>
           <span class="sidebar-subgroup-title">Seccion de Presupuesto</span>
           <div class="sidebar-subgroup">
@@ -395,7 +405,7 @@
         </div>
       </details>
 
-      <details class="sidebar-group" data-sidebar-group="admin">
+      <details class="sidebar-group" data-sidebar-group="admin" data-sidebar-panel="admin">
         <summary>Administracion del Sistema</summary>
         <div class="sidebar-group-links">
           <a id="menu-configuracion" data-menu-target="configuracion" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i>Configuracion</a>
@@ -1386,6 +1396,41 @@
       <h1>Solicitudes a Almacen</h1>
       <div class="dashboard-section">
         <iframe class="module-frame" src="solicitudes_almacen.html?embedded=1" title="Solicitudes a Almacen"></iframe>
+      </div>
+    </section>
+
+    <section id="finanzas" class="hidden">
+      <h1>Panel Financiero y Tesoreria</h1>
+      <div class="dashboard-section">
+        <h2>Departamento Financiero</h2>
+        <div class="dashboard-cards">
+          <div class="card presupuesto-total"><h3>Ingresos por caja</h3><p id="finanzasCajaKpi">RD$ 0</p></div>
+          <div class="card presupuesto-consumido"><h3>Morosidad y deuda vencida</h3><p id="finanzasMoraKpi">RD$ 0</p></div>
+          <div class="card presupuesto-disponible"><h3>Convenios de pago</h3><p id="finanzasConveniosKpi">0</p></div>
+        </div>
+      </div>
+      <div class="dashboard-section">
+        <h2>Seccion de Tesoreria</h2>
+        <form id="formFinanzasTesoreria" onsubmit="guardarFinanzaRegistro(event)">
+          <select name="tipo"><option>Caja</option><option>Cobro</option><option>Convenio de Pago</option><option>Arqueo de Caja</option><option>Morosidad y Deuda Vencida</option></select>
+          <input name="referencia" placeholder="Referencia / contrato / cliente" required>
+          <input name="monto" type="number" min="0" step="0.01" placeholder="Monto" required>
+          <input name="responsable" placeholder="Responsable">
+          <select name="estado"><option>Registrado</option><option>Pendiente</option><option>Conciliado</option><option>Observado</option><option>Cerrado</option></select>
+          <textarea name="nota" placeholder="Observaciones, arqueo, cuotas o soporte"></textarea>
+          <div style="grid-column:1/-1;display:flex;gap:8px"><button class="btn btn-primary" type="submit">Guardar movimiento financiero</button></div>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Referencia</th><th>Monto</th><th>Responsable</th><th>Estado</th><th>Nota</th><th>Fecha</th><th>Accion</th></tr></thead>
+            <tbody id="tablaFinanzasTesoreria"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="dashboard-section">
+        <h2>Seccion de Presupuesto</h2>
+        <p class="small">El control presupuestario de compras se mantiene separado en Administrativo y Financiero.</p>
+        <button class="btn btn-secondary" type="button" onclick="abrirModuloCompras('comprasPresupuesto')"><i class="fa-solid fa-scale-balanced"></i> Abrir Panel Presupuestario y Financiero</button>
       </div>
     </section>
 
@@ -3618,6 +3663,7 @@ let estructuraOrganizacional=JSON.parse(localStorage.getItem('estructuraOrganiza
 let usuarios=JSON.parse(localStorage.getItem('usuariosSistema')||'[]');
 let usuarioVistaId=localStorage.getItem('usuarioVistaId')||'';
 let sesionActualId=sessionStorage.getItem('sesionUsuarioId')||localStorage.getItem('sesionUsuarioId')||'';
+let panelLateralActivo=localStorage.getItem('panelLateralActivo')||'rrhh';
 let empleadoPanelCodigo='';
 let reporteCache={headers:[],rows:[]};
 let novedadesCorreccion=JSON.parse(localStorage.getItem('novedadesCorreccion')||'[]');
@@ -3685,6 +3731,7 @@ const MODULOS_USUARIO=[
     {id:'disciplinario',nombre:'Disciplinario y legal'}
   ]},
   {grupo:'Compras y Almacen',modulos:[
+    {id:'finanzas',nombre:'Finanzas y Tesoreria'},
     {id:'compras',nombre:'Compras y Contrataciones'},
     {id:'compras_admin',nombre:'Compras - Administrativo'},
     {id:'compras_planificacion',nombre:'Compras - Planificacion PAC/PACC'},
@@ -3848,6 +3895,7 @@ const presupuestoNomina2026=[
 const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
 let comprasRegistros=JSON.parse(localStorage.getItem('comprasRegistros')||'[]');
 let comprasSeguimientoDatos=JSON.parse(localStorage.getItem('comprasSeguimientoDatos')||'{}');
+let finanzasRegistros=JSON.parse(localStorage.getItem('finanzasRegistros')||'[]');
 let notificacionesSistema=JSON.parse(localStorage.getItem('notificacionesSistema')||'[]');
 let snipRegistros=JSON.parse(localStorage.getItem('snipRegistros')||'[]');
 const COMPRAS_MODULOS={
@@ -3898,9 +3946,10 @@ function normalizarModulosUsuario(usuario={}){
   const base=Array.isArray(usuario.modulos)?usuario.modulos:modulosPlantillaRol(usuario.rol);
   const administrativos=usuario.rol==='Administrador'?[...MODULOS_ADMIN]:[];
   const compras=base.some(id=>MODULOS_COMPRAS.has(id))?['compras']:[];
+  const finanzas=base.some(id=>['finanzas','compras_presupuesto','comercial_financiero','comercial_cobros'].includes(id))?['finanzas']:[];
   const comerciales=base.some(id=>MODULOS_COMERCIALES.has(id))?['comercial']:[];
   const snip=base.some(id=>MODULOS_SNIP.has(id))?['snip']:[];
-  const modulos=[...new Set(['dashboard',...base,...compras,...comerciales,...snip,...administrativos])]
+  const modulos=[...new Set(['dashboard',...base,...finanzas,...compras,...comerciales,...snip,...administrativos])]
     .filter(id=>permitidos.has(id))
     .filter(id=>usuario.rol==='Administrador'||!MODULOS_ADMIN.has(id));
   return modulos;
@@ -3992,6 +4041,8 @@ function showSection(id){
     alert('No tiene permiso para acceder a este modulo.');
     id='dashboard';
   }
+  if(id!=='dashboard')panelLateralActivo=panelPorModulo(id);
+  localStorage.setItem('panelLateralActivo',panelLateralActivo);
   document.querySelectorAll('.content section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
@@ -4004,6 +4055,7 @@ function showSection(id){
   if(id==='reclutamiento')renderReclutamiento();
   if(id==='asistencia')renderAsistenciaTiempo();
   if(id==='compras')renderComprasPanel();
+  if(id==='finanzas')renderFinanzasPanel();
   if(id==='nomina')renderNominaPanel();
   if(id==='vacaciones')renderVacacionesLicencias();
   if(id==='desempeno')renderDesempeno();
@@ -4044,6 +4096,35 @@ function abrirPanelComercial(panelId){
   };
   setTimeout(abrir,80);
   if(iframe)iframe.onload=abrir;
+}
+
+function panelPorModulo(id){
+  if(['registro','empleados','novedades','notificaciones','reclutamiento','disciplinario','asistencia','nomina','reportes','desempeno','capacitacion','vacaciones','beneficios'].includes(id))return 'rrhh';
+  if(id==='comercial')return 'comercial';
+  if(['compras','almacen','finanzas'].includes(id))return 'financiero';
+  if(['configuracion','estructura','usuarios','snip'].includes(id))return 'admin';
+  return panelLateralActivo||'rrhh';
+}
+
+function seleccionarPanelLateral(panel){
+  panelLateralActivo=panel;
+  localStorage.setItem('panelLateralActivo',panelLateralActivo);
+  document.querySelectorAll('[data-sidebar-panel-button]').forEach(btn=>btn.classList.toggle('active',btn.dataset.sidebarPanelButton===panel));
+  actualizarGruposSidebar(document.querySelector('.sidebar a.active'));
+  const destino=primerDestinoPanel(panel);
+  const usuario=usuarioSesionActual();
+  if(destino&&(!usuario||usuarioPuedeVerModulo(usuario,destino)))showSection(destino);
+}
+
+function primerDestinoPanel(panel){
+  const usuario=usuarioSesionActual();
+  const candidatos={
+    rrhh:['dashboard','registro','empleados','nomina','reportes'],
+    comercial:['comercial'],
+    financiero:['finanzas','compras','almacen'],
+    admin:['configuracion','usuarios','estructura','snip']
+  }[panel]||['dashboard'];
+  return candidatos.find(id=>!usuario||usuarioPuedeVerModulo(usuario,id))||'dashboard';
 }
 
 function guardarStorage(){
@@ -4087,6 +4168,7 @@ function guardarStorage(){
   localStorage.setItem('configuracionSistema',JSON.stringify(configuracionSistema));
   localStorage.setItem('comprasRegistros',JSON.stringify(comprasRegistros));
   localStorage.setItem('comprasSeguimientoDatos',JSON.stringify(comprasSeguimientoDatos));
+  localStorage.setItem('finanzasRegistros',JSON.stringify(finanzasRegistros));
   localStorage.setItem('notificacionesSistema',JSON.stringify(notificacionesSistema));
   localStorage.setItem('snipRegistros',JSON.stringify(snipRegistros));
 }
@@ -4166,6 +4248,52 @@ function eliminarCompraRegistro(id){
   registrarLogSistema('Eliminar registro','Compras y Contrataciones',registro?`${registro.tipo}: ${Object.values(registro.datos||{}).filter(Boolean).slice(0,2).join(' | ')}`:id);
   guardarStorage();
   renderComprasPanel();
+}
+
+function guardarFinanzaRegistro(event){
+  event.preventDefault();
+  const form=event.currentTarget;
+  const registro={
+    id:`FIN-${Date.now()}-${Math.random().toString(16).slice(2,6)}`,
+    tipo:form.elements.tipo.value,
+    referencia:form.elements.referencia.value.trim(),
+    monto:Number(form.elements.monto.value||0),
+    responsable:form.elements.responsable.value.trim(),
+    estado:form.elements.estado.value,
+    nota:form.elements.nota.value.trim(),
+    fecha:new Date().toISOString(),
+    usuario:usuarioSesionActual()?.nombre||'Sistema'
+  };
+  finanzasRegistros.unshift(registro);
+  registrarNotificacionSistema('Direccion Administrativo y Financiero',`Movimiento financiero: ${registro.tipo}`,registro.estado,registro.referencia);
+  registrarLogSistema('Crear registro','Finanzas',`${registro.tipo}: ${registro.referencia}`);
+  guardarStorage();
+  form.reset();
+  renderFinanzasPanel();
+  mostrarToast('Movimiento financiero guardado');
+}
+
+function eliminarFinanzaRegistro(id){
+  if(!confirm('Desea eliminar este movimiento financiero?'))return;
+  finanzasRegistros=finanzasRegistros.filter(item=>item.id!==id);
+  guardarStorage();
+  renderFinanzasPanel();
+}
+
+function renderFinanzasPanel(){
+  const tbody=document.getElementById('tablaFinanzasTesoreria');
+  if(!tbody)return;
+  const ingresos=finanzasRegistros.filter(item=>['Caja','Cobro','Arqueo de Caja'].includes(item.tipo)).reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const mora=finanzasRegistros.filter(item=>item.tipo==='Morosidad y Deuda Vencida').reduce((sum,item)=>sum+Number(item.monto||0),0);
+  const convenios=finanzasRegistros.filter(item=>item.tipo==='Convenio de Pago').length;
+  document.getElementById('finanzasCajaKpi').textContent=formatoNumero(ingresos);
+  document.getElementById('finanzasMoraKpi').textContent=formatoNumero(mora);
+  document.getElementById('finanzasConveniosKpi').textContent=convenios;
+  tbody.innerHTML=finanzasRegistros.map(item=>`<tr>
+    <td>${safeText(item.tipo)}</td><td>${safeText(item.referencia)}</td><td>${formatoNumero(item.monto)}</td><td>${safeText(item.responsable)}</td>
+    <td>${safeText(item.estado)}</td><td>${safeText(item.nota)}</td><td>${safeText(new Date(item.fecha).toLocaleString())}</td>
+    <td><button class="btn btn-danger" type="button" onclick="eliminarFinanzaRegistro('${safeText(item.id)}')"><i class="fa-solid fa-trash"></i></button></td>
+  </tr>`).join('');
 }
 
 function registrarNotificacionSistema(area,titulo,estado='Pendiente',referencia=''){
@@ -4847,12 +4975,18 @@ function usuarioPuedeVerMenuLateral(usuario,menu,destino){
 }
 
 function actualizarGruposSidebar(menuActivo){
+  const grupoActivo=menuActivo?.closest('.sidebar-group');
+  if(grupoActivo?.dataset.sidebarPanel)panelLateralActivo=grupoActivo.dataset.sidebarPanel;
+  localStorage.setItem('panelLateralActivo',panelLateralActivo);
+  document.querySelectorAll('[data-sidebar-panel-button]').forEach(btn=>btn.classList.toggle('active',btn.dataset.sidebarPanelButton===panelLateralActivo));
   document.querySelectorAll('.sidebar-group').forEach(grupo=>{
+    const panel=grupo.dataset.sidebarPanel||'';
     const tieneModulosVisibles=Array.from(grupo.querySelectorAll('.sidebar-group-links a'))
       .some(menu=>!menu.classList.contains('hidden'));
     grupo.classList.toggle('hidden',!tieneModulosVisibles);
+    grupo.classList.toggle('sidebar-panel-hidden',Boolean(panel)&&panel!==panelLateralActivo);
+    if(panel===panelLateralActivo&&!grupo.classList.contains('hidden'))grupo.open=true;
   });
-  const grupoActivo=menuActivo?.closest('.sidebar-group');
   if(grupoActivo&&!grupoActivo.classList.contains('hidden'))grupoActivo.open=true;
 }
 
