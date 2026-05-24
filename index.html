@@ -1437,10 +1437,53 @@
       <h1>Arquitectura General del Ecosistema</h1>
 
       <div class="dashboard-cards">
-        <div class="card presupuesto-total"><h3>Nucleo central</h3><p>Core Platform</p></div>
-        <div class="card presupuesto-disponible"><h3>Sistemas integrados</h3><p>3</p></div>
-        <div class="card presupuesto-consumido"><h3>Modelo tecnico</h3><p>APIs + Eventos</p></div>
-        <div class="card presupuesto-total"><h3>Alcance</h3><p>ERP Gubernamental</p></div>
+        <div class="card presupuesto-total"><h3>Empleados unificados</h3><p id="ecoEmpleadosKpi">0</p></div>
+        <div class="card presupuesto-disponible"><h3>Usuarios con permisos</h3><p id="ecoUsuariosKpi">0</p></div>
+        <div class="card presupuesto-consumido"><h3>Alertas ejecutivas</h3><p id="ecoAlertasKpi">0</p></div>
+        <div class="card presupuesto-total"><h3>Modulos conectados</h3><p id="ecoModulosKpi">0</p></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Tablero institucional consolidado</h2>
+        <div class="architecture-grid">
+          <div class="architecture-card">
+            <h3>Director Institucional</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+                <tbody id="tablaEcoDirector"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="architecture-card">
+            <h3>Finanzas</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+                <tbody id="tablaEcoFinanzas"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="architecture-card">
+            <h3>Recursos Humanos</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+                <tbody id="tablaEcoRRHH"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Matriz operativa de conexiones</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Relacion</th><th>Informacion compartida</th><th>Fuente maestra</th><th>Uso operativo</th><th>Estado</th></tr></thead>
+            <tbody id="tablaEcoConexiones"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="dashboard-section">
@@ -3676,6 +3719,7 @@ function showSection(id){
   if(id==='ess')renderAutoservicioEmpleado();
   if(id==='configuracion')renderConfiguracionSeguridad();
   if(id==='reportes')renderAnaliticaReportes();
+  if(id==='ecosistema')renderEcosistemaInstitucional();
   if(id==='estructura'){renderEstructura();renderCatalogosEstructura();actualizarPadresUnidad();}
   if(id==='usuarios'){renderUsuarios();renderUsuariosPermisos();}
   if(id==='novedades')renderNovedades();
@@ -3876,6 +3920,87 @@ function renderComprasPanel(){
   document.getElementById('comprasProcesosPendientesKpi').innerText=procesosPendientes;
   document.getElementById('comprasContratosVenciendoKpi').innerText=contratosVenciendo;
   document.getElementById('comprasSolicitudesAtrasadasKpi').innerText=solicitudesAtrasadas;
+}
+
+function leerLocalJson(clave, fallback){
+  try{
+    const valor=JSON.parse(localStorage.getItem(clave)||'null');
+    return valor??fallback;
+  }catch(error){
+    return fallback;
+  }
+}
+
+function contarPermisosPorGrupo(predicate){
+  return usuarios.reduce((sum,usuario)=>sum+(normalizarModulosUsuario(usuario).some(predicate)?1:0),0);
+}
+
+function renderFilasIndicadores(tbodyId, filas){
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody)return;
+  tbody.innerHTML=filas.map(([indicador,valor])=>`<tr><td>${safeText(indicador)}</td><td>${safeText(valor)}</td></tr>`).join('');
+}
+
+function renderEcosistemaInstitucional(){
+  const empleadosActivos=empleados.filter(emp=>emp.estado!=='Inactivo').length;
+  const usuariosActivos=usuarios.filter(usuario=>usuario.estado==='Activo').length;
+  const comprasPendientes=comprasRegistros.filter(item=>['solicitudes','procesos','presupuesto','contratos'].includes(item.tipo)&&!['Aprobado','Procesada','Adjudicado','Cerrado','Cancelado','Desierto'].includes(item.datos?.estado)).length;
+  const contratosActivos=comprasRegistros.filter(item=>item.tipo==='contratos'&&['Vigente','Por vencer','Renovado'].includes(item.datos?.estado)).length;
+  const pagosPendientes=comprasRegistros.filter(item=>item.tipo==='presupuesto'&&['Comprometido','Certificado'].includes(item.datos?.estado)).length;
+  const presupuestoEjecutado=comprasRegistros.filter(item=>item.tipo==='presupuesto').reduce((sum,item)=>sum+Number(item.datos?.monto||0),0);
+  const comercialFacturas=leerLocalJson('facturasComerciales',[]);
+  const comercialCobros=leerLocalJson('cobrosComerciales',[]);
+  const comercialTickets=leerLocalJson('ticketsAtencionComercial',[]);
+  const comercialLecturas=leerLocalJson('capturasLecturaComercial',[]);
+  const ingresosCaja=comercialCobros.reduce((sum,item)=>sum+Number(item.monto||item.total||0),0);
+  const proyectosActivos=contarPermisosPorGrupo(id=>MODULOS_SNIP.has(id));
+  const modulosConectados=[
+    empleados.length?'RRHH':'',
+    comprasRegistros.length?'Compras':'',
+    comercialFacturas.length||comercialCobros.length||comercialLecturas.length?'Comercial':'',
+    proyectosActivos?'SNIP':''
+  ].filter(Boolean).length;
+  const alertas=(notificacionesSistema||[]).length+empleadosConCorreccionPendiente().length+comprasPendientes;
+
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  set('ecoEmpleadosKpi',empleados.length);
+  set('ecoUsuariosKpi',usuariosActivos);
+  set('ecoAlertasKpi',alertas);
+  set('ecoModulosKpi',modulosConectados);
+
+  renderFilasIndicadores('tablaEcoDirector',[
+    ['Proyectos activos',proyectosActivos],
+    ['Presupuesto ejecutado',formatoNumero(presupuestoEjecutado)],
+    ['Compras pendientes',comprasPendientes],
+    ['Recursos humanos asignados',empleadosActivos],
+    ['Alertas ejecutivas',alertas]
+  ]);
+  renderFilasIndicadores('tablaEcoFinanzas',[
+    ['Gastos por proyecto',formatoNumero(presupuestoEjecutado)],
+    ['Contratos activos',contratosActivos],
+    ['Pagos pendientes',pagosPendientes],
+    ['Disponibilidad presupuestaria',formatoNumero(Math.max(0,PRESUPUESTO_NOMINA_2026_TOTAL-presupuestoEjecutado))],
+    ['Ingresos por caja comercial',formatoNumero(ingresosCaja)]
+  ]);
+  renderFilasIndicadores('tablaEcoRRHH',[
+    ['Personal por proyecto',empleadosActivos],
+    ['Productividad',calcularAnaliticaReportes().productividad.toFixed(1)],
+    ['Carga laboral',`${asistenciasTiempo.length} registros de asistencia`],
+    ['Asignaciones y disponibilidad',`${vacacionesLicencias.filter(item=>item.estado==='Pendiente').length} solicitudes pendientes`],
+    ['Usuarios vinculados a empleados',usuarios.filter(usuario=>usuario.empleadoCodigo).length]
+  ]);
+
+  const conexiones=[
+    ['Gestion Humana hacia Compras','Empleados, departamentos, jerarquias, firmas, centros de costos','RRHH','Solicitantes, aprobadores y responsables presupuestarios',comprasRegistros.length?'Activo':'Preparado'],
+    ['Proyectos SNIP hacia Compras','Requisiciones, partidas, necesidades presupuestarias, contratos vinculados','SNIP','Generar procesos de compra desde proyectos',proyectosActivos?'Preparado':'Pendiente permisos'],
+    ['SNIP, Finanzas y Compras','Presupuesto aprobado, certificacion, ejecucion, pagos','Finanzas / Compras','Control gubernamental de ejecucion financiera',pagosPendientes?'Activo':'Preparado'],
+    ['Gestion Humana hacia SNIP','Personal asignado, salarios, perfiles, disponibilidad, horas hombre','RRHH','Asignacion de tecnicos y supervision por proyecto',empleadosActivos?'Activo':'Sin empleados'],
+    ['Comercial y Finanzas','Facturacion, cobros, caja, morosidad, reconexiones','Comercial','Ingresos, conciliacion y reportes financieros',comercialCobros.length?'Activo':'Preparado'],
+    ['Comercial y Operaciones','Medidores, lecturas, brigadas, GIS, evidencias','Comercial','Trabajo de campo y trazabilidad operativa',comercialLecturas.length||comercialTickets.length?'Activo':'Preparado'],
+    ['Usuarios centralizados','Roles web, permisos moviles, alcance por unidad','Administracion','Control de acceso transversal',usuariosActivos?'Activo':'Pendiente']
+  ];
+  const tbody=document.getElementById('tablaEcoConexiones');
+  if(tbody)tbody.innerHTML=conexiones.map(row=>`<tr><td>${safeText(row[0])}</td><td>${safeText(row[1])}</td><td>${safeText(row[2])}</td><td>${safeText(row[3])}</td><td>${safeText(row[4])}</td></tr>`).join('');
 }
 
 async function validarUsuarioEnSupabase({id,login,correo}){
