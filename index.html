@@ -27,6 +27,10 @@
   .sidebar-group[open] summary::after{content:"-"}
   .sidebar-group-links{padding:0 5px 5px}
   .sidebar-group-links a{font-size:13px;padding:9px 9px}
+  .sidebar-subgroup{border-left:1px solid rgba(255,255,255,.14);margin:6px 0 8px 11px;padding-left:8px}
+  .sidebar-subgroup-title{display:block;color:#bfdbfe;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:7px 0 5px}
+  .sidebar-group-links .sidebar-subgroup a{font-size:12px;min-height:31px;padding:7px 8px}
+  .sidebar-note{display:block;color:#d7e6f5;font-size:12px;font-weight:700;margin:8px 0 4px;padding:0 8px}
   .content{margin-left:260px;padding:20px;flex:1;min-width:0}
   h1{color:var(--accent);margin:0 0 16px}
   .dashboard-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:12px}
@@ -91,6 +95,14 @@
   .tracking-stage.active{border-left-color:#245cc7;background:#f8fbff}
   .tracking-stage.complete{border-left-color:#148466}
   .tracking-stage strong{display:block;color:#172b47;font-size:18px;margin-top:4px}
+  .tracking-modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+  .tracking-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:12px}
+  .tracking-flow-step{border:1px solid #dbe4f0;border-radius:8px;background:#fff;padding:10px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .tracking-flow-step strong{display:block;color:#172b47;font-size:13px}
+  .tracking-flow-step span{color:#64748b;font-size:12px}
+  .tracking-flow-step.active{border-color:#2563eb;background:#eff6ff}
+  .tracking-badge{display:inline-flex;align-items:center;border-radius:999px;background:#eef2ff;color:#1d3557;padding:4px 8px;font-size:12px;font-weight:700;white-space:nowrap}
+  .tracking-list{margin:0;padding-left:18px;color:#334155;font-size:13px;line-height:1.6}
   .org-path{grid-column:1/-1;padding:8px 10px;border-radius:6px;background:#eef2ff;color:#1d3557;font-size:13px}
   .employee-profile{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-top:16px}
   .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -218,69 +230,178 @@
   <div class="sidebar" id="mainSidebar">
     <h2>Sistema RRHH</h2>
     <nav class="sidebar-nav">
-      <a id="menu-dashboard" class="active" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard</a>
-      <details class="sidebar-group" data-sidebar-group="empleados" open>
-        <summary>Empleados</summary>
+      <a id="menu-dashboard" class="active" data-menu-target="dashboard" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i>Dashboard Ejecutivo</a>
+
+      <details class="sidebar-group" data-sidebar-group="rrhh" open>
+        <summary>Panel: Recursos Humanos</summary>
         <div class="sidebar-group-links">
-          <a id="menu-registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
-          <a id="menu-empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Empleados</a>
-          <a id="menu-novedades" onclick="showSection('novedades')"><i class="fa-solid fa-bell"></i>Novedades</a>
-          <a id="menu-notificaciones" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i>Notificaciones</a>
+          <span class="sidebar-note">Direccion Recursos Humanos</span>
+          <div class="sidebar-subgroup">
+            <a id="menu-novedades" data-menu-target="novedades" onclick="showSection('novedades')"><i class="fa-solid fa-bell"></i>Novedades</a>
+            <a id="menu-notificaciones" data-menu-target="notificaciones" onclick="showSection('notificaciones')"><i class="fa-solid fa-triangle-exclamation"></i>Notificaciones</a>
+            <a id="menu-reclutamiento" data-menu-target="reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
+            <a id="menu-disciplinario" data-menu-target="disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
+          </div>
+
+          <span class="sidebar-note">Registro y Control de Nomina</span>
+          <div class="sidebar-subgroup">
+            <a id="menu-registro" data-menu-target="registro" onclick="showSection('registro')"><i class="fa-solid fa-user-plus"></i>Registro</a>
+            <a id="menu-empleados" data-menu-target="empleados" onclick="showSection('empleados')"><i class="fa-solid fa-address-book"></i>Lista de empleados</a>
+            <a id="menu-asistencia" data-menu-target="asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
+            <a id="menu-nomina" data-menu-target="nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
+            <a id="menu-reportes" data-menu-target="reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
+          </div>
+
+          <span class="sidebar-note">Desempeno y Capacitacion</span>
+          <div class="sidebar-subgroup">
+            <a id="menu-desempeno" data-menu-target="desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Evaluacion del Desempeno</a>
+            <a id="menu-capacitacion" data-menu-target="capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
+          </div>
+
+          <span class="sidebar-note">Organizacion del Trabajo y Compensaciones</span>
+          <div class="sidebar-subgroup">
+            <a id="menu-vacaciones" data-menu-target="vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
+            <a id="menu-beneficios" data-menu-target="beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
+          </div>
         </div>
       </details>
-      <details class="sidebar-group" data-sidebar-group="gestion">
-        <summary>Gestion RRHH</summary>
-        <div class="sidebar-group-links">
-          <a id="menu-reclutamiento" onclick="showSection('reclutamiento')"><i class="fa-solid fa-people-arrows"></i>Reclutamiento</a>
-          <a id="menu-asistencia" onclick="showSection('asistencia')"><i class="fa-solid fa-clock"></i>Asistencia</a>
-          <a id="menu-vacaciones" onclick="showSection('vacaciones')"><i class="fa-solid fa-calendar-days"></i>Vacaciones</a>
-          <a id="menu-desempeno" onclick="showSection('desempeno')"><i class="fa-solid fa-chart-simple"></i>Desempeno</a>
-          <a id="menu-capacitacion" onclick="showSection('capacitacion')"><i class="fa-solid fa-graduation-cap"></i>Capacitacion</a>
-          <a id="menu-beneficios" onclick="showSection('beneficios')"><i class="fa-solid fa-hand-holding-heart"></i>Beneficios</a>
-          <a id="menu-disciplinario" onclick="showSection('disciplinario')"><i class="fa-solid fa-scale-balanced"></i>Disciplinario</a>
-        </div>
-      </details>
-      <details class="sidebar-group" data-sidebar-group="nomina">
-        <summary>Nomina</summary>
-        <div class="sidebar-group-links">
-          <a id="menu-nomina" onclick="showSection('nomina')"><i class="fa-solid fa-money-check-dollar"></i>Nomina</a>
-          <a id="menu-reportes" onclick="showSection('reportes')"><i class="fa-solid fa-file-alt"></i>Reportes</a>
-        </div>
-      </details>
-      <details class="sidebar-group" data-sidebar-group="compras">
-        <summary>Adm. Financiero</summary>
-        <div class="sidebar-group-links">
-          <a id="menu-compras" onclick="showSection('compras')"><i class="fa-solid fa-cart-shopping"></i>Compras</a>
-          <a id="menu-almacen" onclick="showSection('almacen')"><i class="fa-solid fa-boxes-stacked"></i>Almacen</a>
-        </div>
-      </details>
+
       <details class="sidebar-group" data-sidebar-group="comercial">
-        <summary>Comercial</summary>
+        <summary>Panel: Direccion Comercial</summary>
         <div class="sidebar-group-links">
-          <a id="menu-comercial" onclick="showSection('comercial')"><i class="fa-solid fa-chart-pie"></i>Panel Comercial</a>
+          <span class="sidebar-note">Direccion Comercial</span>
+          <div class="sidebar-subgroup">
+            <a id="menu-comercial" data-menu-target="comercial" onclick="abrirPanelComercial('dashboardComercial')"><i class="fa-solid fa-chart-pie"></i>Dashboard Comercial</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('reportesBiComercial')"><i class="fa-solid fa-chart-column"></i>Reportes Power BI</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('iaComercial')"><i class="fa-solid fa-robot"></i>IA</a>
+          </div>
+
+          <span class="sidebar-note">Departamento de Gestion Operativa</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')"><i class="fa-solid fa-clipboard-check"></i>Auditoria del Catastro</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('medidoresComerciales')"><i class="fa-solid fa-gauge-high"></i>Auditoria de Micro-Medicion</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('medidoresComerciales')"><i class="fa-solid fa-boxes-stacked"></i>Inventario y Estado</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('suspensionesComercial')"><i class="fa-solid fa-file-lines"></i>Reporte Ordenes de Corte</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Catastro de Usuarios</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">Panel de Catastro Comercial</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">Registro de Usuarios</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">Registro de Inmuebles</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">Contratos de Servicios</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">Catastro de Servicio</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">Catastro Geografico</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('catastroComercial')">App Movil y Sincronizacion</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gisComercial')">Mapa de Usuarios y Red</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('reportesBiComercial')">Reportes de Catastro</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Micro-Medicion</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('medidoresComerciales')">Inventario de Medidores</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('medidoresComerciales')">Instalaciones</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('medidoresComerciales')">Reemplazos</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('medidoresComerciales')">Historial de Consumo</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('lecturaComercial')">Asignacion de Rutas</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('lecturaComercial')">Captura de Lecturas</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('lecturaComercial')">Lecturas Anomalas</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('lecturaComercial')">App Movil y Sincronizacion</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gisComercial')">Activos de Red, Averias y GIS</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Corte y Reconexion</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('suspensionesComercial')">Ordenes de Corte</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('suspensionesComercial')">Programacion de Brigadas</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('suspensionesComercial')">Evidencias</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('suspensionesComercial')">Reconexiones</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('tecnicoComercial')">Brigada Tecnica</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('tecnicoComercial')">Ordenes Tecnicas y Materiales</a>
+          </div>
+
+          <span class="sidebar-note">Departamento de Gestion Comercial</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('facturacionComercial')"><i class="fa-solid fa-receipt"></i>Notas de Credito / Debito</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('reportesBiComercial')"><i class="fa-solid fa-shield-halved"></i>Auditoria</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Facturacion</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('facturacionComercial')">Tarifarios</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('facturacionComercial')">Generacion de Factura</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('facturacionComercial')">Facturacion Masiva</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('facturacionComercial')">Facturacion Electronica</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('facturacionComercial')">Facturas y Reimpresion</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Gestion de Cobros</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Convenios de Pago</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Morosidad y Deuda Vencida</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Filtros de Cartera</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Gestion de Cobranza</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Notificaciones</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Orden de Suspension</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Cartera de Clientes Morosos</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gisComercial')">Geolocalizacion de Morosos</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('reportesBiComercial')">Reportes de Cobranza</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Atencion al Cliente</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('atencionComercial')">Crear Ticket</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('atencionComercial')">Seguimiento</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('atencionComercial')">Call Center y Omnicanal</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('atencionComercial')">Tickets y SLA</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('tecnicoComercial')">Ordenes y Brigadas Tecnicas</a>
+          </div>
         </div>
       </details>
-      <details class="sidebar-group" data-sidebar-group="ecosistema">
-        <summary>Ecosistema</summary>
+
+      <details class="sidebar-group" data-sidebar-group="financiero">
+        <summary>Panel: Direccion Administrativo y Financiero</summary>
         <div class="sidebar-group-links">
-          <a id="menu-snip" onclick="showSection('snip')"><i class="fa-solid fa-diagram-project"></i>Proyectos SNIP</a>
+          <span class="sidebar-note">Direccion Administrativo y Financiero</span>
+          <span class="sidebar-subgroup-title">Departamento Financiero</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('financieroComercial')"><i class="fa-solid fa-building-columns"></i>Departamento Financiero</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')"><i class="fa-solid fa-file-invoice-dollar"></i>Morosidad y Deuda Vencida</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')"><i class="fa-solid fa-cash-register"></i>Arqueo de Caja</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Tesoreria</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Caja</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Cobros</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Convenios de Pago</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Presupuesto</span>
+          <div class="sidebar-subgroup">
+            <a id="menu-compras" data-menu-target="compras" onclick="abrirModuloCompras('comprasPresupuesto')"><i class="fa-solid fa-scale-balanced"></i>Panel Presupuestario y Financiero</a>
+          </div>
+
+          <span class="sidebar-note">Departamento Administrativo</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasRecepcion')"><i class="fa-solid fa-clipboard-check"></i>Recepcion y Fiscalizacion</a>
+          </div>
+          <span class="sidebar-subgroup-title">Seccion de Compras y Contrataciones</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasPlanificacion')">Planificacion de Compras PAC/PACC</a>
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasSolicitudes')">Solicitudes internas y requisiciones</a>
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasSeguimiento')">Seguimiento</a>
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasProcesos')">Procesos de Compras</a>
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasProveedores')">Proveedores / Suplidores</a>
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasContratos')">Contratos</a>
+          </div>
+          <span class="sidebar-subgroup-title">Division de Servicios Generales / Almacen y Suministros</span>
+          <div class="sidebar-subgroup">
+            <a data-menu-target="compras" onclick="abrirModuloCompras('comprasInventario')"><i class="fa-solid fa-boxes-stacked"></i>Almacen e Inventario</a>
+            <a id="menu-almacen" data-menu-target="almacen" onclick="showSection('almacen')"><i class="fa-solid fa-clipboard-list"></i>Solicitud a Almacen</a>
+          </div>
         </div>
       </details>
-      <details class="sidebar-group" data-sidebar-group="colaboracion">
-        <summary>Colaboracion</summary>
-        <div class="sidebar-group-links">
-          <a id="menu-comunicacion" onclick="showSection('comunicacion')"><i class="fa-solid fa-bullhorn"></i>Comunicacion</a>
-          <a id="menu-supervisor" onclick="showSection('supervisor')"><i class="fa-solid fa-user-tie"></i>Supervisor</a>
-          <a id="menu-ia" onclick="showSection('ia')"><i class="fa-solid fa-robot"></i>IA</a>
-          <a id="menu-ess" onclick="showSection('ess')"><i class="fa-solid fa-id-card"></i>Autoservicio</a>
-        </div>
-      </details>
+
       <details class="sidebar-group" data-sidebar-group="admin">
-        <summary>Administracion</summary>
+        <summary>Administracion del Sistema</summary>
         <div class="sidebar-group-links">
-          <a id="menu-configuracion" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i>Configuracion</a>
-          <a id="menu-estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
-          <a id="menu-usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
+          <a id="menu-configuracion" data-menu-target="configuracion" onclick="showSection('configuracion')"><i class="fa-solid fa-shield-halved"></i>Configuracion</a>
+          <a id="menu-estructura" data-menu-target="estructura" onclick="showSection('estructura')"><i class="fa-solid fa-sitemap"></i>Estructura</a>
+          <a id="menu-usuarios" data-menu-target="usuarios" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i>Usuarios</a>
+          <a id="menu-snip" data-menu-target="snip" onclick="showSection('snip')"><i class="fa-solid fa-diagram-project"></i>Proyectos SNIP</a>
         </div>
       </details>
     </nav>
@@ -1271,7 +1392,7 @@
     <section id="comercial" class="hidden">
       <h1>Panel General del Sistema Comercial</h1>
       <div class="dashboard-section">
-        <iframe class="module-frame" src="sistema_comercial.html?embedded=1" title="Sistema Comercial"></iframe>
+        <iframe id="iframeComercial" class="module-frame" src="sistema_comercial.html?embedded=1" title="Sistema Comercial"></iframe>
       </div>
     </section>
 
@@ -3389,6 +3510,82 @@
       </form>
     </div>
   </div>
+  <div class="modal-backdrop hidden" id="modalSeguimientoCompra">
+    <div class="modal-card" style="width:min(1120px,100%)">
+      <div class="tracking-modal-head">
+        <div>
+          <h2 id="seguimientoModalExpediente" style="margin:0;color:#1d3557">EXP-2026-0001</h2>
+          <p id="seguimientoModalSolicitud" class="small" style="margin:4px 0 0">Uniforme institucional</p>
+        </div>
+        <button class="btn" type="button" onclick="cerrarModalSeguimientoCompra()">Cerrar</button>
+      </div>
+      <input type="hidden" id="seguimientoExpedienteActual">
+      <div class="profile-grid" id="seguimientoModalResumen"></div>
+
+      <div class="dashboard-section" style="margin-top:14px">
+        <h2>Checklist documental</h2>
+        <p class="small" style="margin:0">Documentacion requerida completa para avanzar</p>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Datos de Compras y Contrataciones</h2>
+        <form id="formSeguimientoCompras" novalidate onsubmit="guardarDatosSeguimientoCompra(event)">
+          <input id="seguimientoClasificacion" placeholder="Clasificacion" value="No activo">
+          <input id="seguimientoTipoProceso" placeholder="Tipo de proceso">
+          <input id="seguimientoNumeroProceso" placeholder="Numero de proceso">
+          <input id="seguimientoOferente" placeholder="Oferente adjudicado">
+          <input id="seguimientoMontoProceso" type="number" min="0" step="0.01" placeholder="0">
+          <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-save"></i> Guardar datos de Compras</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Pagos de Finanzas</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+          <input id="seguimientoPagoMonto" type="number" min="0" step="0.01" placeholder="0">
+          <input id="seguimientoPagoConcepto" placeholder="Concepto / referencia">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-primary" type="button" onclick="guardarPagoSeguimientoCompra()"><i class="fa-solid fa-save"></i> Guardar pago</button>
+            <button class="btn btn-secondary" type="button" onclick="agregarPagoParcialCompra()">Agregar pago parcial</button>
+          </div>
+        </div>
+        <ul class="tracking-list" id="seguimientoPagosLista" style="margin-top:10px"><li>Sin pagos parciales</li></ul>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Documentos</h2>
+        <ul class="tracking-list" id="seguimientoDocumentosLista"><li>Sin documentos</li></ul>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <input id="seguimientoDocumentoNombre" placeholder="Nombre del documento" style="max-width:340px">
+          <button class="btn btn-secondary" type="button" onclick="adjuntarDocumentoSeguimientoCompra()"><i class="fa-solid fa-paperclip"></i> Adjuntar documento</button>
+        </div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Flujo del proceso</h2>
+        <div class="tracking-flow" id="seguimientoFlujoCompra"></div>
+      </div>
+
+      <div class="dashboard-section">
+        <h2>Notas</h2>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start">
+          <textarea id="seguimientoNotaTexto" placeholder="Agregar nota"></textarea>
+          <button class="btn btn-secondary" type="button" onclick="agregarNotaSeguimientoCompra()">Agregar nota</button>
+        </div>
+        <ul class="tracking-list" id="seguimientoNotasLista" style="margin-top:10px"></ul>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+        <button class="btn btn-secondary" type="button" onclick="avanzarSeguimientoCompra()">Avanzar</button>
+        <button class="btn btn-warning" type="button" onclick="devolverSeguimientoCompra()">Devolver</button>
+        <button class="btn btn-secondary" type="button" onclick="exportSeguimientoCompraExcel()">Excel</button>
+        <button class="btn btn-warning" type="button" onclick="exportSeguimientoCompraPDF()">PDF</button>
+        <button class="btn" type="button" onclick="mostrarHistoricoSeguimientoCompra()">Historico</button>
+      </div>
+    </div>
+  </div>
   <div class="toast hidden" id="toastSistema"></div>
 
 <script>
@@ -3594,6 +3791,22 @@ const PANEL_COMPRAS_PERMISOS={
   comprasComunicaciones:'compras_comunicaciones',
   comprasIntegraciones:'compras_integraciones'
 };
+const PANEL_COMERCIAL_PERMISOS={
+  dashboardComercial:'comercial_dashboard',
+  reportesBiComercial:'comercial_reportes_bi',
+  iaComercial:'comercial_ia',
+  catastroComercial:'comercial_catastro',
+  medidoresComerciales:'comercial_medidores',
+  lecturaComercial:'comercial_lectura',
+  facturacionComercial:'comercial_facturacion',
+  cobrosComercial:'comercial_cobros',
+  gestorCobrosComercial:'comercial_gestor_cobros',
+  suspensionesComercial:'comercial_suspensiones',
+  atencionComercial:'comercial_atencion',
+  tecnicoComercial:'comercial_tecnico',
+  gisComercial:'comercial_gis',
+  financieroComercial:'comercial_financiero'
+};
 const MODULOS_POR_ROL_COMERCIAL={
   'Director Comercial':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros','comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi','comercial_ia','comercial_gestor_cobros'],
   'Supervisor Comercial':['comercial_dashboard','comercial_lectura','comercial_cobros','comercial_suspensiones','comercial_tecnico','comercial_gestor_cobros','comercial_reportes_bi'],
@@ -3634,6 +3847,7 @@ const presupuestoNomina2026=[
 ];
 const PRESUPUESTO_NOMINA_2026_TOTAL=12783926.33;
 let comprasRegistros=JSON.parse(localStorage.getItem('comprasRegistros')||'[]');
+let comprasSeguimientoDatos=JSON.parse(localStorage.getItem('comprasSeguimientoDatos')||'{}');
 let notificacionesSistema=JSON.parse(localStorage.getItem('notificacionesSistema')||'[]');
 let snipRegistros=JSON.parse(localStorage.getItem('snipRegistros')||'[]');
 const COMPRAS_MODULOS={
@@ -3809,6 +4023,29 @@ function showSection(id){
   if(id==='notificaciones')renderNotificacionesCorreccion();
 }
 
+function abrirModuloCompras(panelId){
+  showSection('compras');
+  setTimeout(()=>activarCompraModulo(panelId),0);
+}
+
+function abrirPanelComercial(panelId){
+  showSection('comercial');
+  const iframe=document.getElementById('iframeComercial');
+  const abrir=()=>{
+    try{
+      if(iframe?.contentWindow?.mostrarPanelComercial){
+        iframe.contentWindow.mostrarPanelComercial(panelId);
+      }else{
+        iframe?.contentWindow?.postMessage({tipo:'abrirPanelComercial',panel:panelId},'*');
+      }
+    }catch(error){
+      iframe?.contentWindow?.postMessage({tipo:'abrirPanelComercial',panel:panelId},'*');
+    }
+  };
+  setTimeout(abrir,80);
+  if(iframe)iframe.onload=abrir;
+}
+
 function guardarStorage(){
   localStorage.setItem('empleados',JSON.stringify(empleados));
   localStorage.setItem('contadorCodigo',String(contadorCodigo));
@@ -3849,6 +4086,7 @@ function guardarStorage(){
   localStorage.setItem('ticketsSoporteRRHH',JSON.stringify(ticketsSoporteRRHH));
   localStorage.setItem('configuracionSistema',JSON.stringify(configuracionSistema));
   localStorage.setItem('comprasRegistros',JSON.stringify(comprasRegistros));
+  localStorage.setItem('comprasSeguimientoDatos',JSON.stringify(comprasSeguimientoDatos));
   localStorage.setItem('notificacionesSistema',JSON.stringify(notificacionesSistema));
   localStorage.setItem('snipRegistros',JSON.stringify(snipRegistros));
 }
@@ -4069,9 +4307,225 @@ function renderSeguimientoCompras(){
   tbody.innerHTML=expedientes.map(item=>`<tr><td>${safeText(item.expediente)}</td><td>${safeText(item.solicitud)}</td><td>${safeText(item.responsable)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.horas)} h</td><td>${safeText(item.documentos)}</td><td><button class="btn btn-secondary" type="button" onclick="mostrarDetalleSeguimientoCompra('${safeText(item.expediente)}')">Mostrar detalles</button></td></tr>`).join('');
 }
 
+const FLUJO_SEGUIMIENTO_COMPRAS=[
+  ['Solicitud de compra o servicio','Encargado de area'],
+  ['Revision y firma de Administracion','Administracion'],
+  ['Validacion en PAC','Compras y Contrataciones'],
+  ['Recepcion en Finanzas','Finanzas'],
+  ['Firma de Direccion General','Direccion General'],
+  ['Carga en portal SECP - En proceso','Compras y Contrataciones'],
+  ['Apertura de sobre','Compras y Contrataciones'],
+  ['Evaluacion de ofertas','Compras y Contrataciones'],
+  ['Adjudicacion','Compras y Finanzas'],
+  ['Orden de compra o servicio','Compras y Contrataciones'],
+  ['Contrato legal','Legal'],
+  ['Registro y control interno','Unidad Interna de Registro y Control Interno de Contratos'],
+  ['Certificacion remitida a Compras','Unidad Interna de Registro y Control Interno de Contratos'],
+  ['Notificacion a oferentes','Compras y Contrataciones'],
+  ['Validacion de entrada e inicio de pago','Compras y Contrataciones'],
+  ['Revision y analisis','Revision y Analisis'],
+  ['Remision a Financiero','Revision y Analisis'],
+  ['Pago financiero','Finanzas'],
+  ['Tesoreria y certificacion','Tesoreria'],
+  ['Cierre del proceso','Compras y Contrataciones']
+];
+
+function datosSeguimientoCompra(expediente){
+  if(!comprasSeguimientoDatos[expediente]){
+    comprasSeguimientoDatos[expediente]={
+      clasificacion:'No activo',
+      tipoProceso:'',
+      numeroProceso:'',
+      oferente:'',
+      montoProceso:0,
+      pagos:[],
+      documentos:[],
+      notas:[],
+      pasoActual:5,
+      historico:[{fecha:new Date().toISOString(),accion:'Creacion de seguimiento',usuario:usuarioSesionActual()?.nombre||'Sistema'}]
+    };
+  }
+  comprasSeguimientoDatos[expediente].pagos=comprasSeguimientoDatos[expediente].pagos||[];
+  comprasSeguimientoDatos[expediente].documentos=comprasSeguimientoDatos[expediente].documentos||[];
+  comprasSeguimientoDatos[expediente].notas=comprasSeguimientoDatos[expediente].notas||[];
+  comprasSeguimientoDatos[expediente].historico=comprasSeguimientoDatos[expediente].historico||[];
+  return comprasSeguimientoDatos[expediente];
+}
+
+function expedienteSeguimientoActual(){
+  const expediente=document.getElementById('seguimientoExpedienteActual')?.value||'EXP-2026-0001';
+  return expedientesSeguimientoCompras().find(reg=>reg.expediente===expediente)||expedienteCompraDemo();
+}
+
 function mostrarDetalleSeguimientoCompra(expediente=''){
   const item=expedientesSeguimientoCompras().find(reg=>reg.expediente===expediente)||expedientesSeguimientoCompras()[0]||expedienteCompraDemo();
-  alert(`${item.expediente}\n${item.solicitud}\nEstado actual: ${item.estado}\nResponsable: ${item.responsable}\nSin movimiento: ${item.horas} h\nDocumentos: ${item.documentos}`);
+  renderModalSeguimientoCompra(item);
+  document.getElementById('modalSeguimientoCompra').classList.remove('hidden');
+}
+
+function renderModalSeguimientoCompra(item){
+  const datos=datosSeguimientoCompra(item.expediente);
+  document.getElementById('seguimientoExpedienteActual').value=item.expediente;
+  document.getElementById('seguimientoModalExpediente').textContent=item.expediente;
+  document.getElementById('seguimientoModalSolicitud').textContent=item.solicitud;
+  document.getElementById('seguimientoClasificacion').value=datos.clasificacion||'No activo';
+  document.getElementById('seguimientoTipoProceso').value=datos.tipoProceso||'';
+  document.getElementById('seguimientoNumeroProceso').value=datos.numeroProceso||'';
+  document.getElementById('seguimientoOferente').value=datos.oferente||'';
+  document.getElementById('seguimientoMontoProceso').value=datos.montoProceso||0;
+  document.getElementById('seguimientoModalResumen').innerHTML=[
+    ['Clasificacion',datos.clasificacion||'No activo'],
+    ['Estado actual',item.estado],
+    ['Responsable',item.responsable],
+    ['Sin movimiento',`${item.horas} h`],
+    ['Documentos',item.documentos]
+  ].map(([label,value])=>`<div class="profile-item"><small>${safeText(label)}</small><strong>${safeText(value)}</strong></div>`).join('');
+  document.getElementById('seguimientoPagosLista').innerHTML=(datos.pagos||[]).length
+    ? datos.pagos.map(pago=>`<li>${safeText(formatoFechaISO(pago.fecha))} - ${formatoNumero(pago.monto)} - ${safeText(pago.concepto||'Pago parcial')}</li>`).join('')
+    : '<li>Sin pagos parciales</li>';
+  document.getElementById('seguimientoDocumentosLista').innerHTML=(datos.documentos||[]).length
+    ? datos.documentos.map(doc=>`<li>${safeText(doc.nombre)} - ${safeText(new Date(doc.fecha).toLocaleString())}</li>`).join('')
+    : '<li>Sin documentos</li>';
+  document.getElementById('seguimientoNotasLista').innerHTML=(datos.notas||[]).length
+    ? datos.notas.map(nota=>`<li>${safeText(new Date(nota.fecha).toLocaleString())} - ${safeText(nota.texto)}</li>`).join('')
+    : '<li>Sin notas</li>';
+  document.getElementById('seguimientoFlujoCompra').innerHTML=FLUJO_SEGUIMIENTO_COMPRAS.map(([paso,area],index)=>{
+    const active=index===Number(datos.pasoActual||0);
+    return `<div class="tracking-flow-step${active?' active':''}">
+      <div><strong>${safeText(paso)}</strong><span>${safeText(area)}</span></div>
+      ${active?'<span class="tracking-badge">Actual</span>':''}
+    </div>`;
+  }).join('');
+}
+
+function cerrarModalSeguimientoCompra(){
+  document.getElementById('modalSeguimientoCompra').classList.add('hidden');
+}
+
+function guardarDatosSeguimientoCompra(event){
+  event.preventDefault();
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  datos.clasificacion=document.getElementById('seguimientoClasificacion').value.trim()||'No activo';
+  datos.tipoProceso=document.getElementById('seguimientoTipoProceso').value.trim();
+  datos.numeroProceso=document.getElementById('seguimientoNumeroProceso').value.trim();
+  datos.oferente=document.getElementById('seguimientoOferente').value.trim();
+  datos.montoProceso=Number(document.getElementById('seguimientoMontoProceso').value||0);
+  datos.historico.unshift({fecha:new Date().toISOString(),accion:'Datos de Compras actualizados',usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  guardarStorage();
+  renderModalSeguimientoCompra(item);
+  mostrarToast('Datos de Compras guardados');
+}
+
+function guardarPagoSeguimientoCompra(){
+  agregarPagoParcialCompra();
+}
+
+function agregarPagoParcialCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  const monto=Number(document.getElementById('seguimientoPagoMonto').value||0);
+  const concepto=document.getElementById('seguimientoPagoConcepto').value.trim()||'Pago parcial';
+  if(monto<=0){alert('Digite el monto del pago.');return;}
+  datos.pagos.unshift({fecha:new Date().toISOString(),monto,concepto});
+  datos.historico.unshift({fecha:new Date().toISOString(),accion:`Pago registrado: ${formatoNumero(monto)}`,usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  document.getElementById('seguimientoPagoMonto').value='';
+  document.getElementById('seguimientoPagoConcepto').value='';
+  guardarStorage();
+  renderModalSeguimientoCompra(item);
+  mostrarToast('Pago parcial agregado');
+}
+
+function adjuntarDocumentoSeguimientoCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  const nombre=document.getElementById('seguimientoDocumentoNombre').value.trim();
+  if(!nombre){alert('Digite el nombre del documento.');return;}
+  datos.documentos.unshift({nombre,fecha:new Date().toISOString()});
+  datos.historico.unshift({fecha:new Date().toISOString(),accion:`Documento adjunto: ${nombre}`,usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  document.getElementById('seguimientoDocumentoNombre').value='';
+  guardarStorage();
+  renderModalSeguimientoCompra(item);
+  mostrarToast('Documento adjuntado');
+}
+
+function agregarNotaSeguimientoCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  const texto=document.getElementById('seguimientoNotaTexto').value.trim();
+  if(!texto){alert('Digite la nota.');return;}
+  datos.notas.unshift({fecha:new Date().toISOString(),texto});
+  datos.historico.unshift({fecha:new Date().toISOString(),accion:'Nota agregada',usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  document.getElementById('seguimientoNotaTexto').value='';
+  guardarStorage();
+  renderModalSeguimientoCompra(item);
+  mostrarToast('Nota agregada');
+}
+
+function avanzarSeguimientoCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  datos.pasoActual=Math.min(FLUJO_SEGUIMIENTO_COMPRAS.length-1,Number(datos.pasoActual||0)+1);
+  datos.historico.unshift({fecha:new Date().toISOString(),accion:'Proceso avanzado',usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  guardarStorage();
+  renderModalSeguimientoCompra(item);
+  mostrarToast('Proceso avanzado');
+}
+
+function devolverSeguimientoCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  datos.pasoActual=Math.max(0,Number(datos.pasoActual||0)-1);
+  datos.historico.unshift({fecha:new Date().toISOString(),accion:'Proceso devuelto',usuario:usuarioSesionActual()?.nombre||'Sistema'});
+  guardarStorage();
+  renderModalSeguimientoCompra(item);
+  mostrarToast('Proceso devuelto');
+}
+
+function filasSeguimientoCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  return [
+    ['Expediente',item.expediente],
+    ['Solicitud',item.solicitud],
+    ['Clasificacion',datos.clasificacion||'No activo'],
+    ['Estado actual',item.estado],
+    ['Responsable',item.responsable],
+    ['Tipo de proceso',datos.tipoProceso||''],
+    ['Numero de proceso',datos.numeroProceso||''],
+    ['Oferente adjudicado',datos.oferente||''],
+    ['Monto proceso',datos.montoProceso||0],
+    ['Pagos parciales',(datos.pagos||[]).map(p=>`${formatoFechaISO(p.fecha)} ${formatoNumero(p.monto)} ${p.concepto}`).join(' | ')],
+    ['Documentos',(datos.documentos||[]).map(d=>d.nombre).join(' | ')],
+    ['Notas',(datos.notas||[]).map(n=>n.texto).join(' | ')]
+  ];
+}
+
+function exportSeguimientoCompraExcel(){
+  if(!window.XLSX){alert('No se pudo cargar la libreria de Excel.');return;}
+  const item=expedienteSeguimientoActual();
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Campo','Valor'],...filasSeguimientoCompra()]);
+  XLSX.utils.book_append_sheet(wb,ws,'Seguimiento');
+  XLSX.writeFile(wb,`Seguimiento_${item.expediente}.xlsx`);
+}
+
+function exportSeguimientoCompraPDF(){
+  if(!window.jspdf){alert('No se pudo cargar la libreria PDF.');return;}
+  const item=expedienteSeguimientoActual();
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF('p','pt','a4');
+  doc.setFontSize(14);
+  doc.text(`Seguimiento ${item.expediente}`,40,40);
+  doc.autoTable({head:[['Campo','Valor']],body:filasSeguimientoCompra(),startY:62,styles:{fontSize:9},headStyles:{fillColor:[29,78,216]}});
+  doc.save(`Seguimiento_${item.expediente}.pdf`);
+}
+
+function mostrarHistoricoSeguimientoCompra(){
+  const item=expedienteSeguimientoActual();
+  const datos=datosSeguimientoCompra(item.expediente);
+  const lineas=(datos.historico||[]).map(h=>`${new Date(h.fecha).toLocaleString()} - ${h.accion} - ${h.usuario}`).join('\n');
+  alert(lineas||'Sin historico');
 }
 
 function leerLocalJson(clave, fallback){
@@ -4365,6 +4819,10 @@ function aplicarPermisosMenu(usuario){
     const menu=document.getElementById('menu-'+modulo.id);
     if(menu)menu.classList.toggle('hidden',!usuarioPuedeVerModulo(usuario,modulo.id));
   });
+  document.querySelectorAll('[data-menu-target]').forEach(menu=>{
+    const destino=menu.dataset.menuTarget;
+    if(destino)menu.classList.toggle('hidden',!usuarioPuedeVerMenuLateral(usuario,menu,destino));
+  });
   localStorage.setItem('usuarioComercialPermisos',JSON.stringify({
     usuarioId:usuario?.id||'',
     rol:usuario?.rol||'',
@@ -4372,6 +4830,20 @@ function aplicarPermisosMenu(usuario){
     modulos:normalizarModulosUsuario(usuario||{})
   }));
   actualizarGruposSidebar(document.querySelector('.sidebar a.active'));
+}
+
+function usuarioPuedeVerMenuLateral(usuario,menu,destino){
+  if(destino==='comercial'){
+    const panel=(menu.getAttribute('onclick')||'').match(/abrirPanelComercial\('([^']+)'\)/)?.[1];
+    const permiso=panel?PANEL_COMERCIAL_PERMISOS[panel]:'';
+    return permiso?normalizarModulosUsuario(usuario).includes(permiso):usuarioPuedeVerModulo(usuario,destino);
+  }
+  if(destino==='compras'){
+    const panel=(menu.getAttribute('onclick')||'').match(/abrirModuloCompras\('([^']+)'\)/)?.[1];
+    const permiso=panel?PANEL_COMPRAS_PERMISOS[panel]:'';
+    return permiso?normalizarModulosUsuario(usuario).includes(permiso):usuarioPuedeVerModulo(usuario,destino);
+  }
+  return usuarioPuedeVerModulo(usuario,destino);
 }
 
 function actualizarGruposSidebar(menuActivo){

@@ -4204,6 +4204,14 @@ presupuestoFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
 reporteFinancieroPeriodo.value=new Date().toISOString().slice(0,7);
 reporteBiPeriodo.value=new Date().toISOString().slice(0,7);
 aplicarPermisosComerciales();
+window.addEventListener('message',event=>{
+  const data=event.data||{};
+  if(data.tipo==='abrirPanelComercial'&&data.panel){
+    mostrarPanelComercial(data.panel);
+  }
+});
+const panelInicial=new URLSearchParams(location.search).get('panel');
+if(panelInicial)mostrarPanelComercial(panelInicial);
 </script>
 </body>
 </html>
