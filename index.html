@@ -342,8 +342,8 @@
           </div>
           <span class="sidebar-subgroup-title">Seccion de Gestion de Cobros</span>
           <div class="sidebar-subgroup">
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Convenios de Pago</a>
-            <a data-menu-target="comercial" onclick="abrirPanelComercial('cobrosComercial')">Morosidad y Deuda Vencida</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Convenios de Pago</a>
+            <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Morosidad y Deuda Vencida</a>
             <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Filtros de Cartera</a>
             <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Gestion de Cobranza</a>
             <a data-menu-target="comercial" onclick="abrirPanelComercial('gestorCobrosComercial')">Notificaciones</a>
@@ -3756,12 +3756,10 @@ const MODULOS_USUARIO=[
     {id:'comercial_medidores',nombre:'Comercial - Medidores'},
     {id:'comercial_lectura',nombre:'Comercial - Lectura'},
     {id:'comercial_facturacion',nombre:'Comercial - Facturacion'},
-    {id:'comercial_cobros',nombre:'Comercial - Cobros y Caja'},
     {id:'comercial_suspensiones',nombre:'Comercial - Suspensiones'},
     {id:'comercial_atencion',nombre:'Comercial - Atencion al Cliente'},
     {id:'comercial_tecnico',nombre:'Comercial - Tecnico Operativo'},
     {id:'comercial_gis',nombre:'Comercial - GIS'},
-    {id:'comercial_financiero',nombre:'Comercial - Financiero'},
     {id:'comercial_reportes_bi',nombre:'Comercial - Reportes BI'},
     {id:'comercial_ia',nombre:'Comercial - IA'},
     {id:'comercial_gestor_cobros',nombre:'Comercial - Gestor de Cobros'}
@@ -3799,8 +3797,8 @@ const MODULOS_COMPRAS=new Set([
   'compras_comunicaciones','compras_integraciones'
 ]);
 const MODULOS_COMERCIALES=new Set([
-  'comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros',
-  'comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi',
+  'comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion',
+  'comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_reportes_bi',
   'comercial_ia','comercial_gestor_cobros'
 ]);
 const MODULOS_SNIP=new Set([
@@ -3846,35 +3844,33 @@ const PANEL_COMERCIAL_PERMISOS={
   medidoresComerciales:'comercial_medidores',
   lecturaComercial:'comercial_lectura',
   facturacionComercial:'comercial_facturacion',
-  cobrosComercial:'comercial_cobros',
   gestorCobrosComercial:'comercial_gestor_cobros',
   suspensionesComercial:'comercial_suspensiones',
   atencionComercial:'comercial_atencion',
   tecnicoComercial:'comercial_tecnico',
-  gisComercial:'comercial_gis',
-  financieroComercial:'comercial_financiero'
+  gisComercial:'comercial_gis'
 };
 const MODULOS_POR_ROL_COMERCIAL={
-  'Director Comercial':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_cobros','comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_financiero','comercial_reportes_bi','comercial_ia','comercial_gestor_cobros'],
-  'Supervisor Comercial':['comercial_dashboard','comercial_lectura','comercial_cobros','comercial_suspensiones','comercial_tecnico','comercial_gestor_cobros','comercial_reportes_bi'],
-  'Cajero':['comercial_dashboard','comercial_cobros','comercial_financiero'],
+  'Director Comercial':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_lectura','comercial_facturacion','comercial_suspensiones','comercial_atencion','comercial_tecnico','comercial_gis','comercial_reportes_bi','comercial_ia','comercial_gestor_cobros'],
+  'Supervisor Comercial':['comercial_dashboard','comercial_lectura','comercial_suspensiones','comercial_tecnico','comercial_gestor_cobros','comercial_reportes_bi'],
+  'Cajero':['finanzas'],
   'Facturador':['comercial_dashboard','comercial_catastro','comercial_medidores','comercial_facturacion'],
   'Lecturista':['comercial_dashboard','comercial_medidores','comercial_lectura'],
-  'Gestor de Cobros':['comercial_dashboard','comercial_cobros','comercial_suspensiones','comercial_gis','comercial_gestor_cobros'],
+  'Gestor de Cobros':['comercial_dashboard','comercial_suspensiones','comercial_gis','comercial_gestor_cobros'],
   'Atencion al Cliente':['comercial_dashboard','comercial_catastro','comercial_atencion'],
   'Tecnico':['comercial_dashboard','comercial_suspensiones','comercial_tecnico','comercial_gis'],
-  'Auditor':['comercial_dashboard','comercial_financiero','comercial_reportes_bi']
+  'Auditor':['comercial_dashboard','comercial_reportes_bi']
 };
 const ROLES_COMERCIALES=[
-  {rol:'Director Comercial',funcion:'Supervision general',modulos:['Sistema Comercial','Facturacion','Cobros','Gestor de Cobranza','Atencion Cliente','GIS','Finanzas','BI','IA']},
-  {rol:'Supervisor Comercial',funcion:'Control operativo',modulos:['Cobros','Gestor de Cobranza','Lectura','Suspensiones','Reconexiones','Reportes']},
-  {rol:'Cajero',funcion:'Cobros',modulos:['Caja','Cobros','Conciliaciones']},
+  {rol:'Director Comercial',funcion:'Supervision general',modulos:['Sistema Comercial','Facturacion','Gestor de Cobranza','Atencion Cliente','GIS','BI','IA']},
+  {rol:'Supervisor Comercial',funcion:'Control operativo',modulos:['Gestor de Cobranza','Lectura','Suspensiones','Reconexiones','Reportes']},
+  {rol:'Cajero',funcion:'Cobros financieros',modulos:['Caja','Cobros','Conciliaciones en Finanzas']},
   {rol:'Facturador',funcion:'Facturacion',modulos:['Facturacion','Catastro','Medidores']},
   {rol:'Lecturista',funcion:'Lecturas',modulos:['Lectura','Medidores','Rutas']},
   {rol:'Gestor de Cobros',funcion:'Recuperacion',modulos:['Gestor de Cobranza','Cartera','Notificaciones','Convenios','GIS']},
   {rol:'Atencion al Cliente',funcion:'Reclamos',modulos:['Atencion Cliente','Catastro','Tickets']},
   {rol:'Tecnico',funcion:'Suspensiones/reconexiones',modulos:['Tecnico Operativo','Suspensiones','Reconexiones','GIS']},
-  {rol:'Auditor',funcion:'Fiscalizacion',modulos:['Auditoria','Reportes','BI','Finanzas']}
+  {rol:'Auditor',funcion:'Fiscalizacion',modulos:['Auditoria','Reportes','BI']}
 ];
 const presupuestoNomina2026=[
   {fondo:'Fondo 30',programa:'Programa 1',actividad:'Actividad 1',monto:857250.00},
@@ -3946,7 +3942,7 @@ function normalizarModulosUsuario(usuario={}){
   const base=Array.isArray(usuario.modulos)?usuario.modulos:modulosPlantillaRol(usuario.rol);
   const administrativos=usuario.rol==='Administrador'?[...MODULOS_ADMIN]:[];
   const compras=base.some(id=>MODULOS_COMPRAS.has(id))?['compras']:[];
-  const finanzas=base.some(id=>['finanzas','compras_presupuesto','comercial_financiero','comercial_cobros'].includes(id))?['finanzas']:[];
+  const finanzas=base.some(id=>['finanzas','compras_presupuesto'].includes(id))?['finanzas']:[];
   const comerciales=base.some(id=>MODULOS_COMERCIALES.has(id))?['comercial']:[];
   const snip=base.some(id=>MODULOS_SNIP.has(id))?['snip']:[];
   const modulos=[...new Set(['dashboard',...base,...finanzas,...compras,...comerciales,...snip,...administrativos])]
@@ -5253,8 +5249,8 @@ function aplicarPlantillaMovil(){
   if(modulos.has('asistencia'))sugeridos.push('movil_asistencia');
   if(modulos.has('supervisor'))sugeridos.push('movil_supervisor');
   if(modulos.has('comercial_lectura'))sugeridos.push('movil_lectura');
-  if(modulos.has('comercial_cobros')||modulos.has('comercial_gestor_cobros'))sugeridos.push('movil_cobros');
-  if(modulos.has('comercial_cobros')||modulos.has('comercial_financiero'))sugeridos.push('movil_caja');
+  if(modulos.has('comercial_gestor_cobros'))sugeridos.push('movil_cobros');
+  if(modulos.has('finanzas'))sugeridos.push('movil_caja');
   if(modulos.has('comercial_tecnico')||modulos.has('comercial_suspensiones'))sugeridos.push('movil_brigadas');
   if(modulos.has('compras_inventario')||modulos.has('almacen'))sugeridos.push('movil_inventario');
   if(modulos.has('compras_solicitudes')||modulos.has('compras_presupuesto')||modulos.has('compras_procesos'))sugeridos.push('movil_compras_aprobaciones');

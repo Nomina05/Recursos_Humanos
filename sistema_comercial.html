@@ -110,9 +110,7 @@ body.embedded .wrap{padding:0}
       <span class="tab-group-title">Facturacion y cobros</span>
       <div class="tab-actions">
         <button type="button" data-panel="facturacionComercial" onclick="mostrarPanelComercial('facturacionComercial')">Facturacion</button>
-        <button type="button" data-panel="cobrosComercial" onclick="mostrarPanelComercial('cobrosComercial')">Cobros y Caja</button>
         <button type="button" data-panel="gestorCobrosComercial" onclick="mostrarPanelComercial('gestorCobrosComercial')">Gestor de Cobros</button>
-        <button type="button" data-panel="financieroComercial" onclick="mostrarPanelComercial('financieroComercial')">Financiero</button>
       </div>
     </div>
     <div class="tab-group">
@@ -1873,12 +1871,10 @@ const panelesComerciales=[
   {panel:'medidoresComerciales',permiso:'comercial_medidores',label:'Medidores'},
   {panel:'lecturaComercial',permiso:'comercial_lectura',label:'Lectura'},
   {panel:'facturacionComercial',permiso:'comercial_facturacion',label:'Facturacion'},
-  {panel:'cobrosComercial',permiso:'comercial_cobros',label:'Cobros y Caja'},
   {panel:'suspensionesComercial',permiso:'comercial_suspensiones',label:'Suspensiones'},
   {panel:'atencionComercial',permiso:'comercial_atencion',label:'Atencion'},
   {panel:'tecnicoComercial',permiso:'comercial_tecnico',label:'Tecnico Operativo'},
   {panel:'gisComercial',permiso:'comercial_gis',label:'GIS'},
-  {panel:'financieroComercial',permiso:'comercial_financiero',label:'Financiero'},
   {panel:'reportesBiComercial',permiso:'comercial_reportes_bi',label:'Reportes BI'},
   {panel:'iaComercial',permiso:'comercial_ia',label:'IA'},
   {panel:'gestorCobrosComercial',permiso:'comercial_gestor_cobros',label:'Gestor de Cobros'}
@@ -1961,7 +1957,7 @@ function mostrarPanelComercial(id){
   medidoresComerciales.style.display=id==='medidoresComerciales'?'block':'none';
   lecturaComercial.style.display=id==='lecturaComercial'?'block':'none';
   facturacionComercial.style.display=id==='facturacionComercial'?'block':'none';
-  cobrosComercial.style.display=id==='cobrosComercial'?'block':'none';
+  cobrosComercial.style.display='none';
   suspensionesComercial.style.display=id==='suspensionesComercial'?'block':'none';
   atencionComercial.style.display=id==='atencionComercial'?'block':'none';
   tecnicoComercial.style.display=id==='tecnicoComercial'?'block':'none';
@@ -1976,7 +1972,6 @@ function mostrarPanelComercial(id){
   if(id==='medidoresComerciales')renderMedidoresComerciales();
   if(id==='lecturaComercial')renderLecturaComercial();
   if(id==='facturacionComercial')renderFacturacionComercial();
-  if(id==='cobrosComercial')renderCobrosComercial();
   if(id==='suspensionesComercial')renderSuspensionesComercial();
   if(id==='atencionComercial')renderAtencionComercial();
   if(id==='tecnicoComercial')renderTecnicoComercial();
