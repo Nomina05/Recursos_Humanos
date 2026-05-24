@@ -87,6 +87,10 @@
   .phase-card{border-left:4px solid #1d4ed8;background:#fff;border-radius:8px;padding:10px;box-shadow:0 1px 5px rgba(0,0,0,.05)}
   .phase-card strong{display:block;color:#1d3557;margin-bottom:5px}
   .phase-card span{color:#475569;font-size:13px;line-height:1.45}
+  .tracking-stage{border-left:4px solid #cbd5e1}
+  .tracking-stage.active{border-left-color:#245cc7;background:#f8fbff}
+  .tracking-stage.complete{border-left-color:#148466}
+  .tracking-stage strong{display:block;color:#172b47;font-size:18px;margin-top:4px}
   .org-path{grid-column:1/-1;padding:8px 10px;border-radius:6px;background:#eef2ff;color:#1d3557;font-size:13px}
   .employee-profile{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:14px;margin-top:16px}
   .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -970,6 +974,7 @@
           <span class="module-nav-title">Operacion de compras</span>
           <div class="module-nav-actions">
             <button class="btn" type="button" onclick="activarCompraModulo('comprasSolicitudes')">Solicitudes</button>
+            <button class="btn" type="button" onclick="activarCompraModulo('comprasSeguimiento')">Seguimiento</button>
             <button class="btn" type="button" onclick="activarCompraModulo('comprasProcesos')">Procesos</button>
             <button class="btn" type="button" onclick="activarCompraModulo('comprasProveedores')">Proveedores</button>
             <button class="btn" type="button" onclick="activarCompraModulo('comprasContratos')">Contratos</button>
@@ -1044,6 +1049,26 @@
         <div class="dashboard-section">
           <h2>Modulo operativo: Solicitudes de Compras</h2>
           <iframe class="module-frame" src="solicitudes_compras.html?embedded=1" title="Solicitudes de Compras"></iframe>
+        </div>
+      </div>
+
+      <div id="comprasSeguimiento" class="employee-module">
+        <div class="dashboard-section">
+          <h2>Seguimiento</h2>
+          <div class="architecture-grid" id="comprasSeguimientoResumen"></div>
+          <div class="dashboard-section" style="margin-top:14px">
+            <h2 id="comprasSeguimientoExpediente">EXP-2026-0001</h2>
+            <div class="profile-grid" id="comprasSeguimientoDetalle"></div>
+            <div style="margin-top:12px">
+              <button class="btn btn-primary" type="button" onclick="mostrarDetalleSeguimientoCompra()"><i class="fa-solid fa-eye"></i> Mostrar detalles</button>
+            </div>
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table>
+              <thead><tr><th>Expediente</th><th>Solicitud</th><th>Responsable</th><th>Estado actual</th><th>Sin movimiento</th><th>Documentos</th><th>Accion</th></tr></thead>
+              <tbody id="tablaComprasSeguimiento"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -3556,6 +3581,7 @@ const PANEL_COMPRAS_PERMISOS={
   comprasAdmin:'compras_admin',
   comprasPlanificacion:'compras_planificacion',
   comprasSolicitudes:'compras_solicitudes',
+  comprasSeguimiento:'compras_solicitudes',
   comprasPresupuesto:'compras_presupuesto',
   comprasProcesos:'compras_procesos',
   comprasProveedores:'compras_proveedores',
@@ -3978,6 +4004,74 @@ function renderComprasPanel(){
   document.getElementById('comprasProcesosPendientesKpi').innerText=procesosPendientes;
   document.getElementById('comprasContratosVenciendoKpi').innerText=contratosVenciendo;
   document.getElementById('comprasSolicitudesAtrasadasKpi').innerText=solicitudesAtrasadas;
+  renderSeguimientoCompras();
+}
+
+function expedienteCompraDemo(){
+  return {
+    expediente:'EXP-2026-0001',
+    solicitud:'Uniforme institucional',
+    responsable:'Comarky.Reyes',
+    cargo:'Encargado de area',
+    estado:'Solicitud de compra o servicio',
+    horas:147,
+    documentos:'Completo',
+    creadoEn:new Date(Date.now()-(147*60*60*1000)).toISOString()
+  };
+}
+
+function expedientesSeguimientoCompras(){
+  const solicitudes=comprasRegistros.filter(item=>item.tipo==='solicitudes');
+  if(!solicitudes.length)return [expedienteCompraDemo()];
+  return solicitudes.map((item,index)=>({
+    expediente:item.datos?.expediente||`EXP-${new Date(item.creadoEn||Date.now()).getFullYear()}-${String(index+1).padStart(4,'0')}`,
+    solicitud:item.datos?.descripcion||'Solicitud sin descripcion',
+    responsable:item.datos?.solicitante||item.creadoPor||'Sin responsable',
+    cargo:'Encargado de area',
+    estado:item.datos?.tipo||'Solicitud de compra o servicio',
+    horas:Math.max(0,Math.round((Date.now()-new Date(item.creadoEn||Date.now()).getTime())/3600000)),
+    documentos:item.datos?.justificacion?'Completo':'Pendiente',
+    creadoEn:item.creadoEn
+  }));
+}
+
+function conteoEtapaCompra(etapa){
+  if(etapa==='Solicitud')return expedientesSeguimientoCompras().length;
+  const mapa={Validaciones:'presupuesto',SECP:'procesos',Contrato:'contratos','Recepcion':'recepcion',Pago:'presupuesto',Cierre:'auditoria',Completado:'reportes'};
+  const tipo=mapa[etapa];
+  return comprasRegistros.filter(item=>item.tipo===tipo).length;
+}
+
+function renderSeguimientoCompras(){
+  const resumen=document.getElementById('comprasSeguimientoResumen');
+  const detalle=document.getElementById('comprasSeguimientoDetalle');
+  const tbody=document.getElementById('tablaComprasSeguimiento');
+  if(!resumen||!detalle||!tbody)return;
+  const etapas=['Solicitud','Validaciones','SECP','Contrato','Recepcion','Pago','Cierre','Completado'];
+  const expedientes=expedientesSeguimientoCompras();
+  const actual=expedientes[0]||expedienteCompraDemo();
+  resumen.innerHTML=etapas.map((etapa,index)=>{
+    const total=conteoEtapaCompra(etapa);
+    const activo=index===0;
+    return `<div class="architecture-card tracking-stage${activo?' active':''}${index<1?' complete':''}">
+      <h3>${safeText(etapa)} (${total})</h3>
+      ${total?`<strong>${safeText(actual.expediente)}</strong><p class="small">${safeText(actual.solicitud)}<br>${safeText(actual.responsable)}<br>${safeText(actual.cargo)}</p>`:'<p class="small">Sin solicitudes</p>'}
+    </div>`;
+  }).join('');
+  document.getElementById('comprasSeguimientoExpediente').textContent=actual.expediente;
+  detalle.innerHTML=[
+    ['Solicitud',actual.solicitud],
+    ['Estado actual',actual.estado],
+    ['Responsable',actual.responsable],
+    ['Sin movimiento',`${actual.horas} h`],
+    ['Documentos',actual.documentos]
+  ].map(([label,value])=>`<div class="profile-item"><small>${safeText(label)}</small><strong>${safeText(value)}</strong></div>`).join('');
+  tbody.innerHTML=expedientes.map(item=>`<tr><td>${safeText(item.expediente)}</td><td>${safeText(item.solicitud)}</td><td>${safeText(item.responsable)}</td><td>${safeText(item.estado)}</td><td>${safeText(item.horas)} h</td><td>${safeText(item.documentos)}</td><td><button class="btn btn-secondary" type="button" onclick="mostrarDetalleSeguimientoCompra('${safeText(item.expediente)}')">Mostrar detalles</button></td></tr>`).join('');
+}
+
+function mostrarDetalleSeguimientoCompra(expediente=''){
+  const item=expedientesSeguimientoCompras().find(reg=>reg.expediente===expediente)||expedientesSeguimientoCompras()[0]||expedienteCompraDemo();
+  alert(`${item.expediente}\n${item.solicitud}\nEstado actual: ${item.estado}\nResponsable: ${item.responsable}\nSin movimiento: ${item.horas} h\nDocumentos: ${item.documentos}`);
 }
 
 function leerLocalJson(clave, fallback){
